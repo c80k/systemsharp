@@ -1,0 +1,17 @@
+#summary System# wiki index page
+
+= Welcome to the System# wiki =
+
+== Installation ==
+
+Before you install System#, please make sure your machines meet the following prerequisites:
+
+- *Visual Studio 2010 SP1*. If you're missing Service Pack 1, try http://www.microsoft.com/download/en/details.aspx?id=23691.
+
+- *.NET Framework 4* (usually installed along with Visual Studio 2010)
+
+- *Reactive Extensions (Rx)* Try http://www.microsoft.com/download/en/details.aspx?id=26649 to obtain the Rx SDK.
+
+- Recommended, but not mandatory: *Code Contracts*. Try http://research.microsoft.com/en-us/projects/contracts/.
+
+- Only if you want to rebuild System# from scratch: The *boost libraries, v1.46.1* Try http://www.boost.org/.
