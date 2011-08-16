@@ -14,6 +14,10 @@ http://systemsharp.googlecode.com/files/screenshot_NewCSApp.png
 http://systemsharp.googlecode.com/files/screenshot_AddReference.png
   * Select the _.NET_ tab and left-click _Component Name_ to get an alphabetical sorting of all .NET assemblies in your system. Now add the following four components:
     * *GraphAlgorithmLib*
+http://systemsharp.googlecode.com/files/screenshot_AddRefGraphAlgorithmLib.png
     * *Oyster.IntX*
+http://systemsharp.googlecode.com/files/screenshot_AddRefOysterIntX.png
     * *SystemSharp*
+http://systemsharp.googlecode.com/files/screenshot_AddRefSystemSharp.png
     * *XilinxSupportLib*
+http://systemsharp.googlecode.com/files/screenshot_AddRefXilinxSupportLib.png
