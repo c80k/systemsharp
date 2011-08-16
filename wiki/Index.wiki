@@ -1,4 +1,5 @@
 #summary System# wiki index page
+#labels Featured,Phase-Deploy
 
 = Welcome to the System# wiki =
 
