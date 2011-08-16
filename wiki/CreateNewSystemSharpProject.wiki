@@ -1,0 +1,20 @@
+#summary How to create a new Visual Studio project using System#
+#labels Phase-Implementation
+
+= Introduction =
+
+This page describes the steps needed to incorporate System# in a Visual Studio project.
+
+
+= Details =
+
+Steps:
+  * Create a new C# Application project. It is up to you whether you choose a Windows Forms application, WPF application or console application. If in doubt, create a console application.
+
+  * In the _Solution Explorer_ right-click _References_ and choose _Add Reference..._
+
+  * Select the _.NET_ tab and left-click _Component Name_ to get an alphabetical sorting of all .NET assemblies in your system. Now add the following four components:
+    * *GraphAlgorithmLib*
+    * *Oyster.IntX*
+    * *SystemSharp*
+    * *XilinxSupportLib*
