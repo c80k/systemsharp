@@ -14,10 +14,21 @@ http://systemsharp.googlecode.com/files/screenshot_NewCSApp.png
 http://systemsharp.googlecode.com/files/screenshot_AddReference.png
   * Select the _.NET_ tab and left-click _Component Name_ to get an alphabetical sorting of all .NET assemblies in your system. Now add the following four components:
     * *GraphAlgorithmLib*
-http://systemsharp.googlecode.com/files/screenshot_AddRefGraphAlgorithmLib.png
+      http://systemsharp.googlecode.com/files/screenshot_AddRefGraphAlgorithmLib.png
     * *Oyster.IntX*
-http://systemsharp.googlecode.com/files/screenshot_AddRefOysterIntX.png
+      http://systemsharp.googlecode.com/files/screenshot_AddRefOysterIntX.png
     * *SystemSharp*
-http://systemsharp.googlecode.com/files/screenshot_AddRefSystemSharp.png
+      http://systemsharp.googlecode.com/files/screenshot_AddRefSystemSharp.png
     * *XilinxSupportLib*
-http://systemsharp.googlecode.com/files/screenshot_AddRefXilinxSupportLib.png
+      http://systemsharp.googlecode.com/files/screenshot_AddRefXilinxSupportLib.png
+  * Add the following import directives at the beginning of each source file where you want to use System#:
+<code language="cs">
+using SystemSharp.Components;
+using SystemSharp.Components.Std;
+using SystemSharp.DataTypes;
+using SystemSharp.Synthesis;
+using SystemSharp.Synthesis.VHDLGen;
+using SystemSharp.Interop.Xilinx;
+using SystemSharp.Interop.Xilinx.IPCores;
+</code>
+  * You're ready now to start off your own design.
