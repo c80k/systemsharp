@@ -40,23 +40,58 @@ class MyComponent: Component
 </code>
 If your component class shall contain a child component, just declare it as a field and instantiate them inside the constructor:
 <code language="cs">
-import SystemSharp.Components;
-
-class MySubComponent: Component
-{
-}
-
 class MyTopComponent: Component
 {
-    private MySubComponent child;
+    private MyComponent child;
 
     public MyTopComponent()
     {
-        child = new MySubComponent();
+        child = new MyComponent();
     }
 }
 </code>
 
 == Component interfaces: Ports ==
 
-The only way for a component to interact with its environment is through _ports_. A port can be thought as of an interface which exposes a certain functionality to the component. In hardware design, a port models a discrete signal input or output. In System#, ports are described by C# properties. System# ports are _always_ assigned from outside the component (a process called _binding_) and read from _inside_. Therefore, a port property has a `public` `set`-accessor and a `private` `get`-accessor (yes, the accessor modifications are just converse compared to usual programming practice).
+The only way for a component to interact with its environment is through _ports_. A port can be thought as of an interface which exposes a certain functionality to the component. In hardware design, a port models a discrete signal input or output. In System#, ports are described by C# properties. System# ports are _always_ assigned from outside the component (a process called _binding_) and read from _inside_. Therefore, a port property has a `public` `set`-accessor and a `private` `get`-accessor (yes, the accessor modifications are converse compared to usual programming practice).
+  * Signal input ports are declared through a property of type `In<Type>` where `Type` is the signal value data type.
+  * Signal output ports are declared through a property of type `Out<Type>` where `Type` is the signal value data type.
+  * Bidirectional signal ports are declared through a property of type `InOut<Type>` where `Type` is the signal value data type.
+Let's declare a component having a `bool`-valued input, an `StdLogic`-valued input, an `int`-valued output and an `StdLogicVector`-valued output:
+<code language="cs">
+class MyComponent: Component
+{
+  public In<bool> In1 { get; private set; }
+  public In<StdLogic> In2 { get; private set; }
+  public Out<int> Out1 { get; private set; }
+  public Out<StdLogicVector> Out2 { get; private set; }
+}
+</code>
+Now assume that some other component, `MyTopComponent`, instantiates `MyComponent` as child component. Then `MyTopComponent` is responsible for associating each port of `MyComponent` with an appropriate signal instance (signals are discussed later). This process is called binding and is attended best by using the `Bind()` method which expects a delegate which describes the bind operations to be carried out:
+<code language="cs">
+class MyTopComponent: Component
+{
+    private MySubComponent child;
+
+     private Signal<bool> sig1 = new Signal<bool>();
+    private SLSignal sig2 = new SLSignal();
+    private Signal<int> sig3 = new Signal<int>();
+    private SLVSignal sig4 = new SLVSignal();
+
+     public MyTopComponent()
+    {
+        child = new MySubComponent();
+        Bind(() => {
+          child.In1 = sig1;
+          child.In2 = sig2;
+          child.Out1 = sig3;
+          child.Out2 = sig4;
+        });
+    }
+}
+</code>
+
+== Channels and signals ==
+
+Ports constitute a component's interface. We still need a thing which stores the actual information which is exchanged by ports, a thing where we can bind those ports to. This thing is called a _channel_. Whereas a component encapsulates the _computation_ which takes place inside a system part, a channel models _communication_.
+The probably most well-known realization of a channel in hardware design is a signal. 
