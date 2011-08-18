@@ -26,8 +26,37 @@ If you're familiar with SystemC and/or VHDL, you'll find that things are very si
 || `process` with `wait` statements || call to `sc_thread()` || call to `AddThread()` ||
 || n.a. || clocked thread || call to `AddClockedThread()` ||
 
-The next subsections will dive into the details.
+The next subsections will dive into the details. All code examples are given in C#.
 
 == Components and hierarchical composition ==
 
-A System# design consists of hierachically composed _components_. 
+A System# design is hierachically composed of _components_. A component encapsulates the behavior of a certain design part and can itself contain further components. To declare a component type, derive a class from `SystemSharp.Components`:
+<code language="cs">
+import SystemSharp.Components;
+
+class MyComponent: Component
+{
+}
+</code>
+If your component class shall contain a child component, just declare it as a field and instantiate them inside the constructor:
+<code language="cs">
+import SystemSharp.Components;
+
+class MySubComponent: Component
+{
+}
+
+class MyTopComponent: Component
+{
+    private MySubComponent child;
+
+    public MyTopComponent()
+    {
+        child = new MySubComponent();
+    }
+}
+</code>
+
+== Component interfaces: Ports ==
+
+The only way for a component to interact with its environment is through _ports_. A port can be thought as of an interface which exposes a certain functionality to the component. In hardware design, a port models a discrete signal input or output. In System#, ports are described by C# properties. System# ports are _always_ assigned from outside the component (a process called _binding_) and read from _inside_. Therefore, a port property has a `public` `set`-accessor and a `private` `get`-accessor (yes, the accessor modifications are just converse compared to usual programming practice).
