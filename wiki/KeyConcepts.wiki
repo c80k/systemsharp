@@ -97,7 +97,7 @@ Ports constitute a component's interface. We still need a thing which stores the
 
 `Channel` (namespace: `SystemSharp.Components`) is System#'s abstract base class used for all channel realizations. Signals are implemented by class `Signal<Type>`. `Type` is a generic type parameter and depicts the data type of the carried signal value. System# offers special signal implementations for resolved data types.
   * Class `SLSignal` is a signal of data type `StdLogic`.
-  * Class `SLVSignal` is a signal of data type `StdLogicVector`. `SLVSignal` needs one constructor argument which tells the desired width of the sotred logic vector.
+  * Class `SLVSignal` is a signal of data type `StdLogicVector`. `SLVSignal` needs one constructor argument which tells the desired width of the stored logic vector.
   * Use `Signal<Type>` for any other data type.
 
 Data access to signals is governed by a set of properties:
@@ -111,3 +111,124 @@ The preset of `InitialValue` for...
   * an `SLSignal` instance is `'U'`,
   * an `SLVSignal` instance is `'UUU...U'`,
   * a `Signal<Type>` is `default(Type)`.
+
+== Processes ==
+
+A process is the place where actual design action occurs. Technologically, a process is a method without any arguments. However, it has a special meaning in that a process acts like a program's `main` function. As we're modeling a concurrent system, there are multiple `main` functions in parallel.
+
+System# distinguishes three kind of processes:
+  * A *triggered process* executes its implementing method due to some event. The set of events which are capable of triggering the process is specified inside the process _sensitivity list_. A triggered process consumes no (simulation) time during its execution. Thus, it may not call any of the `DesignContext.Wait(...)` methods.
+  * A *threaded process* starts executing its implementing method from the very beginning. It incorporates the `DesignContext.Wait(...)` methods to pause its execution until some event occurs.
+  * A *clocked thread* is a special threaded process and especially useful to model synthesizable synchronous finite state machines. The clocked thread pre-defines its sensitivity the rising or falling edge event of a clock signal. It is only allowed to call `DesignContext.Wait()` (without any arguments) which will pause its execution for one clock cycle.
+To turn a method into a process, the method must be registered by a special framework call. The registration must take place inside the overwritten `Initialize` method of a component. Which framework call to use depends on the process kind. Assume the method to be registered has the identifier `MyMethod`:
+|| *Task* || *Syntax* || *Remarks* ||
+|| Register a *triggered process* || `AddProcess(MyMethod, ...)` || The sensitivity list is specified by the following arguments ||
+|| Register a *threaded process* || `AddThread(MyMethod)` || ||
+|| Register a *clocked thread* || `AddClockedThread(MyMethod, Clk.RisingEdge, Clk)` or<br> `AddClockedThread(MyMethod, Clk.FallingEdge, Clk)` || `Clk` depicts the desired clock signal. It must be of type `StdLogic` or `bool`. ||
+
+=== Example: Counter with triggered process ===
+
+The following example describes a synchronous binary n-bit counter. The increment process is realized using a triggered process:
+
+<code language="cs">
+class Counter : Component
+{
+  public In<StdLogic> Clk { private get; set; }
+  public Out<StdLogicVector> Ctr { private get; set; }
+
+  private SLVSignal `_`ctr;
+
+  public Counter(int width)
+  {
+    `_`ctr = new SLVSignal(StdLogicVector.`_`1s(width));
+  }
+
+  private void Processing()
+  {
+    if (Clk.RisingEdge())
+    {
+      Ctr.Next = ctr.Cur;
+      `_`ctr.Next = `_`ctr.Cur + "1";
+    }
+  }
+
+  protected override void Initialize()
+  {
+    // Triggered process is registered here
+    AddProcess(Processing, Clk);
+  }
+}
+</code>
+
+=== Example: Counter with threaded process ===
+
+The following example replaces the triggered process by a threaded one.
+
+<code language="cs">
+class Counter : Component
+{
+  public In<StdLogic> Clk { private get; set; }
+  public Out<StdLogicVector> Ctr { private get; set; }
+
+  private SLVSignal `_`ctr;
+
+  public Counter(int width)
+  {
+    `_`ctr = new SLVSignal(StdLogicVector.`_`1s(width));
+  }
+
+  private void Processing()
+  {
+    while (true)
+    {
+      DesignContext.Wait(Clk);
+      if (Clk.RisingEdge())
+      {
+        Ctr.Next = ctr.Cur;
+        `_`ctr.Next = `_`ctr.Cur + "1";
+      }
+    }
+  }
+
+  protected override void Initialize()
+  {
+    // Threaded process is registered here
+    AddThread(Processing);
+  }
+}
+</code>
+
+=== Example: Counter with clocked thread ===
+
+And a third example incorporating a clocked thread.
+
+<code language="cs">
+class Counter : Component
+{
+  public In<StdLogic> Clk { private get; set; }
+  public Out<StdLogicVector> Ctr { private get; set; }
+
+  private SLVSignal `_`ctr;
+
+  public Counter(int width)
+  {
+    `_`ctr = new SLVSignal(StdLogicVector.`_`1s(width));
+  }
+
+  private void Processing()
+  {
+    while (true)
+    {
+      DesignContext.Wait();
+      Ctr.Next = ctr.Cur;
+      `_`ctr.Next = `_`ctr.Cur + "1";
+    }
+  }
+
+  protected override void Initialize()
+  {
+    // Clocked thread is registered here
+    AddClockedThread(Processing, Clk.RisingEdge, Clk);
+  }
+}
+</code>
