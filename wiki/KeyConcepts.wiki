@@ -93,5 +93,21 @@ class MyTopComponent: Component
 
 == Channels and signals ==
 
-Ports constitute a component's interface. We still need a thing which stores the actual information which is exchanged by ports, a thing where we can bind those ports to. This thing is called a _channel_. Whereas a component encapsulates the _computation_ which takes place inside a system part, a channel models _communication_.
-The probably most well-known realization of a channel in hardware design is a signal. 
+Ports constitute a component's interface. We still need a thing which stores the actual information which is exchanged by ports, a thing where we can bind those ports to. This thing is called a _channel_. Whereas a component encapsulates the _computation_ which takes place inside a system part, a channel models _communication_. In hardware design, the most popular realization of a channel is a signal.
+
+`Channel` (namespace: `SystemSharp.Components`) is System#'s abstract base class used for all channel realizations. Signals are implemented by class `Signal<Type>`. `Type` is a generic type parameter and depicts the data type of the carried signal value. System# offers special signal implementations for resolved data types.
+  * Class `SLSignal` is a signal of data type `StdLogic`.
+  * Class `SLVSignal` is a signal of data type `StdLogicVector`. `SLVSignal` needs one constructor argument which tells the desired width of the sotred logic vector.
+  * Use `Signal<Type>` for any other data type.
+
+Data access to signals is governed by a set of properties:
+|| *Property name* || *Access restrictions* || *Description* ||
+|| `InitialValue` || read/write. Only before simulation. || Sets/gets the signal's value at simulation time 0. ||
+|| `Cur` || read-only. Only during simulation. || Gets the signal's value. ||
+|| `Next` || write-only. Only during simulation. || Sets the signal's value. ||
+|| `Pre` || read-only. Only during simulation. || Gets the value the signal had prior to the current event. ||
+
+The preset of `InitialValue` for...
+  * an `SLSignal` instance is `'U'`,
+  * an `SLVSignal` instance is `'UUU...U'`,
+  * a `Signal<Type>` is `default(Type)`.
