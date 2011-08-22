@@ -232,3 +232,57 @@ class Counter : Component
   }
 }
 </code>
+
+== Hardware datatypes ==
+
+The `SystemSharp.DataTypes` namespace contains bit-accurate datatypes and resolved logic.
+
+=== Resolved logic ===
+
+`StdLogic` ist the counterpart to VHDL's `std_logic`. The datatype implements implicit conversions from and to `char`, so the syntax is very similar to VHDL. To instantiate an `StdLogic`-valued signal, use class `SLSignal`. It was designed to support resolved logic.
+
+As might guess it, System# `StdLogicVector` is the equivalent to VHDL `std_logic_vector`. Again, an implicit conversion operator lets you assign any `StdLogicVector` from a string. Compared to VHDL, an `StdLogicVector v` is always assumed to have an implicitly defined range of `v.Size - 1 downto 0`. Operator overloads provide access to single bits and slices:
+<code language="cs">
+import SystemSharp.DataTypes;
+...
+StdLogicVector v = "1010ZU-"; // assigns an StdLogicVector, VHDL range: range 6 downto 0
+StdLogic bit = v`[2]`; // returns StdLogic.`_`Z
+StdLogicVector slice = v`[5, 1]`; returns StdLogicVector("010ZU")
+</code>
+To instantiate an `StdLogicVector`-valued signal, use class `SLVSignal`. It provides appropriate operators to drive dedicated portions of a signal:
+<code language="cs">
+import SystemSharp.DataTypes;
+...
+SLVSignal sig = new SLVSignal(8);
+...
+StdLogic bit1 = sig.Cur`[0]`;
+StdLogic bit2 = sig`[0]`.Cur;
+// Both lines are equvialent, so we have: bit1.Equals(bit2)
+
+ sig.Next`[1]` = '0'; // Error! Not allowed!
+sig`[1]`.Next = '0'; // OK
+</code>
+
+== Arbitrary-length integers ==
+
+The System# datatypes `Signed` and `Unsigned` provide implementations of arbitrary-length integers. They are mapped to the VHDL datatypes `signed`  and `unsigned`, respectively. Static helper methods let you create instances of these datatypes form native C# data types or from the underlying arbitrary-length integer implementation `IntX`:
+
+|| *Method* || *Description* ||
+|| `Signed.FromInt(i, size)` || Converts integer value `i` to a `Signed` instance having a size of `size` bits. ||
+|| `Signed.FromLong(i, size)` || Converts long integer value `i` to a `Signed` instance having a size of `size` bits. ||
+|| `Signed.FromIntX(i, size)` || Converts `IntX` value `i` to a `Signed` instance having a size of `size` bits. || 
+|| `Unsigned.FromUInt(i, size)` || Converts unsigned integer value `i` to an `Unsigned` instance having a size of `size` bits. ||
+|| `Unsigned.FromULong(i, size)` || Converts unsigned long integer value `i` to an `Unsigned` instance having a size of `size` bits. ||
+|| `Unsigned.FromIntX(i, size)` || Converts `IntX` value `i` to an `Unsigned` instance having a size of `size` bits. || 
+
+To convert any `Signed` or `Unsigned` value to its binary 2's complement encoding, you can use the property `SLVValue`:
+<code language="cs">
+import SystemSharp.DataTypes;
+...
+Signed value = Signed.FromInt(-2, 8);
+StdLogicVector slv = value.SLVValue; // returns StdLogicVector("11111110");
+</code>
+
+== Fixed-point arithmetic ==
+
+Fixed-point arithmetic is supported by the System# datatypes `SFix` (signed fixed-point value) and `UFix` (unsigned fixed-point value). These are mapped to the VHDL datatypes `sfixed` and `ufixed`, respectively.
