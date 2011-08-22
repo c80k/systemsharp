@@ -285,4 +285,20 @@ StdLogicVector slv = value.SLVValue; // returns StdLogicVector("11111110");
 
 == Fixed-point arithmetic ==
 
-Fixed-point arithmetic is supported by the System# datatypes `SFix` (signed fixed-point value) and `UFix` (unsigned fixed-point value). These are mapped to the VHDL datatypes `sfixed` and `ufixed`, respectively.
+Fixed-point arithmetic is supported by the System# datatypes `SFix` (signed fixed-point value) and `UFix` (unsigned fixed-point value). These are mapped to the VHDL datatypes `sfixed` and `ufixed`, respectively. The following table gives you an overview about the possibilities to construct instances of `SFix` and `UFix`:
+
+|| *Method* || *Description* ||
+|| `SFix.FromSigned(value, intWidth, fracWidth)` || Scales `Signed value` by a factor of 2^-fracWidth^ and returns the `SFix` result. ||
+|| `SFix.FromDouble(value, intWidth, fracWidth)` || Converts `double value` to an `SFix`, having an integer width of `intWidth` and a fractional width of `fracWidth`. ||
+|| `UFix.FromUnsigned(value, intWidth, fracWidth)` || Scales `Unsigned value` by a factor of 2^-fracWidth^ and returns the `UFix` result. ||
+|| `UFix.FromDouble(value, intWidth, fracWidth)` || Converts `double value` to a `UFix`, having an integer width of `intWidth` and a fractional width of `fracWidth`. ||
+
+It is also possible to convert an `SFix` or `UFix` value back to a `Signed`, `Unsigned`, `double` or `StdLogicVector`. Be `value` an instance of `SFix`. Then
+  * `value.SignedValue` scales `value` by 2^n^ (n is its fractional width) and returns the result as `Signed`.
+  * `value.DoubleValue` converts `value` to its `double` (floating point) representation.
+  * `value.SignedValue.SLVValue` converts `value` to its binary two's complement encoding.
+
+Now the same for `value` being a `UFix`:
+  * `value.UnsignedValue` scales `value` by 2^n^ (n is its fractional width) and returns the result as `Unsigned`.
+  * `value.DoubleValue` converts `value` to its `double` (floating point) representation.
+  * `value.SignedValue.SLVValue` converts `value` to its binary encoding.
