@@ -323,3 +323,38 @@ DesignContext.Instance.Simulate(new Time(60.0, ETimeUnit.sec);
 simulates 60 seconds of system runtime. It is possible to continue simulation by succeeding calls to `Simulate`.
 
 = Translation =
+
+System# was designed with synthesis in mind. It provides a convenient interface to translate an elaborated design to some implementation-level language. However, VHDL is currently the only supported language. The translation of a design basically consists of three steps:
+  * Create a container project for your design.
+  * Create an appropriate code generator.
+  * Perform the design translation given the container project and the code generator.
+
+The following code snippet demonstrates how to translate a design to VHDL, saving it in a Xilinx ISE container project:
+<code language="cs">
+using SystemSharp.Synthesis;
+using SystemSharp.Synthesis.VHDLGen;
+using SystemSharp.Interop.Xilinx;
+
+...
+
+// Create a Xilinx ISE project containing the generated sources.
+//  1st argument is the desired output path
+//  2nd argument is the project name
+XilinxProject project = new XilinxProject(@".\hdl_output", "MyDesign");
+
+// Configure project-specific options
+project.PutProperty(EXilinxProjectProperties.DeviceFamily, EDeviceFamily.Spartan3);
+project.PutProperty(EXilinxProjectProperties.Device, EDevice.xc3s1500l);
+project.PutProperty(EXilinxProjectProperties.Package, EPackage.fg676);
+project.PutProperty(EXilinxProjectProperties.SpeedGrade, ESpeedGrade.`_`4);
+project.PutProperty(EXilinxProjectProperties.PreferredLanguage, EHDL.VHDL);
+
+// Instantiate the VHDL code generator
+VHDLGenerator codeGen = new VHDLGenerator();
+
+// Advise the synthesis engine to translate the design
+SynthesisEngine.Synthesize(DesignContext.Instance, project, codeGen);
+
+// Don't forget to save the project
+project.Save();
+</code>
