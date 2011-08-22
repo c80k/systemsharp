@@ -25,4 +25,9 @@ constructs an array of `StdLogic`-valued signals.
 *Note*: `Signal1D<StdLogic>` is _not_ the same as `SLVSignal`. Whereas the first models an array of `StdLogic`-valued signals, 
 the latter defines a single signal of type `StdLogicVector`.
 
-The value of a `Signal1D<>` instance can be accessed in two ways. Compound access treats the signal instance as if it would be 
+The value of a `Signal1D<>` instance can be accessed in two ways. Compound access treats the signal instance as if it would be a single signal of type `Signal<Type[]>`. Therefore, the `InitialValue`, `Cur`, `Pre` and `Next` properties of a `Signal1D<Type>` all expect an array `Type[]`. Element and slice access is possible by indexer methods. E.g. to manipulate a single bit of a `Signal1D<StdLogic>` you can write:
+<code language="cs">
+`/* assume sig is an instance of Signal1D<StdLogic> */`
+
+`sig[index].Next = '0';`
+</code>
