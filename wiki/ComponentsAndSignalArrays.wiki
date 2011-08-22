@@ -31,3 +31,5 @@ The value of a `Signal1D<>` instance can be accessed in two ways. Compound acces
 
 `sig[index].Next = '0';`
 </code>
+
+= Arrays of ports =
