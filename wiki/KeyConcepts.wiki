@@ -302,3 +302,24 @@ Now the same for `value` being a `UFix`:
   * `value.UnsignedValue` scales `value` by 2^n^ (n is its fractional width) and returns the result as `Unsigned`.
   * `value.DoubleValue` converts `value` to its `double` (floating point) representation.
   * `value.SignedValue.SLVValue` converts `value` to its binary encoding.
+
+Both datatypes `SFix` and `UFix` overload operators for standard arithmetic operations. To convert an `SFix` or `UFix` value to a different fixed-point format, both datatypes implement a method `Resize(newIntWidth, newFracWidth)` which takes the desired integer and fractional widths as input arguments. If the new integer width is bigger than the current width, the result is padded to the left. It case of an `SFix` the sign is extended whereas a `UFix` value is left-padded by zeroes. If the new integer width is smaller, overlapping integer bits are truncated. If the new fractional width is bigger, the value is right-padded by zeroes. If the new fractional width is smaller, overlapping fractional bits are truncated.
+
+= Elaboration =
+
+System# shares the concept of elaboration with SystemC and VHDL. Elaboration is the point where a system design is made ready for simulation, analysis and program transformations, such as translation to VHDL. It is important to understand that before and after elaboration, things are fundamentally different: Whereas before elaboration, a System# model is free to do almost anything, elaboration will freeze the system design in certain aspects. Once a design is elaborated, you are not allowed to add new processes, create new signals or add new components to it.
+SystemC elaborates a design automatically as soon as to start the simulation. In contrast, System# defines a separate method call which lets you trigger elaboration:
+<code language="cs">
+DesignContext.Instance.Elaborate();
+</code>
+We made this explicit because elaboration is not only a prerequisite to simulation but also to design analysis and translation. So we wanted to leave the designer in control when elaboration happens.
+
+= Simulation =
+
+Simulation is controlled by a call to `DesignContext.Instance.Simulate(Time delta)`. The `delta` argument specifies what amount of simulated time the simulation should run. E.g.
+<code language="cs">
+DesignContext.Instance.Simulate(new Time(60.0, ETimeUnit.sec);
+</code>
+simulates 60 seconds of system runtime. It is possible to continue simulation by succeeding calls to `Simulate`.
+
+= Translation =
