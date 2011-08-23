@@ -11,7 +11,7 @@ Have a look at the example project `Example_Arbiter` which is part of the System
 
 A component array is modled by class `ComponentCollection` (namespace: `SystemSharp.Components`). Be sure you declare the `ComponentCollection` as a (typically private) field inside the hosting component. The constructor of `ComponentCollection` takes a single argument of type `IEnumerable<Component>`. This argument depicts the actual sequence of component instances you want to be put inside the `ComponentCollection`.
 
-= Arrays of signals =
+= Array-typed signals =
 
 If you're familiar with VHDL, you'll have to rethink things a little bit: The VHDL way of declaring an array of signals is actually to declare a signal of an array-valued datatype. If multiple processes drive portions of the same signal, it is up to the VHDL compiler to figure out which process drives which portion. System# does not distinguish signal drivers by portion. Either a process drives a signal or not, regardless of whether it drives only a single bit inside the signal or the complete one. However, the `SystemSharp.Components` namespace defines a special class which models an array of signals: `Signal1D<Type>`. Internally, it stores an array of `Signal<Type>`, so the generic type parameter `Type` depicts the type of a single signal value element. Because there is a dedicated `Signal<>` instance for each element the analysis engine is able to distinguish a separate set of drivers for each `Signal1D<>` element.
 The `Signal1D<>` constructor comes in two flavors:
@@ -25,11 +25,18 @@ constructs an array of `StdLogic`-valued signals.
 *Note*: `Signal1D<StdLogic>` is _not_ the same as `SLVSignal`. Whereas the first models an array of `StdLogic`-valued signals, 
 the latter defines a single signal of type `StdLogicVector`.
 
-The value of a `Signal1D<>` instance can be accessed in two ways. Compound access treats the signal instance as if it would be a single signal of type `Signal<Type[]>`. Therefore, the `InitialValue`, `Cur`, `Pre` and `Next` properties of a `Signal1D<Type>` all expect an array `Type[]`. Element and slice access is possible by indexer methods. E.g. to manipulate a single bit of a `Signal1D<StdLogic>` you can write:
+The value of a `Signal1D<>` instance can be accessed in two ways. Compound access treats the signal instance as if it would be a single signal of type `Signal<Type[]>`. Therefore, the `InitialValue`, `Cur`, `Pre` and `Next` properties of a `Signal1D<Type>` all expect an array `Type[]`. Element and slice access is possible by indexer methods. E.g. to manipulate a single bit of a `Signal1D<StdLogic>` instance you write:
 <code language="cs">
 `/* assume sig is an instance of Signal1D<StdLogic> */`
 
 `sig[index].Next = '0';`
 </code>
 
-= Arrays of ports =
+= Array-typed ports =
+
+System# provides special interfaces for the declaration of array-typed ports: `XIn`, `XOut` and `XInOut`. Let's face it: Their syntax is currently rather convoluted due to the generic type parameters they need. This is definitely a point we'll be working on for future releases. The following table will give you the correct syntax to declare an array-typed input, output or bidirectional port which is compatible with `Signal1D<Type>`:
+
+|| *Port direction* || *Port property type* ||
+|| input || `XIn<Type[], InOut<Type>>` ||
+|| output || `XOut<Type[], InOut<Type>>` ||
+|| bidirectional || `XInOut<Type[], InOut<Type>>` ||
