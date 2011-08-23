@@ -1,0 +1,8 @@
+#summary How to describe and incorporate synthesizable transactions
+#labels Phase-Implementation
+
+= Introduction =
+
+Transaction-level modeling (TLM) is a technique which strengthens the separation of computation and communication in system-level design. Communication to a certain peer, e.g. a bus or IP core is broken down to so-called transactions. Each transaction describes a well-defined activity at some communication end-point. E.g. a bus model typically yields two transactions _Read_ and _Write_. You already guessed it: _Read_ models reading a data word from the bus wheras _Write_ models writing a word to it. Depending on the bus architecture there may be more complex transactions, such as _BurstRead_ or _BurstWrite_. From a programatical point of view, transactions are implemented by procedures or methods. These contain all the required handshake logic to perform the transaction, e.g. setting a `request` signal, waiting for `acknowledge` and accounting for wait cycles. Therefore, transactions greatly simplify the development of testbenches and system mockups: Instead of driving each bit separately, you write down an intuitive sequence of transactions.
+
+TLM was successfully applied to the domain of verification and design-space exploration. However, it is usually restricted to the simulation domain. That is, you can simulate a TLM, but you usually can't synthesize it. That's where System# transactions come into play: These _are_ designed to be suitable for synthesizable HDL generation. The downside: System# TLM is clearly not as powerful as SystemC TLM 2.0. We restrict ourselves to a simple use case: Transactions are there to feed some IP core with data and to pull the result out of it. 
