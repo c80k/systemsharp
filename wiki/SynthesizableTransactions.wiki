@@ -5,4 +5,24 @@
 
 Transaction-level modeling (TLM) is a technique which strengthens the separation of computation and communication in system-level design. Communication to a certain peer, e.g. a bus or IP core is broken down to so-called transactions. Each transaction describes a well-defined activity at some communication end-point. E.g. a bus model typically yields two transactions _Read_ and _Write_. You already guessed it: _Read_ models reading a data word from the bus wheras _Write_ models writing a word to it. Depending on the bus architecture there may be more complex transactions, such as _BurstRead_ or _BurstWrite_. From a programatical point of view, transactions are implemented by procedures or methods. These contain all the required handshake logic to perform the transaction, e.g. setting a `request` signal, waiting for `acknowledge` and accounting for wait cycles. Therefore, transactions greatly simplify the development of testbenches and system mockups: Instead of driving each bit separately, you write down an intuitive sequence of transactions.
 
-TLM was successfully applied to the domain of verification and design-space exploration. However, it is usually restricted to the simulation domain. That is, you can simulate a TLM, but you usually can't synthesize it. That's where System# transactions come into play: These _are_ designed to be suitable for synthesizable HDL generation. The downside: System# TLM is clearly not as powerful as SystemC TLM 2.0. We restrict ourselves to a simple use case: Transactions are there to feed some IP core with data and to pull the result out of it. 
+TLM was successfully applied to the domain of verification and design-space exploration. However, it is usually restricted to the simulation domain. That is, you can simulate a TLM, but you usually can't synthesize it. That's where System# transactions come into play: These _are_ designed to be suitable for synthesizable HDL generation. The downside: System# TLM is clearly not as powerful as SystemC TLM 2.0. We restrict ourselves to a simple use case: Transactions are there to feed some IP core with data and to fetch the result out of it. Nothing ambitious. Don't expect any fancy bus or interface synthesis. But if your goal is to integrate a memory, a divider core and some I/O, System# offers an elegant solution to you.
+
+= Functional units =
+
+TLM always involves two parties: One that initiates a transaction (the transactor) and one that accepts it (the transaction target). Think of a divider core: The transactor sets divisor and dividend, waits for the transaction to complete and returns the quotient. The divider core is the transaction target, performing the actual computation.
+
+We'll begin with the transaction target. To enable transaction support for a component, it must be derived from a special class: `SystemSharp.Components.FU.FunctionalUnit`. A functional unit exposes one or more _transaction sites_. A transaction site is like a virtual port which is able to receive transactions. E.g. a dual-ported memory has two ports which allow for independent memory accesses. Consequently, it exposes two transaction sites. Of course, the simple divider gets along with a single transaction site. A transaction site defines the set of possible transactions. To define a transaction site, derive an interface from `SystemSharp.Components.Transactions.ITransactionSite`. This interface is defined as follows:
+<code language="cs">
+    public interface ITransactionSite
+    {
+        FunctionalUnit Host { `[StaticEvaluation]` get; }
+        object Group { `[StaticEvaluation]` get; }
+
+        `[StaticEvaluation]` IEnumerable`<TAVerb>` 
+       DoNothing();
+    }
+</code>
+The base interface defines the following properties and methods:
+  * `Host` depicts the functional unit which will be the target of any transaction.
+  * `Group` denotes a group identifier which is used to distinguish multiple transactions sites uniquely.
+  * `DoNothing()` is the so-called neutral transaction. Any transaction site must implement this special transaction. It is executed whenever there is actually no other transaction to be performed.
