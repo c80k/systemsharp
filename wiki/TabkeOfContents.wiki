@@ -1,9 +1,0 @@
-#summary The table of contents
-
-* [Index Getting started]
-  * [KeyConcepts System# key concepts]
-  * [CreateNewSystemSharpProject Project creation]
-* [ Advanced]
-  * [ComponentsAndSignalArrays Arrays of components and signals]
-  * [SynthesizableClockedThreads Synthesizable clocked threads]
-  * [SynthesizableTransactions Synthesizable transaction-level modeling]
