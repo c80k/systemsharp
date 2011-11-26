@@ -320,7 +320,7 @@ We made this explicit because elaboration is not only a prerequisite to simulati
 
 Simulation is controlled by a call to `DesignContext.Instance.Simulate(Time delta)`. The `delta` argument specifies what amount of simulated time the simulation should run. E.g.
 <code language="cs">
-DesignContext.Instance.Simulate(new Time(60.0, ETimeUnit.sec);
+DesignContext.Instance.Simulate(new Time(60.0, ETimeUnit.sec));
 </code>
 simulates 60 seconds of system runtime. It is possible to continue simulation by succeeding calls to `Simulate`.
 
