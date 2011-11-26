@@ -23,7 +23,7 @@ Before you install System#, please make sure your machines meet the following pr
 
   * Only if you want to rebuild System# from scratch: The *boost libraries, v1.46.1* Try http://www.boost.org/.
 
-  * System#'s supports Xilinx IP Cores and generates a Xilinx ISE project along with the VHDL sources. So *Xilinx ISE Design Suite 12.x* is recommended (no matter what edition).
+  * System#'s supports Xilinx IP Cores and generates a Xilinx ISE project along with the VHDL sources. So *Xilinx ISE Design Suite 12.x* or *13.x* is recommended (no matter what edition).
 
 
 === Download and Setup ===
