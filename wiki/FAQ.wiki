@@ -1,0 +1,18 @@
+#labels Phase-Support
+#Frequently asked questions
+
+= Frequently Asked Questions =
+
+*What's new/different in System# compared to "_insert your SLDL here_"?*
+
+  * Unlike most other SLDLs (system-level design languages), System# is based on C# and the .NET framework.
+
+  * System# is not just restricted to simulation - it is a combined simulation/synthesis framework, featuring the generation of synthesizable VHDL from models. It is not only an embedded domain-specific language - it is also a tool.
+
+  * Unlike most other synthesis tools, System# is open source.
+
+  * To our best knowledge, we present the first open source tool which features generation of synthesizable VHDL from C#.
+
+*What about [http://sourceforge.net/projects/esyssim/ ESys.NET]?*
+  
+  * ESys.NET is also a system-level modeling and simulation environment. It is currently restricted to simulation and does not feature code generation. System# is not related to this project in any way and did not derive any sources from it. System# is a completely unrelated, independent project.
