@@ -7,4 +7,4 @@
 * [ Advanced]
   * [ComponentsAndSignalArrays Arrays of components and signals]
   * [SynthesizableClockedThreads Synthesizable clocked threads]
-* [FAQ Frequently Asked Questions]
+* [FAQ]
