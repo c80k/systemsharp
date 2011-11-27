@@ -35,7 +35,7 @@
 
   * The simplest thing: Try System# and send us your feedback. Did you find a bug? Did you miss any feature? We're highly interested in improving the overall implementation quality!
 
-  * Use System# for your FPGA design tell us about your application. You design will be a helpful example for other developers.
+  * Use System# for your FPGA design tell us about your application. Your design will be a helpful example for other developers.
 
   * Improve toolchain support in System#: Add more IP cores to the Xilinx library or even create new support libraries for other FPGA vendors.
 
