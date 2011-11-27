@@ -7,4 +7,4 @@
 * [ Advanced]
   * [ComponentsAndSignalArrays Arrays of components and signals]
   * [SynthesizableClockedThreads Synthesizable clocked threads]
-  * [SynthesizableTransactions Synthesizable transaction-level modeling]
+* [FAQ Frequently Asked Questions]
