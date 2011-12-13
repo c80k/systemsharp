@@ -16,4 +16,5 @@ This procedure was tested with Mentor ModelSim SE 6.5e and Xilinx ISE 13.2. Diff
   # Wait for the compilation, then close the project.
   # In the ModelSim _Library_ window, right click and choose _New_, _Library..._ from the context menu.
   # Select _a map to an existing library_. For the library name, enter `ieee_proposed`. For _Library maps to_, browse to the location of the project you created. Click _Ok_.
+  # Open `modelsim.ini` (you'll find it in the Modelsim installation folder) in a text editor and add the following line to the `Library` section: `ieee_proposed = C:/Xilinx/13.2/ISE_DS/ISE/vhdl/mti_se/6.5e/nt64/ieee_proposed` (again, modify the path according to your installation and mind the forward slashes which are required even on a Windows machine).
   # That's all folks.
