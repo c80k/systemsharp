@@ -64,10 +64,10 @@ Let's declare a component having a `bool`-valued input, an `StdLogic`-valued inp
 <code language="cs">
 class MyComponent: Component
 {
-  public In<bool> In1 { get; private set; }
-  public In<StdLogic> In2 { get; private set; }
-  public Out<int> Out1 { get; private set; }
-  public Out<StdLogicVector> Out2 { get; private set; }
+  public In<bool> In1 { private get; set; }
+  public In<StdLogic> In2 { private get; set; }
+  public Out<int> Out1 { private get; set; }
+  public Out<StdLogicVector> Out2 { private get; set; }
 }
 </code>
 Now assume that some other component, `MyTopComponent`, instantiates `MyComponent` as child component. Then `MyTopComponent` is responsible for associating each port of `MyComponent` with an appropriate signal instance (signals are discussed later). This process is called binding and is attended best by using the `Bind()` method which expects a delegate which describes the bind operations to be carried out:
@@ -150,7 +150,7 @@ class Counter : Component
   {
     if (Clk.RisingEdge())
     {
-      Ctr.Next = ctr.Cur;
+      Ctr.Next = `_`ctr.Cur;
       `_`ctr.Next = `_`ctr.Cur + "1";
     }
   }
