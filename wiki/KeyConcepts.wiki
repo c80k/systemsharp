@@ -187,7 +187,7 @@ class Counter : Component
       DesignContext.Wait(Clk);
       if (Clk.RisingEdge())
       {
-        Ctr.Next = ctr.Cur;
+        Ctr.Next = `_`ctr.Cur;
         `_`ctr.Next = `_`ctr.Cur + "1";
       }
     }
@@ -223,7 +223,7 @@ class Counter : Component
     while (true)
     {
       DesignContext.Wait();
-      Ctr.Next = ctr.Cur;
+      Ctr.Next = `_`ctr.Cur;
       `_`ctr.Next = `_`ctr.Cur + "1";
     }
   }
