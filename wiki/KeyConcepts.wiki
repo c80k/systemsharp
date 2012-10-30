@@ -222,6 +222,8 @@ class Counter : Component
 
   private void Processing()
   {
+    // The following while-loop is actually redundant: A threaded process is
+    // implicitly embedded in a while (true) loop.
     while (true)
     {
       DesignContext.Wait();
