@@ -31,8 +31,6 @@
 
 *How to contribute?*
 
-  * There are lots of possibilities which allow for contributions. If you're a student, you can also do a Bachelor/Master/Diploma thesis, an intern or work for us as a student assistant. In either case, feel free to [mailto:koellner@fzi.de contact us]. Below is a list of opportunities:
-
   * The simplest thing: Try System# and send us your feedback. Did you find a bug? Did you miss any feature? We're highly interested in improving the overall implementation quality!
 
   * Use System# for your FPGA design tell us about your application. Your design will be a helpful example for other developers.
