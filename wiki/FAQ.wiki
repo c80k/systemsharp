@@ -37,8 +37,7 @@
 
   * Improve toolchain support in System#: Add more IP cores to the Xilinx library or even create new support libraries for other FPGA vendors.
 
-  * Write a code generator for Verilog, C/C++ or SystemC.
+  * Write a code generator for Verilog/SystemVerilog/....
 
-  * Integrate co-simulation support. For example, realize a co-simulation interface for System#/SystemC.
 
   * Got your own idea? Let us know!
