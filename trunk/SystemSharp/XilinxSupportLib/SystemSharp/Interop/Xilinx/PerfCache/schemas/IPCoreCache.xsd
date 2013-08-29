@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="IPCoreCache"
+    targetNamespace="http://tempuri.org/IPCoreCache.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/IPCoreCache.xsd"
+    xmlns:mstns="http://tempuri.org/IPCoreCache.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+
+  <xs:complexType name="IPCore">
+    <xs:sequence minOccurs="1" maxOccurs="1">
+      <xs:element name="className" type="xs:string"/>
+      <xs:element name="generator" type="xs:string"/>
+      <xs:element name="variants">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="variant" minOccurs="0" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="deviceName" type="xs:string"/>
+                  <xs:element name="package" type="xs:string"/>
+                  <xs:element name="speedGrade" type="xs:string"/>
+                  <xs:element name="iseVersion" type="xs:string"/>
+                  <xs:element name="timestamp" type="xs:dateTime"/>
+                  <xs:element name="parameters">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="param" minOccurs="0" maxOccurs="unbounded">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="name" type="xs:string"/>
+                              <xs:element name="value" type="xs:string"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="consumedResources">
+                    <xs:complexType>
+                      <xs:sequence>
+                        <xs:element name="resource" minOccurs="0" maxOccurs="unbounded">
+                          <xs:complexType>
+                            <xs:sequence>
+                              <xs:element name="name" type="xs:string"/>
+                              <xs:element name="amount" type="xs:int"/>
+                            </xs:sequence>
+                          </xs:complexType>
+                        </xs:element>
+                      </xs:sequence>
+                    </xs:complexType>
+                  </xs:element>
+                  <xs:element name="minPeriod" type="xs:double"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:element name="core" type="IPCore"/>
+
+</xs:schema>

@@ -1,0 +1,428 @@
+﻿<#@ template language="C#" #>
+<#@ output extension=".vhd" #>
+<#@ assembly name="Microsoft.CSharp.dll" #>
+<#@ assembly name="System.Core.dll" #>
+
+------------------------------------------------------------------------------
+-- <#= Master.TopEntityName #>.vhd - entity/architecture pair
+------------------------------------------------------------------------------
+-- IMPORTANT:
+-- DO NOT MODIFY THIS FILE EXCEPT IN THE DESIGNATED SECTIONS.
+--
+-- SEARCH FOR --USER TO DETERMINE WHERE CHANGES ARE ALLOWED.
+--
+-- TYPICALLY, THE ONLY ACCEPTABLE CHANGES INVOLVE ADDING NEW
+-- PORTS AND GENERICS THAT GET PASSED THROUGH TO THE INSTANTIATION
+-- OF THE USER_LOGIC ENTITY.
+------------------------------------------------------------------------------
+--
+------------------------------------------------------------------------------
+-- Filename:          <#= Master.TopEntityName #>.vhd
+-- Version:           <#= Master.Version #>
+-- Description:       Top level design, instantiates library components and user logic.
+-- Date:              <#= Master.CreationDate #>
+-- VHDL Standard:     VHDL'93
+------------------------------------------------------------------------------
+-- Naming Conventions:
+--   active low signals:                    "*_n"
+--   clock signals:                         "clk", "clk_div#", "clk_#x"
+--   reset signals:                         "rst", "rst_n"
+--   generics:                              "C_*"
+--   user defined types:                    "*_TYPE"
+--   state machine next state:              "*_ns"
+--   state machine current state:           "*_cs"
+--   combinatorial signals:                 "*_com"
+--   pipelined or register delay signals:   "*_d#"
+--   counter signals:                       "*cnt*"
+--   clock enable signals:                  "*_ce"
+--   internal version of output port:       "*_i"
+--   device pins:                           "*_pin"
+--   ports:                                 "- Names begin with Uppercase"
+--   processes:                             "*_PROCESS"
+--   component instantiations:              "<ENTITY_>I_<FUNC>"
+------------------------------------------------------------------------------
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
+------------------------------------------------------------------------------
+-- Entity section
+------------------------------------------------------------------------------
+-- Definition of Generics:
+--   C_S_AXI_DATA_WIDTH           -- 
+--   C_S_AXI_ADDR_WIDTH           -- 
+--   C_S_AXI_MIN_SIZE             -- 
+--   C_USE_WSTRB                  -- 
+--   C_DPHASE_TIMEOUT             -- 
+--   C_BASEADDR                   -- AXI4LITE slave: base address
+--   C_HIGHADDR                   -- AXI4LITE slave: high address
+--   C_FAMILY                     -- 
+--   C_NUM_REG                    -- Number of software accessible registers
+--   C_NUM_MEM                    -- Number of address-ranges
+--   C_SLV_AWIDTH                 -- Slave interface address bus width
+--   C_SLV_DWIDTH                 -- Slave interface data bus width
+--   C_M_AXI_ADDR_WIDTH           -- Master-Intf address bus width
+--   C_M_AXI_DATA_WIDTH           -- Master-Intf data bus width
+--   C_MAX_BURST_LEN              -- Max no. of data-beats allowed in burst
+--   C_NATIVE_DATA_WIDTH          -- Internal bus width on user-side
+--   C_LENGTH_WIDTH               -- Master interface data bus width
+--   C_ADDR_PIPE_DEPTH            -- Depth of Address pipelining
+--
+-- Definition of Ports:
+--   S_AXI_ACLK                   -- 
+--   S_AXI_ARESETN                -- 
+--   S_AXI_AWADDR                 -- 
+--   S_AXI_AWVALID                -- 
+--   S_AXI_WDATA                  -- 
+--   S_AXI_WSTRB                  -- 
+--   S_AXI_WVALID                 -- 
+--   S_AXI_BREADY                 -- 
+--   S_AXI_ARADDR                 -- 
+--   S_AXI_ARVALID                -- 
+--   S_AXI_RREADY                 -- 
+--   S_AXI_ARREADY                -- 
+--   S_AXI_RDATA                  -- 
+--   S_AXI_RRESP                  -- 
+--   S_AXI_RVALID                 -- 
+--   S_AXI_WREADY                 -- 
+--   S_AXI_BRESP                  -- 
+--   S_AXI_BVALID                 -- 
+--   S_AXI_AWREADY                -- 
+--   m_axi_aclk                   -- 
+--   m_axi_aresetn                -- 
+--   md_error                     -- 
+--   m_axi_arready                -- 
+--   m_axi_arvalid                -- 
+--   m_axi_araddr                 -- 
+--   m_axi_arlen                  -- 
+--   m_axi_arsize                 -- 
+--   m_axi_arburst                -- 
+--   m_axi_arprot                 -- 
+--   m_axi_arcache                -- 
+--   m_axi_rready                 -- 
+--   m_axi_rvalid                 -- 
+--   m_axi_rdata                  -- 
+--   m_axi_rresp                  -- 
+--   m_axi_rlast                  -- 
+--   m_axi_awready                -- 
+--   m_axi_awvalid                -- 
+--   m_axi_awaddr                 -- 
+--   m_axi_awlen                  -- 
+--   m_axi_awsize                 -- 
+--   m_axi_awburst                -- 
+--   m_axi_awprot                 -- 
+--   m_axi_awcache                -- 
+--   m_axi_wready                 -- 
+--   m_axi_wvalid                 -- 
+--   m_axi_wdata                  -- 
+--   m_axi_wstrb                  -- 
+--   m_axi_wlast                  -- 
+--   m_axi_bready                 -- 
+--   m_axi_bvalid                 -- 
+--   m_axi_bresp                  -- 
+------------------------------------------------------------------------------
+
+entity <#= Master.TopEntityName #> is
+  generic
+  (
+    -- ADD USER GENERICS BELOW THIS LINE ---------------
+    --USER generics added here
+    -- ADD USER GENERICS ABOVE THIS LINE ---------------
+
+    -- DO NOT EDIT BELOW THIS LINE ---------------------
+    -- Bus protocol parameters, do not add to or delete
+    C_S_AXI_DATA_WIDTH             : integer              := <#= Master.SlaveAXIDataWidth #>;
+    C_S_AXI_ADDR_WIDTH             : integer              := <#= Master.SlaveAXIAddrWidth #>;
+    C_S_AXI_MIN_SIZE               : std_logic_vector     := X"<#= Master.AXIMinSize #>";
+    C_USE_WSTRB                    : integer              := <#= Master.UseWRSTRB #>;
+    C_DPHASE_TIMEOUT               : integer              := <#= Master.DPhaseTimeout #>;
+    C_BASEADDR                     : std_logic_vector     := X"<#= Master.BaseAddr #>";
+    C_HIGHADDR                     : std_logic_vector     := X"<#= Master.HighAddr #>";
+    C_FAMILY                       : string               := "<#= Master.DeviceFamily #>";
+    C_NUM_REG                      : integer              := <#= Master.NumRegs #>;
+    C_NUM_MEM                      : integer              := <#= Master.NumMem #>;
+    C_SLV_AWIDTH                   : integer              := <#= Master.SLVAWidth #>;
+    C_SLV_DWIDTH                   : integer              := <#= Master.SLVDWidth #>;
+    C_M_AXI_ADDR_WIDTH             : integer              := <#= Master.MasterAXIAddrWidth #>;
+    C_M_AXI_DATA_WIDTH             : integer              := <#= Master.MasterAXIDataWidth #>;
+    C_MAX_BURST_LEN                : integer              := <#= Master.MaxBurstLen #>;
+    C_NATIVE_DATA_WIDTH            : integer              := <#= Master.NativeDataWidth #>;
+    C_LENGTH_WIDTH                 : integer              := <#= Master.LengthWidth #>;
+    C_ADDR_PIPE_DEPTH              : integer              := <#= Master.AddrPipeDepth #>
+    -- DO NOT EDIT ABOVE THIS LINE ---------------------
+  );
+  port
+  (
+    -- ADD USER PORTS BELOW THIS LINE ------------------
+    --USER ports added here
+<#
+    PushIndent("    ");
+    foreach (var port in Master.UserPorts)
+        WriteLine(port.Name + ": " + port.Type + ";");
+    PopIndent();
+ #>
+    -- ADD USER PORTS ABOVE THIS LINE ------------------
+
+    -- DO NOT EDIT BELOW THIS LINE ---------------------
+    -- Bus protocol ports, do not add to or delete
+    S_AXI_ACLK                     : in  std_logic;
+    S_AXI_ARESETN                  : in  std_logic;
+    S_AXI_AWADDR                   : in  std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+    S_AXI_AWVALID                  : in  std_logic;
+    S_AXI_WDATA                    : in  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+    S_AXI_WSTRB                    : in  std_logic_vector((C_S_AXI_DATA_WIDTH/8)-1 downto 0);
+    S_AXI_WVALID                   : in  std_logic;
+    S_AXI_BREADY                   : in  std_logic;
+    S_AXI_ARADDR                   : in  std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+    S_AXI_ARVALID                  : in  std_logic;
+    S_AXI_RREADY                   : in  std_logic;
+    S_AXI_ARREADY                  : out std_logic;
+    S_AXI_RDATA                    : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+    S_AXI_RRESP                    : out std_logic_vector(1 downto 0);
+    S_AXI_RVALID                   : out std_logic;
+    S_AXI_WREADY                   : out std_logic;
+    S_AXI_BRESP                    : out std_logic_vector(1 downto 0);
+    S_AXI_BVALID                   : out std_logic;
+    S_AXI_AWREADY                  : out std_logic;
+    m_axi_aclk                     : in  std_logic;
+    m_axi_aresetn                  : in  std_logic;
+    md_error                       : out std_logic;
+    m_axi_arready                  : in  std_logic;
+    m_axi_arvalid                  : out std_logic;
+    m_axi_araddr                   : out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
+    m_axi_arlen                    : out std_logic_vector(7 downto 0);
+    m_axi_arsize                   : out std_logic_vector(2 downto 0);
+    m_axi_arburst                  : out std_logic_vector(1 downto 0);
+    m_axi_arprot                   : out std_logic_vector(2 downto 0);
+    m_axi_arcache                  : out std_logic_vector(3 downto 0);
+    m_axi_rready                   : out std_logic;
+    m_axi_rvalid                   : in  std_logic;
+    m_axi_rdata                    : in  std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
+    m_axi_rresp                    : in  std_logic_vector(1 downto 0);
+    m_axi_rlast                    : in  std_logic;
+    m_axi_awready                  : in  std_logic;
+    m_axi_awvalid                  : out std_logic;
+    m_axi_awaddr                   : out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
+    m_axi_awlen                    : out std_logic_vector(7 downto 0);
+    m_axi_awsize                   : out std_logic_vector(2 downto 0);
+    m_axi_awburst                  : out std_logic_vector(1 downto 0);
+    m_axi_awprot                   : out std_logic_vector(2 downto 0);
+    m_axi_awcache                  : out std_logic_vector(3 downto 0);
+    m_axi_wready                   : in  std_logic;
+    m_axi_wvalid                   : out std_logic;
+    m_axi_wdata                    : out std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
+    m_axi_wstrb                    : out std_logic_vector((C_M_AXI_DATA_WIDTH)/8 - 1 downto 0);
+    m_axi_wlast                    : out std_logic;
+    m_axi_bready                   : out std_logic;
+    m_axi_bvalid                   : in  std_logic;
+    m_axi_bresp                    : in  std_logic_vector(1 downto 0)
+    -- DO NOT EDIT ABOVE THIS LINE ---------------------
+  );
+
+  attribute MAX_FANOUT : string;
+  attribute SIGIS : string;
+  attribute MAX_FANOUT of S_AXI_ACLK       : signal is "10000";
+  attribute MAX_FANOUT of S_AXI_ARESETN       : signal is "10000";
+  attribute SIGIS of S_AXI_ACLK       : signal is "Clk";
+  attribute SIGIS of S_AXI_ARESETN       : signal is "Rst";
+
+  attribute MAX_FANOUT of m_axi_aclk       : signal is "10000";
+  attribute MAX_FANOUT of m_axi_aresetn       : signal is "10000";
+  attribute SIGIS of m_axi_aclk       : signal is "Clk";
+  attribute SIGIS of m_axi_aresetn       : signal is "Rst";
+end entity <#= Master.TopEntityName #>;
+
+------------------------------------------------------------------------------
+-- Architecture section
+------------------------------------------------------------------------------
+
+architecture IMP of <#= Master.TopEntityName #> is
+  component <#= Master.ImpEntityName #> is
+  generic
+  (
+    -- ADD USER GENERICS BELOW THIS LINE ---------------
+    --USER generics added here
+    -- ADD USER GENERICS ABOVE THIS LINE ---------------
+
+    -- DO NOT EDIT BELOW THIS LINE ---------------------
+    -- Bus protocol parameters, do not add to or delete
+    C_S_AXI_DATA_WIDTH             : integer              := <#= Master.SlaveAXIDataWidth #>;
+    C_S_AXI_ADDR_WIDTH             : integer              := <#= Master.SlaveAXIAddrWidth #>;
+    C_S_AXI_MIN_SIZE               : std_logic_vector     := X"<#= Master.AXIMinSize #>";
+    C_USE_WSTRB                    : integer              := <#= Master.UseWRSTRB #>;
+    C_DPHASE_TIMEOUT               : integer              := <#= Master.DPhaseTimeout #>;
+    C_BASEADDR                     : std_logic_vector     := X"<#= Master.BaseAddr #>";
+    C_HIGHADDR                     : std_logic_vector     := X"<#= Master.HighAddr #>";
+    C_FAMILY                       : string               := "<#= Master.DeviceFamily #>";
+    C_NUM_REG                      : integer              := <#= Master.NumRegs #>;
+    C_NUM_MEM                      : integer              := <#= Master.NumMem #>;
+    C_SLV_AWIDTH                   : integer              := <#= Master.SLVAWidth #>;
+    C_SLV_DWIDTH                   : integer              := <#= Master.SLVDWidth #>;
+    C_M_AXI_ADDR_WIDTH             : integer              := <#= Master.MasterAXIAddrWidth #>;
+    C_M_AXI_DATA_WIDTH             : integer              := <#= Master.MasterAXIDataWidth #>;
+    C_MAX_BURST_LEN                : integer              := <#= Master.MaxBurstLen #>;
+    C_NATIVE_DATA_WIDTH            : integer              := <#= Master.NativeDataWidth #>;
+    C_LENGTH_WIDTH                 : integer              := <#= Master.LengthWidth #>;
+    C_ADDR_PIPE_DEPTH              : integer              := <#= Master.AddrPipeDepth #>
+    -- DO NOT EDIT ABOVE THIS LINE ---------------------
+  );
+  port
+  (
+    -- ADD USER PORTS BELOW THIS LINE ------------------
+    --USER ports added here
+<#
+    PushIndent("    ");
+    foreach (var port in Master.UserPorts)
+        WriteLine(port.Name + ": " + port.Type + ";");
+    PopIndent();
+ #>
+    -- ADD USER PORTS ABOVE THIS LINE ------------------
+
+    -- DO NOT EDIT BELOW THIS LINE ---------------------
+    -- Bus protocol ports, do not add to or delete
+    S_AXI_ACLK                     : in  std_logic;
+    S_AXI_ARESETN                  : in  std_logic;
+    S_AXI_AWADDR                   : in  std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+    S_AXI_AWVALID                  : in  std_logic;
+    S_AXI_WDATA                    : in  std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+    S_AXI_WSTRB                    : in  std_logic_vector((C_S_AXI_DATA_WIDTH/8)-1 downto 0);
+    S_AXI_WVALID                   : in  std_logic;
+    S_AXI_BREADY                   : in  std_logic;
+    S_AXI_ARADDR                   : in  std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
+    S_AXI_ARVALID                  : in  std_logic;
+    S_AXI_RREADY                   : in  std_logic;
+    S_AXI_ARREADY                  : out std_logic;
+    S_AXI_RDATA                    : out std_logic_vector(C_S_AXI_DATA_WIDTH-1 downto 0);
+    S_AXI_RRESP                    : out std_logic_vector(1 downto 0);
+    S_AXI_RVALID                   : out std_logic;
+    S_AXI_WREADY                   : out std_logic;
+    S_AXI_BRESP                    : out std_logic_vector(1 downto 0);
+    S_AXI_BVALID                   : out std_logic;
+    S_AXI_AWREADY                  : out std_logic;
+    m_axi_aclk                     : in  std_logic;
+    m_axi_aresetn                  : in  std_logic;
+    md_error                       : out std_logic;
+    m_axi_arready                  : in  std_logic;
+    m_axi_arvalid                  : out std_logic;
+    m_axi_araddr                   : out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
+    m_axi_arlen                    : out std_logic_vector(7 downto 0);
+    m_axi_arsize                   : out std_logic_vector(2 downto 0);
+    m_axi_arburst                  : out std_logic_vector(1 downto 0);
+    m_axi_arprot                   : out std_logic_vector(2 downto 0);
+    m_axi_arcache                  : out std_logic_vector(3 downto 0);
+    m_axi_rready                   : out std_logic;
+    m_axi_rvalid                   : in  std_logic;
+    m_axi_rdata                    : in  std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
+    m_axi_rresp                    : in  std_logic_vector(1 downto 0);
+    m_axi_rlast                    : in  std_logic;
+    m_axi_awready                  : in  std_logic;
+    m_axi_awvalid                  : out std_logic;
+    m_axi_awaddr                   : out std_logic_vector(C_M_AXI_ADDR_WIDTH-1 downto 0);
+    m_axi_awlen                    : out std_logic_vector(7 downto 0);
+    m_axi_awsize                   : out std_logic_vector(2 downto 0);
+    m_axi_awburst                  : out std_logic_vector(1 downto 0);
+    m_axi_awprot                   : out std_logic_vector(2 downto 0);
+    m_axi_awcache                  : out std_logic_vector(3 downto 0);
+    m_axi_wready                   : in  std_logic;
+    m_axi_wvalid                   : out std_logic;
+    m_axi_wdata                    : out std_logic_vector(C_M_AXI_DATA_WIDTH-1 downto 0);
+    m_axi_wstrb                    : out std_logic_vector((C_M_AXI_DATA_WIDTH)/8 - 1 downto 0);
+    m_axi_wlast                    : out std_logic;
+    m_axi_bready                   : out std_logic;
+    m_axi_bvalid                   : in  std_logic;
+    m_axi_bresp                    : in  std_logic_vector(1 downto 0)
+    -- DO NOT EDIT ABOVE THIS LINE ---------------------
+  );
+  end component;
+begin
+
+  ------------------------------------------
+  -- instantiate implementation
+  ------------------------------------------
+  MASTER_IMP_I : <#= Master.ImpEntityName #>
+    generic map
+    (
+        C_S_AXI_DATA_WIDTH             => C_S_AXI_DATA_WIDTH,
+        C_S_AXI_ADDR_WIDTH             => C_S_AXI_ADDR_WIDTH,
+        C_S_AXI_MIN_SIZE               => C_S_AXI_MIN_SIZE,
+        C_USE_WSTRB                    => C_USE_WSTRB,
+        C_DPHASE_TIMEOUT               => C_DPHASE_TIMEOUT,
+        C_BASEADDR                     => C_BASEADDR,
+        C_HIGHADDR                     => C_HIGHADDR,
+        C_FAMILY                       => C_FAMILY,
+        C_NUM_REG                      => C_NUM_REG,
+        C_NUM_MEM                      => C_NUM_MEM,
+        C_SLV_AWIDTH                   => C_SLV_AWIDTH,
+        C_SLV_DWIDTH                   => C_SLV_DWIDTH,
+        C_M_AXI_ADDR_WIDTH             => C_M_AXI_ADDR_WIDTH,
+        C_M_AXI_DATA_WIDTH             => C_M_AXI_DATA_WIDTH,
+        C_MAX_BURST_LEN                => C_MAX_BURST_LEN,
+        C_NATIVE_DATA_WIDTH            => C_NATIVE_DATA_WIDTH,
+        C_LENGTH_WIDTH                 => C_LENGTH_WIDTH,
+        C_ADDR_PIPE_DEPTH              => C_ADDR_PIPE_DEPTH
+    )
+    port map
+    (
+<#
+    PushIndent("      ");
+    foreach (var port in Master.UserPorts)
+        WriteLine(port.Name + " => " + port.Name + ",");
+    PopIndent();
+ #>
+
+      S_AXI_ACLK                     => S_AXI_ACLK,
+      S_AXI_ARESETN                  => S_AXI_ARESETN,
+      S_AXI_AWADDR                   => S_AXI_AWADDR,
+      S_AXI_AWVALID                  => S_AXI_AWVALID,
+      S_AXI_WDATA                    => S_AXI_WDATA,
+      S_AXI_WSTRB                    => S_AXI_WSTRB,
+      S_AXI_WVALID                   => S_AXI_WVALID,
+      S_AXI_BREADY                   => S_AXI_BREADY,
+      S_AXI_ARADDR                   => S_AXI_ARADDR,
+      S_AXI_ARVALID                  => S_AXI_ARVALID,
+      S_AXI_RREADY                   => S_AXI_RREADY,
+      S_AXI_ARREADY                  => S_AXI_ARREADY,
+      S_AXI_RDATA                    => S_AXI_RDATA,
+      S_AXI_RRESP                    => S_AXI_RRESP,
+      S_AXI_RVALID                   => S_AXI_RVALID,
+      S_AXI_WREADY                   => S_AXI_WREADY,
+      S_AXI_BRESP                    => S_AXI_BRESP,
+      S_AXI_BVALID                   => S_AXI_BVALID,
+      S_AXI_AWREADY                  => S_AXI_AWREADY,
+      m_axi_aclk                     => m_axi_aclk,
+      m_axi_aresetn                  => m_axi_aresetn,
+      md_error                       => md_error,
+      m_axi_arready                  => m_axi_arready,
+      m_axi_arvalid                  => m_axi_arvalid,
+      m_axi_araddr                   => m_axi_araddr,
+      m_axi_arlen                    => m_axi_arlen,
+      m_axi_arsize                   => m_axi_arsize,
+      m_axi_arburst                  => m_axi_arburst,
+      m_axi_arprot                   => m_axi_arprot,
+      m_axi_arcache                  => m_axi_arcache,
+      m_axi_rready                   => m_axi_rready,
+      m_axi_rvalid                   => m_axi_rvalid,
+      m_axi_rdata                    => m_axi_rdata,
+      m_axi_rresp                    => m_axi_rresp,
+      m_axi_rlast                    => m_axi_rlast,
+      m_axi_awready                  => m_axi_awready,
+      m_axi_awvalid                  => m_axi_awvalid,
+      m_axi_awaddr                   => m_axi_awaddr,
+      m_axi_awlen                    => m_axi_awlen,
+      m_axi_awsize                   => m_axi_awsize,
+      m_axi_awburst                  => m_axi_awburst,
+      m_axi_awprot                   => m_axi_awprot,
+      m_axi_awcache                  => m_axi_awcache,
+      m_axi_wready                   => m_axi_wready,
+      m_axi_wvalid                   => m_axi_wvalid,
+      m_axi_wdata                    => m_axi_wdata,
+      m_axi_wstrb                    => m_axi_wstrb,
+      m_axi_wlast                    => m_axi_wlast,
+      m_axi_bready                   => m_axi_bready,
+      m_axi_bvalid                   => m_axi_bvalid,
+      m_axi_bresp                    => m_axi_bresp
+    );
+
+end IMP;
