@@ -1,0 +1,402 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7FE2ACBB-34B1-45F2-89B3-B07D92193791}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SystemSharp</RootNamespace>
+    <AssemblyName>SystemSharp</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>False</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
+    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
+    <CodeContractsEnumObligations>True</CodeContractsEnumObligations>
+    <CodeContractsRedundantAssumptions>True</CodeContractsRedundantAssumptions>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>False</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions>-show progress</CodeContractsExtraAnalysisOptions>
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeContractsInferRequires>True</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>True</CodeContractsInferEnsures>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>False</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestRequires>True</CodeContractsSuggestRequires>
+    <CodeContractsSuggestEnsures>False</CodeContractsSuggestEnsures>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsSQLServerOption />
+    <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
+    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>False</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>False</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
+    <CodeContractsEnumObligations>False</CodeContractsEnumObligations>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
+    <CodeContractsInferRequires>False</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>False</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestRequires>True</CodeContractsSuggestRequires>
+    <CodeContractsSuggestEnsures>False</CodeContractsSuggestEnsures>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
+    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsSQLServerOption />
+    <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>systemsharp.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Reactive.Core, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Net45\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-Interfaces.2.1.30214.0\lib\Net45\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-Linq.2.1.30214.0\lib\Net45\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices, Version=2.1.30214.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net45\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Microsoft\Experimental\IO\Interop\NativeMethods.cs" />
+    <Compile Include="Microsoft\Experimental\IO\Interop\SafeFindHandle.cs" />
+    <Compile Include="Microsoft\Experimental\IO\LongPathCommon.cs" />
+    <Compile Include="Microsoft\Experimental\IO\LongPathDirectory.cs" />
+    <Compile Include="Microsoft\Experimental\IO\LongPathFile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="SystemSharp\Algebraic\EquationBlocks.cs" />
+    <Compile Include="SystemSharp\Algebraic\LargeExpressions.cs" />
+    <Compile Include="SystemSharp\Analysis\AsyncMethodCustomInstructionInfo.cs" />
+    <Compile Include="SystemSharp\Analysis\AsyncStateMachineHelpers.cs" />
+    <Compile Include="SystemSharp\Analysis\AsyncStateMachines.cs" />
+    <Compile Include="SystemSharp\Analysis\BehavioralAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\C2M\ResolveDelegateCalls.cs" />
+    <Compile Include="SystemSharp\Analysis\ControlflowAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\DataflowAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\DecompilerControl.cs" />
+    <Compile Include="SystemSharp\Analysis\FactUniverse.cs" />
+    <Compile Include="SystemSharp\Analysis\FieldFacts.cs" />
+    <Compile Include="SystemSharp\Analysis\GuardedArguments.cs" />
+    <Compile Include="SystemSharp\Analysis\M2M\HLS.cs" />
+    <Compile Include="SystemSharp\Analysis\M2M\WaitDissector.cs" />
+    <Compile Include="SystemSharp\Analysis\MethodFacts.cs" />
+    <Compile Include="SystemSharp\Analysis\MethodOrdering.cs" />
+    <Compile Include="SystemSharp\Analysis\MSILAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\MSILDecompiler.cs" />
+    <Compile Include="SystemSharp\Analysis\Msil\FixPointAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\Msil\InvocationAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\Msil\StackInfluenceAnalyzer.cs" />
+    <Compile Include="SystemSharp\Analysis\Msil\VariabilityAnalysis.cs" />
+    <Compile Include="SystemSharp\Analysis\ProgramFlow.cs" />
+    <Compile Include="SystemSharp\Analysis\SDILReader\Globals.cs" />
+    <Compile Include="SystemSharp\Analysis\SDILReader\ILInstruction.cs" />
+    <Compile Include="SystemSharp\Analysis\SDILReader\MethodBodyReader.cs" />
+    <Compile Include="SystemSharp\Analysis\SourcesAndMutations.cs" />
+    <Compile Include="SystemSharp\Analysis\TypeFacts.cs" />
+    <Compile Include="SystemSharp\Assembler\3ACtoStk.cs" />
+    <Compile Include="SystemSharp\Assembler\AsmCore.cs" />
+    <Compile Include="SystemSharp\Assembler\CompilerAttributes.cs" />
+    <Compile Include="SystemSharp\Assembler\CompilerCore.cs" />
+    <Compile Include="SystemSharp\Assembler\DesignGen\DefaultDatapathBuilder.cs" />
+    <Compile Include="SystemSharp\Assembler\DesignGen\FlowMatrix.cs" />
+    <Compile Include="SystemSharp\Assembler\DesignGen\BuilderInterfaces.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\ConditionalBranchOptimizer.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\ImplTypeRewriter.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\LocalVariableExtraction.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\ReadWriteDependencyInjector.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\TransitiveGotoEliminator.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\UnreachableInstructionEliminator.cs" />
+    <Compile Include="SystemSharp\Assembler\XILResultTypes.cs" />
+    <Compile Include="SystemSharp\Collections\HashableSequence.cs" />
+    <Compile Include="SystemSharp\Components\Event.cs" />
+    <Compile Include="SystemSharp\Components\ExtensionMethods.cs" />
+    <Compile Include="SystemSharp\Components\Std\FixedAbs.cs" />
+    <Compile Include="SystemSharp\Components\Std\InlineConcat.cs" />
+    <Compile Include="SystemSharp\Components\Std\InlineFieldAccess.cs" />
+    <Compile Include="SystemSharp\Components\Std\InlineMemory.cs" />
+    <Compile Include="SystemSharp\Components\DSP\Streams.cs" />
+    <Compile Include="SystemSharp\Components\Std\LERP.cs" />
+    <Compile Include="SystemSharp\Components\TLMPorts.cs" />
+    <Compile Include="SystemSharp\DataTypes\Fraction.cs" />
+    <Compile Include="SystemSharp\DataTypes\SFix.cs" />
+    <Compile Include="SystemSharp\DataTypes\Signed.cs" />
+    <Compile Include="SystemSharp\DataTypes\UFix.cs" />
+    <Compile Include="SystemSharp\DataTypes\Unsigned.cs" />
+    <Compile Include="SystemSharp\HLS\ControlPathConstruction\FSMControlpathBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\ControlPathConstruction\MicrocodeAlgorithms.cs" />
+    <Compile Include="SystemSharp\HLS\ControlPathConstruction\TristateBusFSMControlpathBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\HClustInterconnectBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\MaxRegInterconnectBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\ControlPathConstruction\MicrocodeControlpathBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\ControlPathConstruction\MicrocodeDesign.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\MinRegInterconnectBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\SlimMuxInterconnectBuilder.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\SlimMuxInterconnectHelper.cs" />
+    <Compile Include="SystemSharp\Assembler\InstructionSet.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\CSE.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\FixPointImplementor.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\InstructionExpander.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\LocalVariableOptimizer.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\MemoryMapper.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\ParLimiter.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\SlotReduction.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\TypeReducer.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\TypeReplacer.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\XIL3Rewriter.cs" />
+    <Compile Include="SystemSharp\Assembler\Rewriters\XILSRewriter.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\Profiling.cs" />
+    <Compile Include="SystemSharp\Assembler\StkTo3AC.cs" />
+    <Compile Include="SystemSharp\Assembler\XILMapping.cs" />
+    <Compile Include="SystemSharp\Assembler\XILSchedulingAdapter.cs" />
+    <Compile Include="SystemSharp\Collections\Arrays.cs" />
+    <Compile Include="SystemSharp\Collections\CacheDictionary.cs" />
+    <Compile Include="SystemSharp\Collections\DynamicArray.cs" />
+    <Compile Include="SystemSharp\Collections\EmilStefanov\DisjointSets.cs" />
+    <Compile Include="SystemSharp\Collections\EmilStefanov\TestDisjointSets.cs" />
+    <Compile Include="SystemSharp\Collections\Enumerables.cs" />
+    <Compile Include="SystemSharp\Collections\IntervalSet.cs" />
+    <Compile Include="SystemSharp\Collections\Lists.cs" />
+    <Compile Include="SystemSharp\Collections\MultiMaps.cs" />
+    <Compile Include="SystemSharp\Collections\ObservableCache.cs" />
+    <Compile Include="SystemSharp\Collections\ObservableExtensions.cs" />
+    <Compile Include="SystemSharp\Collections\ObservableSet.cs" />
+    <Compile Include="SystemSharp\Collections\ObservingMultiMap.cs" />
+    <Compile Include="SystemSharp\Collections\PriorityQueue.cs" />
+    <Compile Include="SystemSharp\Collections\Sets.cs" />
+    <Compile Include="SystemSharp\Common\MathExt.cs" />
+    <Compile Include="SystemSharp\Common\ReflectionHelper.cs" />
+    <Compile Include="SystemSharp\Common\StringHelpers.cs" />
+    <Compile Include="SystemSharp\Common\Subst.cs" />
+    <Compile Include="SystemSharp\Common\TypeConversions.cs" />
+    <Compile Include="SystemSharp\Common\ValueProxy.cs" />
+    <Compile Include="SystemSharp\Common\Win32File.cs" />
+    <Compile Include="SystemSharp\Components\AutoBinding.cs" />
+    <Compile Include="SystemSharp\Components\Component.cs" />
+    <Compile Include="SystemSharp\Components\ComponentCollection.cs" />
+    <Compile Include="SystemSharp\Components\ComponentsAttributes.cs" />
+    <Compile Include="SystemSharp\Components\ComponentsCore.cs" />
+    <Compile Include="SystemSharp\Components\DesignContext.cs" />
+    <Compile Include="SystemSharp\Components\DynamicComponent.cs" />
+    <Compile Include="SystemSharp\Components\FU\CompilerBlocks.cs" />
+    <Compile Include="SystemSharp\Components\FU\FunctionalComponents.cs" />
+    <Compile Include="SystemSharp\Components\FU\ReservationTable.cs" />
+    <Compile Include="SystemSharp\Components\ProcessCore.cs" />
+    <Compile Include="SystemSharp\Components\Rewriters\ConcatRewriter.cs" />
+    <Compile Include="SystemSharp\Components\Rewriters\WaitRewriter.cs" />
+    <Compile Include="SystemSharp\Components\SignalsCore.cs" />
+    <Compile Include="SystemSharp\Components\SignalsND.cs" />
+    <Compile Include="SystemSharp\Components\Std\ALU.cs" />
+    <Compile Include="SystemSharp\Components\Std\BCU.cs" />
+    <Compile Include="SystemSharp\Components\Std\BlockMem.cs" />
+    <Compile Include="SystemSharp\Components\Std\Clock.cs" />
+    <Compile Include="SystemSharp\Components\Std\Concatenizer.cs" />
+    <Compile Include="SystemSharp\Components\Std\ConsoleLogger.cs" />
+    <Compile Include="SystemSharp\Components\Std\ConstLoader.cs" />
+    <Compile Include="SystemSharp\Components\Std\FloatNegAbs.cs" />
+    <Compile Include="SystemSharp\Components\Std\FloatSignAsSigned.cs" />
+    <Compile Include="SystemSharp\Components\Std\FPMod1.cs" />
+    <Compile Include="SystemSharp\Components\Std\InlineBCU.cs" />
+    <Compile Include="SystemSharp\Components\Std\LVAccess.cs" />
+    <Compile Include="SystemSharp\Components\Std\MUX2.cs" />
+    <Compile Include="SystemSharp\Components\Std\NopMapper.cs" />
+    <Compile Include="SystemSharp\Components\Std\PortAccess.cs" />
+    <Compile Include="SystemSharp\Components\Std\RegPipe.cs" />
+    <Compile Include="SystemSharp\Components\Std\Shifter.cs" />
+    <Compile Include="SystemSharp\Components\Std\Slicer.cs" />
+    <Compile Include="SystemSharp\Components\Transactions\FlowSpec.cs" />
+    <Compile Include="SystemSharp\Components\Transactions\Transactions.cs" />
+    <Compile Include="SystemSharp\Components\Transactions\TransactionSpec.cs" />
+    <Compile Include="SystemSharp\DataTypes\Common.cs" />
+    <Compile Include="SystemSharp\DataTypes\FixPointMath.cs" />
+    <Compile Include="SystemSharp\DataTypes\StdLogicLib.cs" />
+    <Compile Include="SystemSharp\DataTypes\IEEE754Support.cs" />
+    <Compile Include="SystemSharp\DataTypes\TypeLowering.cs" />
+    <Compile Include="SystemSharp\DSE\DesignSpaceExplorer.cs" />
+    <Compile Include="SystemSharp\HLS\AllocationPolicies\ContextSensitiveAllocation.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\StagePlex.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\MobilityBasedALAPScheduler.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\OneInstructionPerCStepScheduler.cs" />
+    <Compile Include="SystemSharp\Meta\Builders.cs" />
+    <Compile Include="SystemSharp\Meta\ComponentsReflection.cs" />
+    <Compile Include="SystemSharp\Meta\InjectedProperties.cs" />
+    <Compile Include="SystemSharp\Meta\IntrinsicTypes.cs" />
+    <Compile Include="SystemSharp\Meta\M2M\MetaTransformation.cs" />
+    <Compile Include="SystemSharp\Meta\M2M\SubprogramsDontDriveSignals.cs" />
+    <Compile Include="SystemSharp\Meta\NativeAlgebraicTypes.cs" />
+    <Compile Include="SystemSharp\Meta\StdAttributes.cs" />
+    <Compile Include="SystemSharp\Meta\TypeDependencyResolution.cs" />
+    <Compile Include="SystemSharp\Meta\TypeDescriptor.cs" />
+    <Compile Include="SystemSharp\Meta\TypeLibrary.cs" />
+    <Compile Include="SystemSharp\Reporting\HTMLReport.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\BasicSchedulingAlgorithms.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\DefaultFunctionScheduler.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\Interfaces.cs" />
+    <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\ForceDirectedScheduling.cs" />
+    <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\SlimMux.cs" />
+    <Compile Include="SystemSharp\SetAlgorithms\SetAlgorithms.cs" />
+    <Compile Include="SystemSharp\Synthesis\CSharp\SourceGenerator.cs" />
+    <Compile Include="SystemSharp\Synthesis\DefaultMemoryLayoutAlgorithm.cs" />
+    <Compile Include="SystemSharp\Synthesis\DocGen\DocumentationGenerator.cs" />
+    <Compile Include="SystemSharp\Synthesis\DocGen\DocumentationProject.cs" />
+    <Compile Include="SystemSharp\Synthesis\MemoryMapping.cs" />
+    <Compile Include="SystemSharp\Synthesis\Synthesis.cs" />
+    <Compile Include="SystemSharp\Synthesis\SystemCGen\ConcurrentStatements.cs" />
+    <Compile Include="SystemSharp\Synthesis\SystemCGen\SystemCGen.cs" />
+    <Compile Include="SystemSharp\Synthesis\SystemCGen\SystemCGenInfo.cs" />
+    <Compile Include="SystemSharp\Synthesis\SystemCGen\SystemCTypes.cs" />
+    <Compile Include="SystemSharp\Synthesis\Util\ScopedIdentifierManager.cs" />
+    <Compile Include="SystemSharp\Synthesis\VHDLGen\ConcurrentStatements.cs" />
+    <Compile Include="SystemSharp\Synthesis\VHDLGen\IntegerIndices.cs" />
+    <Compile Include="SystemSharp\Synthesis\VHDLGen\VHDLGen.cs" />
+    <Compile Include="SystemSharp\Synthesis\VHDLGen\VHDLGenInfo.cs" />
+    <Compile Include="SystemSharp\Synthesis\VHDLGen\VHDLTypes.cs" />
+    <Compile Include="SystemSharp\SysDOM\Algorithms.cs" />
+    <Compile Include="SystemSharp\SysDOM\Analysis\InductionVariableAnalyzer.cs" />
+    <Compile Include="SystemSharp\SysDOM\ConstructionHelpers.cs" />
+    <Compile Include="SystemSharp\SysDOM\CoreAlgebraic.cs" />
+    <Compile Include="SystemSharp\SysDOM\CoreAlgebraicAlgorithms.cs" />
+    <Compile Include="SystemSharp\SysDOM\Eval\DefaultEvaluator.cs" />
+    <Compile Include="SystemSharp\SysDOM\Eval\StatementInterpreter.cs" />
+    <Compile Include="SystemSharp\SysDOM\ExpressionHelper.cs" />
+    <Compile Include="SystemSharp\SysDOM\ExpressionMatching.cs" />
+    <Compile Include="SystemSharp\SysDOM\IntrinsicFunctions.cs" />
+    <Compile Include="SystemSharp\SysDOM\Literals.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\DefaultTransformer.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\FieldLocalization.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\FunctionInlining.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\HierarchyAnalysis.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\IfStatementBeautifier.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\LocalVariableExtraction.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\LoopKindRecognition.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\ProgramflowSuccessors.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\RetRemoval.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\SingleStatement.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\StateFunctions.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\StatementRemoval.cs" />
+    <Compile Include="SystemSharp\SysDOM\Transformations\VariableModificationDetection.cs" />
+    <Compile Include="SystemSharp\TreeAlgorithms\TreeAlgorithms.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="systemsharp.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GraphAlgorithmLib\GraphAlgorithmLib_VC2012.vcxproj">
+      <Project>{d0a65306-f275-4646-b1dd-fb472b9eb6ab}</Project>
+      <Name>GraphAlgorithmLib_VC2012</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,281 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{266CAD81-BE35-4F1A-B632-C08DB9234BAC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XilinxSupportLib</RootNamespace>
+    <AssemblyName>XilinxSupportLib</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkProfile />
+    <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>False</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>False</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
+    <CodeContractsEnumObligations>False</CodeContractsEnumObligations>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
+    <CodeContractsInferRequires>False</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>False</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestRequires>True</CodeContractsSuggestRequires>
+    <CodeContractsSuggestEnsures>False</CodeContractsSuggestEnsures>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
+    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>False</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>False</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>False</CodeContractsArithmeticObligations>
+    <CodeContractsEnumObligations>False</CodeContractsEnumObligations>
+    <CodeContractsRedundantAssumptions>False</CodeContractsRedundantAssumptions>
+    <CodeContractsInferRequires>False</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>False</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestRequires>True</CodeContractsSuggestRequires>
+    <CodeContractsSuggestEnsures>False</CodeContractsSuggestEnsures>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
+    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <Compile Include="SQLite.cs" />
+    <Compile Include="SQLiteAsync.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AbstractXilinxDevice.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlave.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlaveImpCompletionClass.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlaveImp.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AXILiteSlaveImp.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlaveTop.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AXILiteSlaveTop.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlaveTopCompletionClass.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXIMaster.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXIMasterImp.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AXIMasterImp.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXIMasterImpCompletionClass.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXIMasterTop.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AXIMasterTop.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SystemSharp\Interop\Xilinx\AXI\AXIMasterTopCompletionClass.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\CoreGen\Cache\CoreGenCache.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\CoreGen\XilinxAutoCore.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\CoreGen\XilinxCoreGen.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\DefaultXilinxDevice.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\DeviceFamilies.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\DeviceResources.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\Devices.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\Devices\Virtex6\XC6VLX240T_FF784.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\Devices\Virtex6\XC6VLX240T_FF1156.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\Devices\Virtex6\XC6VLX75T_FF484.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxAdderSubtracter.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxBlockMem.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxClockingWizard.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxCordic.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxDdsCompiler.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxDivider.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxFloatingPoint.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\IPCores\XilinxMultiplier.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\ISEDetection.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\MAP\MAPFlow.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\NGDBuild\NGDBuild.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\Packages.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PAR\PARFlow.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PAR\UtilizationParser.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\PerformanceRecord.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\SqlCommands.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\DeviceCache.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\IPCoreCache.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\IPCoreCacheCustom.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\IPDatabase.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerfCache\PerformanceCache.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\PerformanceRecord.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\ProcessPool.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\ProjectProperties.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\SpeedGrades.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\ToolFlow.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\TRCE\TRCEFlow.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\TRCE\TWXParser.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\XilinxDevice.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\XilinxIntegration.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\XilinxInterop.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\XilinxProject.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\XST\XSTFlow.cs" />
+    <Compile Include="SystemSharp\Interop\Xilinx\XST\XSTProject.cs" />
+    <Compile Include="SystemSharp\SubstManager.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlaveImp.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AXILiteSlaveImp.cs</LastGenOutput>
+    </None>
+    <None Include="SystemSharp\Interop\Xilinx\AXI\AXILiteSlaveTop.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AXILiteSlaveTop.cs</LastGenOutput>
+    </None>
+    <None Include="SystemSharp\Interop\Xilinx\AXI\AXIMasterImp.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AXIMasterImp.cs</LastGenOutput>
+    </None>
+    <None Include="SystemSharp\Interop\Xilinx\AXI\AXIMasterTop.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>AXIMasterTop.cs</LastGenOutput>
+    </None>
+    <None Include="SystemSharp\Interop\Xilinx\PerfCache\schemas\DeviceCache.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="SystemSharp\Interop\Xilinx\PerfCache\schemas\IPCoreCache.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 und x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.SQL.Server.Compact.3.5">
+      <Visible>False</Visible>
+      <ProductName>SQL Server Compact 3.5 SP2</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SystemSharp\SystemSharp.csproj">
+      <Project>{7fe2acbb-34b1-45f2-89b3-b07d92193791}</Project>
+      <Name>SystemSharp %28SystemSharp\SystemSharp%29</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
