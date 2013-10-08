@@ -39,6 +39,12 @@ namespace SystemSharp.Analysis.Msil
 {
     static class StackStates
     {
+        /// <summary>
+        /// Constructs the stack state which results from pushing a given value to the stack
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="obj">value to push</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState Push(this StackState me, ElementSource obj)
         {
             Contract.Requires<ArgumentNullException>(me != null);
@@ -47,6 +53,13 @@ namespace SystemSharp.Analysis.Msil
             return new PushStackState<ElementSources>(me, Enumerable.Repeat(obj, 1));
         }
 
+        /// <summary>
+        /// Constructs the stack state which results from assigning a given value to a specific local variable
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="localIndex">0-based index of local variable receiving the assignment</param>
+        /// <param name="rvalue">value to assign</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState Assign(this StackState me, int localIndex, ElementSource rvalue)
         {
             Contract.Requires<ArgumentNullException>(me != null);
@@ -56,6 +69,14 @@ namespace SystemSharp.Analysis.Msil
             return new AsmtStackState<ElementSources>(me, localIndex, Enumerable.Repeat(rvalue, 1));
         }
 
+        /// <summary>
+        /// Constructs the stack state which results from possibly assigning a given value to a specific local variable.
+        /// I.e. afterwards, the variable nondeterministically retains its former value or the new one.
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="localIndex">0-based index of local variable receiving the potential assignment</param>
+        /// <param name="rvalue">value which is possibly assigned</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState AddAssign(this StackState me, int localIndex, ElementSource rvalue)
         {
             Contract.Requires<ArgumentNullException>(me != null);
@@ -66,6 +87,14 @@ namespace SystemSharp.Analysis.Msil
                 me.GetLocal(localIndex).Union(Enumerable.Repeat(rvalue, 1)));
         }
 
+        /// <summary>
+        /// Constructs the stack state which results from possibly assigning one of multiple given values to a specific local variable.
+        /// I.e. afterwards, the variable nondeterministically retains its former value or one of the new values.
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="localIndex">0-based index of local variable receiving the potential assignment</param>
+        /// <param name="rvalue">values to be possibly assigned</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState AddAssign(this StackState me, int localIndex, ElementSources rvalues)
         {
             Contract.Requires<ArgumentNullException>(me != null);
@@ -75,6 +104,13 @@ namespace SystemSharp.Analysis.Msil
             return new AsmtStackState<ElementSources>(me, localIndex, me.GetLocal(localIndex).Union(rvalues));
         }
 
+        /// <summary>
+        /// Constructs the stack state which results from assigning a specific value to a given method argument.
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="argIndex">0-based index of argument being assigned</param>
+        /// <param name="rvalue">value to be assigned</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState AssignArg(this StackState me, int argIndex, ElementSource rvalue)
         {
             Contract.Requires<ArgumentNullException>(me != null);
@@ -84,6 +120,14 @@ namespace SystemSharp.Analysis.Msil
             return new ArgAsmtStackState<ElementSources>(me, argIndex, Enumerable.Repeat(rvalue, 1));
         }
 
+        /// <summary>
+        /// Constructs the stack state which results from possibly assigning a specific value to a given method argument.
+        /// I.e. afterwards, the argument nondeterministically retains its former value or the new one.
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="argIndex">0-based index of argument receiving the possible assignment</param>
+        /// <param name="rvalue">value to be possibly assigned</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState AddAssignArg(this StackState me, int argIndex, ElementSource rvalue)
         {
             Contract.Requires<ArgumentNullException>(me != null);
@@ -94,6 +138,14 @@ namespace SystemSharp.Analysis.Msil
                 me.GetArgument(argIndex).Union(Enumerable.Repeat(rvalue, 1)));
         }
 
+        /// <summary>
+        /// Constructs the stack state which results from possibly assigning one of multiple values to a given method argument.
+        /// I.e. afterwards, the argument nondeterministically retains its former value or one of the supplied values.
+        /// </summary>
+        /// <param name="me">current stack state</param>
+        /// <param name="argIndex">0-based index of argument receiving the possible assignment</param>
+        /// <param name="rvalues">values to be possibly assigned</param>
+        /// <returns>the resulting stack state</returns>
         public static StackState AddAssignArg(this StackState me, int argIndex, ElementSources rvalues)
         {
             Contract.Requires<ArgumentNullException>(me != null);

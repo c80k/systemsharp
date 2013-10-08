@@ -119,6 +119,10 @@ namespace SystemSharp.Analysis.Msil
         }
     }
 
+    /// <summary>
+    /// This dummy class is only there to satisty CodeContracts.
+    /// </summary>
+    /// <typeparam name="TElem"></typeparam>
     [ContractClassFor(typeof(AbstractStackState<>))]
     abstract class AbstractStackStateContractClass<TElem> : AbstractStackState<TElem>
     {
@@ -369,7 +373,7 @@ namespace SystemSharp.Analysis.Msil
     /// Represents a self-contained stack state, thus storing all required state information by itself.
     /// </summary>
     /// <typeparam name="TElem">Type for representing the state of a stack element, local variable or method parameter</typeparam>
-    /// <remarks>FIXME: poor software design</remarks>
+    /// <remarks>FIXME: poor software design (see implementation comments)</remarks>
     public abstract class IndependentStackStateBase<TElem> : AbstractStackState<TElem>
     {
         /// <summary>
@@ -387,35 +391,62 @@ namespace SystemSharp.Analysis.Msil
         /// </summary>
         protected List<TElem> _stack;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
         public IndependentStackStateBase()
         {
         }
 
+        /// <summary>
+        /// Returns the stack element state at a given index
+        /// </summary>
+        /// <param name="index">0-based index (0 is top)</param>
+        /// <returns>the stack element at given index</returns>
         public override TElem this[int index]
         {
             get { return _stack[index]; }
         }
 
+        /// <summary>
+        /// Returns the local variable state for a local variable with a given index
+        /// </summary>
+        /// <param name="index">0-based index</param>
+        /// <returns>the state of local variable with given index</returns>
         public override TElem GetLocal(int index)
         {
             return _locals[index];
         }
 
+        /// <summary>
+        /// Returns the state of the method argument with a given index
+        /// </summary>
+        /// <param name="index">0-based index</param>
+        /// <returns>the state of the method argument with the given index</returns>
         public override TElem GetArgument(int index)
         {
             return _args[index];
         }
 
+        /// <summary>
+        /// Returns the number of elements on the stack
+        /// </summary>
         public override int Depth
         {
             get { return _stack.Count; }
         }
 
+        /// <summary>
+        /// Returns the number of local variables
+        /// </summary>
         public override int NumLocals
         {
             get { return _locals.Count; }
         }
 
+        /// <summary>
+        /// Returns the number of method arguments
+        /// </summary>
         public override int NumArguments
         {
             get { return _args.Count; }
@@ -556,6 +587,10 @@ namespace SystemSharp.Analysis.Msil
         }
     }
 
+    /// <summary>
+    /// This dummy class is only there to satisfy CodeContracts
+    /// </summary>
+    /// <typeparam name="TElem">dummy element type</typeparam>
     [ContractClassFor(typeof(FixPointAnalyzer<>))]
     abstract class FixPointAnalyzerContractClass<TElem> : FixPointAnalyzer<TElem>
     {

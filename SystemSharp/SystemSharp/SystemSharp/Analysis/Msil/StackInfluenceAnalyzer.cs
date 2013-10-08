@@ -94,6 +94,13 @@ namespace SystemSharp.Analysis.Msil
     /// </summary>
     public static class StackInfluenceAnalysis
     {
+        /// <summary>
+        /// Determines, how many operands a given CIL instruction will remove from the stack, and how many it will push onto the stack.
+        /// </summary>
+        /// <param name="ili">a CIL instruction</param>
+        /// <param name="method">the method inside whose context the given instruction is executed</param>
+        /// <param name="npop">number of removed stack operands</param>
+        /// <param name="npush">number of stack operands pushed onto the stack</param>
         public static void GetStackBilance(ILInstruction ili, MethodBase method, out int npop, out int npush)
         {
             if (ili.Code.Equals(OpCodes.Ret))
@@ -132,6 +139,13 @@ namespace SystemSharp.Analysis.Msil
             }
         }
 
+        /// <summary>
+        /// Determines the set of CIL instructions which potentially compute a particular stack element.
+        /// </summary>
+        /// <param name="ilIndex">index of CIL instruction</param>
+        /// <param name="stackLevel">index of stack element (0 is top)</param>
+        /// <param name="cfg">control-flow graph</param>
+        /// <returns>indices of CIL instructions which come into consideration for producing specified stack element</returns>
         public static IEnumerable<int> GetStackElementDefinitions(int ilIndex, int stackLevel, MethodCode cfg)
         {
             Queue<Tuple<int, int>> q = new Queue<Tuple<int, int>>();
