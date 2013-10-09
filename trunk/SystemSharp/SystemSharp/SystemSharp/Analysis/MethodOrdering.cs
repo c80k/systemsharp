@@ -24,6 +24,9 @@ using System.Text;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This helper class implements a depth-first search over the call tree of all methods
+    /// </summary>
     public static class MethodOrdering
     {
         private static void OrderDFS(MethodFacts mf, ref int nextIndex)
@@ -47,6 +50,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Traverses the call tree of some given methods to determine their call order. 
+        /// It will set their respective CallOrder and IsRecursive properties.
+        /// </summary>
+        /// <param name="methods">methods to analyze</param>
         public static void ComputeCallOrder(IEnumerable<MethodFacts> methods)
         {
             foreach (MethodFacts mf in methods)

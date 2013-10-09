@@ -28,11 +28,27 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This class modifies the behavior of ILInstruction info in the context of calling asynchronous methods:
+    /// It detects the code pattern "call get_IsCompleted; brtrue ...". In those cases, brtrue is not classified as a conditional
+    /// branch but as either no branch or unconditional branch, depending on whether get_IsCompleted is assumed to return always true
+    /// or always false.
+    /// </summary>
     class AsyncMethodCustomInstructionInfo: ILInstructionInfo
     {
+        /// <summary>
+        /// Assumption on IsCompleted property
+        /// </summary>
         public enum EAssumption
         {
+            /// <summary>
+            /// IsCompleted is assumed to return always true.
+            /// </summary>
             AlwaysCompleted,
+
+            /// <summary>
+            /// IsCompleted is assumed to return always false.
+            /// </summary>
             NeverCompleted
         }
 
@@ -40,6 +56,11 @@ namespace SystemSharp.Analysis
         private EAssumption _assumption;
         private Dictionary<int, int> _branchOverrides;
 
+        /// <summary>
+        /// Constructs a new instance based on a control-flow graph and an assumption on IsCompleted properties.
+        /// </summary>
+        /// <param name="cfg">a control-flow graph</param>
+        /// <param name="assumption">whether the IsCompleted property is assumed to return always true or always false</param>
         public AsyncMethodCustomInstructionInfo(MethodCode cfg, EAssumption assumption):
             base(cfg.Method)
         {

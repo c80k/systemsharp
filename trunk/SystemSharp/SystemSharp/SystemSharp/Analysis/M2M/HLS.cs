@@ -980,7 +980,6 @@ namespace SystemSharp.Analysis.M2M
 
             decomp.AddAttribute(this);
             decomp.DisallowConditionals = false;
-            decomp.NestLoopsDeeply = false;
 
             // FIXME: Does it always make sense? Currently just a hack to get PhysicalModels working...
             // Answer: No, it doesn't make sense. To many loops need to be instrumented by ProgramFlow.DoNotUnroll()
