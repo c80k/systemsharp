@@ -27,12 +27,22 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This class captures the information available on a particular field
+    /// </summary>
     public class FieldFacts
     {
         private FieldDescriptor _nullInstDesc;
         private Dictionary<object, FieldDescriptor> _descMap = new Dictionary<object, FieldDescriptor>();
 
+        /// <summary>
+        /// The associated universe
+        /// </summary>
         public FactUniverse Universe { get; private set; }
+
+        /// <summary>
+        /// The field
+        /// </summary>
         public FieldInfo Field { get; private set; }
 
         private void IndicateMutableType()
@@ -52,6 +62,10 @@ namespace SystemSharp.Analysis
         }
 
         private bool _isWritten;
+
+        /// <summary>
+        /// Whether the field is overwritten during runtime
+        /// </summary>
         public bool IsWritten 
         {
             get { return _isWritten; }
@@ -66,6 +80,32 @@ namespace SystemSharp.Analysis
         }
 
         private bool _isSubMutated;
+        
+        /// <summary>
+        /// Whether any subordinate field of this field is overwritten during runtime.
+        /// </summary>
+        /// <remarks>
+        /// Consider a struct:
+        /// <c>
+        /// struct InnerStruct
+        /// {
+        ///     public int X;
+        /// }
+        /// 
+        /// class A
+        /// {
+        ///     public InnerStruct S;
+        ///     
+        ///     public static void Main()
+        ///     {
+        ///         var a = new A();
+        ///         a.S.X = 5;
+        ///     }
+        /// }
+        /// </c>
+        /// For field A.S, we would get: IsWritten = false, IsSubMutated = true. 
+        /// For field InnerStruct.X, we would get: IsWritten = true, IsSubMutated = false.
+        /// </remarks>
         public bool IsSubMutated 
         {
             get { return _isSubMutated; }
@@ -76,6 +116,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns a SysDOM field descriptor for a particular instance
+        /// </summary>
+        /// <param name="inst">instance of class containing the field</param>
+        /// <returns>SysDOM field descriptor</returns>
         public FieldDescriptor GetDescriptor(object inst)
         {
             if (inst == null)
@@ -104,6 +149,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Constructs an instance for a particular field
+        /// </summary>
+        /// <param name="universe">the associated universe</param>
+        /// <param name="field">the field</param>
         public FieldFacts(FactUniverse universe, FieldInfo field)
         {
             Universe = universe;

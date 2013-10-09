@@ -38,6 +38,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// This is a debugging aid. This function won't do anything. However, if you call it inside your code, decompilation will
+        /// trigger a breakpoint as soon as it meets this method.
+        /// </summary>
+        /// <returns></returns>
         [BreakDecompilationImpl]
         public static bool BreakDecompilation()
         {

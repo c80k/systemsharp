@@ -31,6 +31,9 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This class captures the set of reaching definitions for each variable of a given context
+    /// </summary>
     class VarAssignmentSet
     {
         public enum EMergeResult
@@ -44,6 +47,10 @@ namespace SystemSharp.Analysis
         private bool[] _sideFx;
         private bool _succMerge;
 
+        /// <summary>
+        /// Constructs a new instance for a specific number of local variables
+        /// </summary>
+        /// <param name="numVariables">number of local variables</param>
         public VarAssignmentSet(int numVariables)
         {
             _asmts = new HashSet<int>[numVariables];
@@ -51,6 +58,9 @@ namespace SystemSharp.Analysis
             _fixedLocals = new bool[numVariables];
         }
 
+        /// <summary>
+        /// Indicates that there are unmanageable side effects on all local variables, denying the validity of reaching definition information
+        /// </summary>
         public void IndicateSideEffects()
         {
             for (int i = 0; i < _sideFx.Length; i++)
@@ -60,17 +70,30 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Queries whether there is a possible side effect on a particular variable
+        /// </summary>
+        /// <param name="localIndex">local variable index</param>
+        /// <returns>whether there is a side effect on specified variable</returns>
         public bool HasSideEffects(int localIndex)
         {
             return _sideFx[localIndex];
         }
 
+        /// <summary>
+        /// Constructs an initial state by indiciating each variable to be reached by a virtual entry point with index -1
+        /// </summary>
         public void SetInitial()
         {
             for (int i = 0; i < _asmts.Length; i++)
                 _asmts.Add(i, -1);
         }
 
+        /// <summary>
+        /// Updates the state by adding a reaching definition to a certain variable
+        /// </summary>
+        /// <param name="localIndex">local variable index</param>
+        /// <param name="rhs">index of reaching definition</param>
         public void Assign(int localIndex, int rhs)
         {
             if (_asmts[localIndex] != null)
@@ -80,6 +103,11 @@ namespace SystemSharp.Analysis
             _fixedLocals[localIndex] = true;
         }
 
+        /// <summary>
+        /// Merges another state into this state by taking the set unions of all their respective reaching definitions
+        /// </summary>
+        /// <param name="other">another state</param>
+        /// <returns>indication whether this state was changed by the merging procedure</returns>
         public EMergeResult Merge(VarAssignmentSet other)
         {
             EMergeResult result = _succMerge ? EMergeResult.NoChange : EMergeResult.Change;
@@ -109,17 +137,30 @@ namespace SystemSharp.Analysis
             return result;
         }
 
+        /// <summary>
+        /// Returns all reaching definition for a given local variable
+        /// </summary>
+        /// <param name="localIndex">local variable index</param>
+        /// <returns>all its reaching definitions</returns>
         public IEnumerable<int> GetStorePoints(int localIndex)
         {
             return _asmts.Get(localIndex);
         }
     }
 
+    /// <summary>
+    /// A debugging aid: Any method tagged with this attribute will cause the analysis stage to trigger a breakpoint before data-flow analysis.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
     public class BreakOnDataflowAnalysis :
         Attribute
     {
     }
 
+    /// <summary>
+    /// This class implements a data-flow analysis on a given control-flow graph.
+    /// </summary>
+    /// <typeparam name="Ti"></typeparam>
     public class DataflowAnalyzer<Ti>
         where Ti: IInstruction
     {
@@ -164,8 +205,19 @@ namespace SystemSharp.Analysis
             #endregion
         }
 
+        /// <summary>
+        /// Instruction information service
+        /// </summary>
         public IInstructionInfo<Ti> InstructionInfo { get; private set; }
+
+        /// <summary>
+        /// Extended instruction information service
+        /// </summary>
         public IExtendedInstructionInfo<Ti> XInstructionInfo { get; private set; }
+
+        /// <summary>
+        /// Control-flow graph the be analyzed
+        /// </summary>
         public ControlFlowGraph<Ti> Code { get; private set; }
 
         private int _numLocals;
@@ -211,11 +263,20 @@ namespace SystemSharp.Analysis
         /// </summary>
         private Dictionary<Tuple<int,int>, int> _renamings;
 
+        /// <summary>
+        /// Indicates a local variable to be indispensable, e.g. because it is accessed by memory location
+        /// </summary>
+        /// <param name="localIndex">index of local variable to be marked as indispensable</param>
         private void InhitbitElimination(int localIndex)
         {
             _inhibitElimination[localIndex] = true;
         }
 
+        /// <summary>
+        /// Queries whether a certain variable is indispensable
+        /// </summary>
+        /// <param name="localIndex">index of local variable</param>
+        /// <returns>whether specified local variable is indispensable</returns>
         private bool IsEliminationInhibited(int localIndex)
         {
             return _inhibitElimination[localIndex];
@@ -244,6 +305,11 @@ namespace SystemSharp.Analysis
             _storePoints[localIndex].Add(_curILI.Index);
         }
 
+        /// <summary>
+        /// Constructs a new instance for a given control-flow graph
+        /// </summary>
+        /// <param name="cfg">control-flow graph</param>
+        /// <param name="numLocals">number of local variables</param>
         public DataflowAnalyzer(ControlFlowGraph<Ti> cfg, int numLocals)
         {
             InstructionInfo = cfg.InstructionInfo;
@@ -254,8 +320,19 @@ namespace SystemSharp.Analysis
             DetectWriteAndNeverRead = true;
         }
 
+        /// <summary>
+        /// Detect read-after-write dependencies (and allow to eliminate them if possible)
+        /// </summary>
         public bool DetectReadAfterWrite { get; set; }
+
+        /// <summary>
+        /// Detect writes to variables which are never read (and allow to eliminate them if possible)
+        /// </summary>
         public bool DetectWriteAndNeverRead { get; set; }
+
+        /// <summary>
+        /// Disallow optimizations where read and write access reside in different basic blocks
+        /// </summary>
         public bool DoNotOptimizeAcrossBasicBlocks { get; set; }
 
         private IEnumerable<int> GetReferencedLocals(IEnumerable<int> defPoints, out bool containsUndefined)
@@ -543,6 +620,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Executes data-flow analysis
+        /// </summary>
         public void Run()
         {
             IHasAttributes attrs = Code as IHasAttributes;
@@ -562,26 +642,48 @@ namespace SystemSharp.Analysis
             RenameLocals();
         }
 
+        /// <summary>
+        /// Queries whether there is a unique read-after-write dependency
+        /// </summary>
+        /// <param name="writePoint">instruction index of write access</param>
+        /// <param name="readPoint">instruction index of read access, undefined if there is no unique dependency</param>
+        /// <returns>whether there is a unique read-after-write dependency</returns>
         public bool IsReadAfterWrite(int writePoint, out int readPoint)
         {
             return _writeToRead.TryGetValue(writePoint, out readPoint);
         }
 
+        /// <summary>
+        /// Queries whether a certain local variable may be eliminated, i.e. by replacing it with its right-hand-side expression
+        /// </summary>
+        /// <param name="localIndex">index of local variable</param>
+        /// <returns>whether given variable is eliminable</returns>
         public bool IsEliminable(int localIndex)
         {
             return _eliminableLocals.Contains(localIndex);
         }
 
+        /// <summary>
+        /// Queries whether a write access is actually superfluous because the assigned value is never read
+        /// </summary>
+        /// <param name="writePoint">index of writing instruction</param>
+        /// <returns>whether write access is superfluous</returns>
         public bool IsWrittenAndNeverRead(int writePoint)
         {
             return _writtenAndNeverRead.Contains(writePoint);
         }
 
+        /// <summary>
+        /// Returns all locations of superfluous write accesses
+        /// </summary>
         public ISet<int> WrittenAndNeverReadPoints
         {
             get { return _writtenAndNeverRead; }
         }
 
+        /// <summary>
+        /// Returns all eliminable local variables
+        /// </summary>
         public ISet<int> EliminableLocals
         {
             get { return _eliminableLocals; }
@@ -656,33 +758,6 @@ namespace SystemSharp.Analysis
             if (!_refUses.TryGetValue(ilIndex, out result))
                 result = _emptyList;
             return result;
-        }
-    }
-
-    public static class DataflowAnalysis
-    {
-        public static ReadOnlyCollection<Variable> GetLocalAssignmentOrder(MSILDecompilerTemplate templ)
-        {
-            IGraphAdapter<Variable> deps = new HashingGraphAdapter<Variable>();
-            IList<Variable> locals = templ.LocalVariables;
-            foreach (Variable local in locals)
-            {
-                IEnumerable<Expression> exprs = templ.GetLocalVarAssignedExprs(local);
-                foreach (Expression expr in exprs)
-                {
-                    LiteralReference[] lrs = expr.ExtractLiteralReferences();
-                    foreach (LiteralReference lr in lrs)
-                    {
-                        if (lr.ReferencedObject is Variable)
-                        {
-                            Variable rhs = (Variable)lr.ReferencedObject;
-                            deps.Parent[rhs] = local;
-                        }
-                    }
-                }
-            }
-            deps.ComputeSuccessorsFromParent(locals);
-            return new ReadOnlyCollection<Variable>(deps.GetPreOrder(locals).Reverse().ToList());
         }
     }
 }

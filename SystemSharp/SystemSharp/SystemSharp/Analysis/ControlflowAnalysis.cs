@@ -26,59 +26,183 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This interface associates instructions with a unique, 0-based indices
+    /// </summary>
     public interface IInstruction
     {
         int Index { get; set;  }
     }
 
+    /// <summary>
+    /// Classifies instructions into categories
+    /// </summary>
     public enum EInstructionClass
     {
+        /// <summary>
+        /// A branch instruction
+        /// </summary>
         Branch,
+
+        /// <summary>
+        /// An access to a local variable
+        /// </summary>
         LocalVariableAccess,
+
+        /// <summary>
+        /// A method call
+        /// </summary>
         Call,
+
+        /// <summary>
+        /// Everything else
+        /// </summary>
         Other
     }
 
+    /// <summary>
+    /// Classifies branch instructions into categories
+    /// </summary>
     public enum EBranchBehavior
     { 
+        /// <summary>
+        /// Not a branch instruction
+        /// </summary>
         NoBranch,
+
+        /// <summary>
+        /// Unconditional branch
+        /// </summary>
         UBranch,
+
+        /// <summary>
+        /// Conditional branch
+        /// </summary>
         CBranch,
+
+        /// <summary>
+        /// Switch (i.e. case select) instruction
+        /// </summary>
         Switch,
+
+        /// <summary>
+        /// Method return instruction
+        /// </summary>
         Return,
+
+        /// <summary>
+        /// Exception throw instruction
+        /// </summary>
         Throw
     }
 
+    /// <summary>
+    /// Classifies local variable access instructions into categories
+    /// </summary>
     public enum ELocalVariableAccess
     {
+        /// <summary>
+        /// Not a local variable access
+        /// </summary>
         NoAccess,
+
+        /// <summary>
+        /// Read access to local variable
+        /// </summary>
         ReadVariable,
+
+        /// <summary>
+        /// Write acces to local variable
+        /// </summary>
         WriteVariable,
+
+        /// <summary>
+        /// Address of local variable
+        /// </summary>
         AddressOfVariable
     }
 
+    /// <summary>
+    /// Abstract representation of a resource which might be accessed by an instruction
+    /// </summary>
     public interface IInstructionResource
     {
+        /// <summary>
+        /// Tells whether this resource potentially conflicts with another resource (e.g. because they are the same)
+        /// </summary>
+        /// <param name="other">another resource</param>
+        /// <returns>whether resources potentially conflict</returns>
         bool ConflictsWith(IInstructionResource other);
     }
 
+    /// <summary>
+    /// Classifies resource accesses into categories
+    /// </summary>
     public enum EInstructionResourceAccess
     {
+        /// <summary>
+        /// Not a resource access
+        /// </summary>
         NoResource,
+
+        /// <summary>
+        /// Reading resource access
+        /// </summary>
         Reading,
+
+        /// <summary>
+        /// Writing resource access
+        /// </summary>
         Writing
     }
 
+    /// <summary>
+    /// Generic interface for services classifying instructions of some type
+    /// </summary>
+    /// <typeparam name="Ti">data type representing instructions being classified</typeparam>
     public interface IInstructionInfo<Ti>
     {
+        /// <summary>
+        /// Classifies a given instruction into categories
+        /// </summary>
+        /// <param name="i">an instruction</param>
+        /// <returns>instruction category</returns>
         EInstructionClass Classify(Ti i);
+
+        /// <summary>
+        /// Classifies an instruction into branch categories
+        /// </summary>
+        /// <param name="i">an instruction</param>
+        /// <param name="targets">possible branch targets</param>
+        /// <returns>branch category</returns>
         EBranchBehavior IsBranch(Ti i, out IEnumerable<int> targets);
+
+        /// <summary>
+        /// Classifies an instruction into local variable access categories
+        /// </summary>
+        /// <param name="i">an instruction</param>
+        /// <param name="localIndex">index of local variable being accessed (undefined, of no local variable is accessed)</param>
+        /// <returns>local variable access category</returns>
         ELocalVariableAccess IsLocalVariableAccess(Ti i, out int localIndex);
+
+        /// <summary>
+        /// Classifies an instruction into resource access categories
+        /// </summary>
+        /// <param name="i">an instruction</param>
+        /// <param name="resource">resource being accessed by instruction (null, if no resource is accessed)</param>
+        /// <returns>resource access category</returns>
         EInstructionResourceAccess UsesResource(Ti i, out IInstructionResource resource);
     }
 
     public static class InstructionInfoExtensions
     {
+        /// <summary>
+        /// Retrieves all possible successors of a given instruction
+        /// </summary>
+        /// <typeparam name="Ti">data type representing an instruction</typeparam>
+        /// <param name="ii">instruction information service</param>
+        /// <param name="i">an instruction</param>
+        /// <returns>all possible successors in terms of their instruction indices</returns>
         public static IEnumerable<int> GetSuccessors<Ti>(this IInstructionInfo<Ti> ii, Ti i)
             where Ti: IInstruction
         {
@@ -106,8 +230,14 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class captures information on instructions which reference memory locations (i.e. indirections)
+    /// </summary>
     public class ReferenceInfo
     {
+        /// <summary>
+        /// The flag field indicates whether memory location is read and/or written
+        /// </summary>
         [Flags]
         public enum EMode
         {
@@ -116,16 +246,37 @@ namespace SystemSharp.Analysis
             Write = 0x2
         }
 
+        /// <summary>
+        /// Classifies whether memory location is part of an assignment or just loaded
+        /// </summary>
         public enum EKind
         {
             Assignment,
             Indirect
         }
 
+        /// <summary>
+        /// Tells whether memory location is read and/or written
+        /// </summary>
         public EMode Mode { get; private set; }
+
+        /// <summary>
+        /// Tells whether memory location is part of an assignment or just loaded
+        /// </summary>
         public EKind Kind { get; private set; }
+
+        /// <summary>
+        /// All reaching definitions, i.e. indices of all instructions which might contribute the actual memory location being referenced
+        /// </summary>
         public IEnumerable<int> ReachingDefinitions { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="mode">whether memory location is read and/or written</param>
+        /// <param name="kind">whether memory location is part of an assignment or just loaded</param>
+        /// <param name="reachingDefinitions">all reaching definitions, 
+        /// i.e. indices of all instructions which might contribute the actual memory location being referenced</param>
         public ReferenceInfo(EMode mode, EKind kind, IEnumerable<int> reachingDefinitions)
         {
             Mode = mode;
@@ -134,12 +285,26 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// An extended instruction information service, supporting information on instructions dealing with memory locations
+    /// </summary>
+    /// <typeparam name="Ti">type of instructions being represented</typeparam>
     public interface IExtendedInstructionInfo<Ti>: IInstructionInfo<Ti>
         where Ti : IInstruction
     {
+        /// <summary>
+        /// Retrieves all indirections which an instruction might undertake
+        /// </summary>
+        /// <param name="i">an instruction</param>
+        /// <param name="cfg">containing control-flow graph</param>
+        /// <returns>all possible indirections</returns>
         IEnumerable<ReferenceInfo> GetIndirections(Ti i, ControlFlowGraph<Ti> cfg);
     }
 
+    /// <summary>
+    /// This data structure represents a control-flow graph
+    /// </summary>
+    /// <typeparam name="Ti">Type of instructions being represented</typeparam>
     public class ControlFlowGraph<Ti> 
         where Ti: IInstruction
     {
@@ -160,11 +325,34 @@ namespace SystemSharp.Analysis
         /// </summary>
         private ISet<int> _exitPoints;
 
+        /// <summary>
+        /// Instruction information service
+        /// </summary>
         public IInstructionInfo<Ti> InstructionInfo { get; private set; }
+
+        /// <summary>
+        /// Instruction sequence
+        /// </summary>
         public List<Ti> Instructions { get; private set; }
+
+        /// <summary>
+        /// Entry point
+        /// </summary>
         public BasicBlock<Ti> EntryCB { get; private set; }
+
+        /// <summary>
+        /// All basic blocks
+        /// </summary>
         public BasicBlock<Ti>[] BasicBlocks { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance based on an instruction sequence
+        /// </summary>
+        /// <param name="instructions">instruction sequence</param>
+        /// <param name="marshal">the instruction which should be treated as exit point</param>
+        /// <param name="iinfo">instruction information service</param>
+        /// <param name="entryPoint">optional entry point for graph construction (as instruction index)</param>
+        /// <param name="exitPoints">optional set of additional exit points (as instruction indices)</param>
         public ControlFlowGraph(IEnumerable<Ti> instructions, Ti marshal, IInstructionInfo<Ti> iinfo, int entryPoint = 0, ISet<int> exitPoints = null)
         {
             InstructionInfo = iinfo;
@@ -182,6 +370,16 @@ namespace SystemSharp.Analysis
             Setup();
         }
 
+        /// <summary>
+        /// Tells whether a local variable is pinned, see http://msdn.microsoft.com/en-us/library/f58wzh21%28v=vs.110%29.aspx
+        /// </summary>
+        /// <remarks>
+        /// Default implementation returns always false. Override method to implement desired behavior. This feature was never
+        /// tested in reality and probably should be removed in future releases, since pinned variables are only needed in unsafe
+        /// code, and unsafe code is a very bad idea for hardware modeling anyway.
+        /// </remarks>
+        /// <param name="local">index of local variable</param>
+        /// <returns>whether variable is pinned</returns>
         public virtual bool IsLocalPinned(int local)
         {
             return false;
@@ -323,26 +521,51 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Given an instruction index, returns all possible successor instructions
+        /// </summary>
+        /// <param name="index">instruction index</param>
+        /// <returns>all possible successor instruction</returns>
         public Ti[] GetSuccessors(int index)
         {
             return _successors[index];
         }
 
+        /// <summary>
+        /// Given an instruction, returns all possible successor instructions
+        /// </summary>
+        /// <param name="ili">an instruction</param>
+        /// <returns>all possible successor instructions</returns>
         public Ti[] GetSuccessorsOf(Ti ili)
         {
             return _successors[ili.Index];
         }
 
+        /// <summary>
+        /// Given an instruction index, returns all possible predecessor instructions
+        /// </summary>
+        /// <param name="index">instruction index</param>
+        /// <returns>all possible predecessor instruction</returns>
         public Ti[] GetPredecessors(int index)
         {
             return _predecessors[index];
         }
 
+        /// <summary>
+        /// Given an instruction, returns all possible predecessor instructions
+        /// </summary>
+        /// <param name="ili">an instruction</param>
+        /// <returns>all possible predecessor instructions</returns>
         public Ti[] GetPredecessorsOf(Ti ili)
         {
             return _predecessors[ili.Index];
         }
 
+        /// <summary>
+        /// Given an instruction index, returns the index of its immediate dominator
+        /// </summary>
+        /// <param name="ili">instruction index</param>
+        /// <returns>immediate dominator index</returns>
         public int GetIDomIndex(int index)
         {
             BasicBlock<Ti> bb = GetBasicBlockContaining(index);
@@ -361,6 +584,10 @@ namespace SystemSharp.Analysis
         }
 
         private int _maxBBSize;
+        
+        /// <summary>
+        /// Returns the number of instructions inside the largest basic block
+        /// </summary>
         public int MaxBBSize
         {
             get
@@ -371,12 +598,26 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Given an instruction index, returns its associated post-order index
+        /// </summary>
+        /// <remarks>
+        /// The post order index is the index assigned to a graph node during post-order traversal. 
+        /// See http://en.wikipedia.org/wiki/Tree_traversal
+        /// </remarks>
+        /// <param name="index">instruction index</param>
+        /// <returns>its post-order index</returns>
         public int GetPostOrderIndex(int index)
         {
             BasicBlock<Ti> bb = GetBasicBlockContaining(index);
             return bb.PostOrderIndex * MaxBBSize + index;
         }
 
+        /// <summary>
+        /// Given a set of instruction indices, returns the set of their lowest common ancestors.
+        /// </summary>
+        /// <param name="query"></param>
+        /// <returns></returns>
         public IEnumerable<int> GetLCASet(IEnumerable<int> query)
         {
             List<int> result = new List<int>();
@@ -394,16 +635,36 @@ namespace SystemSharp.Analysis
                 IsBranchTarget(index + 1);
         }
 
+        /// <summary>
+        /// Returns the basic block which begins at the supplied instruction index
+        /// </summary>
+        /// <param name="index">instruction index</param>
+        /// <returns>the basic block which begins at the supplied instruction index</returns>
         public BasicBlock<Ti> GetBasicBlockStartingAt(int index)
         {
             return BasicBlocks.Where(bb => bb.StartIndex == index).Single();
         }
 
+        /// <summary>
+        /// Returns the basic block which contains a given instruction
+        /// </summary>
+        /// <param name="index">instruction index</param>
+        /// <returns>basic block which contains an instruction having the supplied index</returns>
         public BasicBlock<Ti> GetBasicBlockContaining(int index)
         {
             return BasicBlocks.Where(bb => bb.StartIndex <= index && bb.EndIndex >= index).Single();
         }
 
+        /// <summary>
+        /// Creates a basic block for a range of instructions. Override this if you want to create a specialized basic block implementation.
+        /// </summary>
+        /// <remarks>
+        /// This method does not check whether the given instruction range formally meets the criterion of a basic block, e.g. having no
+        /// conditional branches except for the last instruction. It is up to the caller to supply valid arguments.
+        /// </remarks>
+        /// <param name="startIndex">index of first instruction inside the basic block</param>
+        /// <param name="lastIndex">index of last instruction inside the basic block</param>
+        /// <returns>a basic block for the specified instruction range</returns>
         protected virtual BasicBlock<Ti> CreateBasicBlock(int startIndex, int lastIndex)
         {
             return new BasicBlock<Ti>(startIndex, lastIndex, this);
@@ -455,6 +716,10 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Analyzes the loop nesting structure of the control-flow graph.
+        /// The default implementation directs the tasks to Havlak's algorithm.
+        /// </summary>
         protected virtual void AnalyzeLoops()
         {
             IGraphAdapter<BasicBlock<Ti>> a = BasicBlock<Ti>.LoopAnalysisAdapter;
@@ -463,6 +728,10 @@ namespace SystemSharp.Analysis
             a.AnalyzeLoops(reachable, EntryCB);
         }
 
+        /// <summary>
+        /// Computes the immediate dominator of each basic block.
+        /// The default implementation directs the task to the Cooper-Harvey-Kennedy algorithm.
+        /// </summary>
         protected virtual void ComputeDominators()
         {
             IGraphAdapter<BasicBlock<Ti>> a = BasicBlock<Ti>.DominanceAnalysisAdapter;
@@ -470,14 +739,9 @@ namespace SystemSharp.Analysis
             a.ComputeImmediateDominators(BasicBlocks, EntryCB);
         }
 
-        /*protected virtual void ComputePostDominators()
-        {
-            BasicBlock<Ti> exit = BasicBlocks.Last();
-            IGraphAdapter<BasicBlock<Ti>> a = BasicBlock<Ti>.PostDominanceAnalysisAdapter;
-            a.InvertRelation(a.Succs, a.Preds, BasicBlocks);
-            a.ComputeImmediatePostDominators(BasicBlocks, exit);
-        }*/
-
+        /// <summary>
+        /// Constructs basic blocks from the instruction sequence.
+        /// </summary>
         protected virtual void ComputeBasicBlocks()
         {
             AnalyzeBranches();
@@ -488,12 +752,15 @@ namespace SystemSharp.Analysis
             EntryCB = entry;
         }
 
+        /// <summary>
+        /// Constructs all essential data structures. The default implementation computes basic blocks,
+        /// loop nesting structure and immediate dominators. Override if you need to compute more.
+        /// </summary>
         protected virtual void Setup()
         {
             ComputeBasicBlocks();
             AnalyzeLoops();
             ComputeDominators();
-            //ComputePostDominators();
         }
 
         public override string ToString()
@@ -507,54 +774,163 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class represents a basic block.
+    /// </summary>
+    /// <typeparam name="Ti">Data type of instructions inside the basic block.</typeparam>
     public class BasicBlock<Ti> : 
         IComparable<BasicBlock<Ti>>
         where Ti: IInstruction
     {
+        /// <summary>
+        /// Index of first instruction covered by this basic block
+        /// </summary>
         public int StartIndex { get; private set; }
+
+        /// <summary>
+        /// Index of last instruction covered by this basic block
+        /// </summary>
         public int EndIndex { get; private set; }
+
+        /// <summary>
+        /// Containing control-flow graph
+        /// </summary>
         public ControlFlowGraph<Ti> Code { get; private set; }
+
+        /// <summary>
+        /// Tells whether this basic block is an exit node
+        /// </summary>
         public bool IsExitBlock { get; internal set; }
 
+        /// <summary>
+        /// Tells whether this basic block is a loop header
+        /// </summary>
         public bool IsLoop
         {
             get { return Type == ENodeType.Reducible || Type == ENodeType.Self; }
         }
 
+        /// <summary>
+        /// Tells whether this basic block is reachable from the entry point
+        /// </summary>
         public bool IsReachable
         {
             get { return PreOrderIndex >= 0; }
         }
 
-        public bool IsConditional { get; internal set; }
+        /// <summary>
+        /// Tells whether this basic block end with a conditional branch
+        /// </summary>
         public bool IsCondition { get; internal set; }
+
+        /// <summary>
+        /// Tells whether this basic block ends with a branch
+        /// </summary>
         public bool IsBranch { get; internal set; }
+
+        /// <summary>
+        /// Tells whether this basic block ends with a switch (case select) instruction
+        /// </summary>
         public bool IsSwitch { get; internal set; }
+
+        /// <summary>
+        /// Tells whether this basic block is directly reachable from a switch (case select) instruction
+        /// </summary>
         public bool IsSwitchTarget { get; internal set; }
 
+        /// <summary>
+        /// All predecessors of this basic block
+        /// </summary>
         public BasicBlock<Ti>[] Predecessors { get; private set; }
+
+        /// <summary>
+        /// The immediate dominator of this basic block
+        /// </summary>
         public BasicBlock<Ti> IDom { get; private set; }
-        //public BasicBlock<Ti> IPDom { get; private set; }
+
+        /// <summary>
+        /// All basic blocks whose immediate dominator is this basic block
+        /// </summary>
         public BasicBlock<Ti>[] Dominatees { get; private set; }
-        //public BasicBlock<Ti>[] PostDominatees { get; private set; }
+
+        /// <summary>
+        /// Post-order index of this basic block
+        /// </summary>
+        /// <remarks>
+        /// The post-order index is determined by post-order traversal of the control-flow graph.
+        /// See http://en.wikipedia.org/wiki/Tree_traversal
+        /// </remarks>
         public int PostOrderIndex { get; private set; }
+
+        /// <summary>
+        /// Pre-order index of this basic block
+        /// </summary>
+        /// <remarks>
+        /// The pre-order index is determined by pre-order traversal of the control-flow graph.
+        /// See http://en.wikipedia.org/wiki/Tree_traversal
+        /// </remarks>
         public int PreOrderIndex { get; private set; }
+
+        /// <summary>
+        /// The parent of this block in the post-order traversal tree
+        /// </summary>
         public BasicBlock<Ti> PostOrderParent { get; private set; }
+
+        /// <summary>
+        /// The children of this block in the post-order traversal tree
+        /// </summary>
         public BasicBlock<Ti>[] PostOrderChildren { get; private set; }
+
+        /// <summary>
+        /// The last basic block visited during pre-order traversal. See Cooper-Harvey-Kennedy paper for formal definition.
+        /// </summary>
         public BasicBlock<Ti> PreOrderLast { get; private set; }
+
+        /// <summary>
+        /// Loop header classification due to Havlak's loop analysis algorithm
+        /// </summary>
         public ENodeType Type { get; private set; }
+
+        /// <summary>
+        /// As defined in Havlak's paper on loop analysis
+        /// </summary>
         public HashSet<BasicBlock<Ti>> BackPreds { get; private set; }
+
+        /// <summary>
+        /// As defined in Havlak's paper on loop analysis
+        /// </summary>
         public HashSet<BasicBlock<Ti>> NonBackPreds { get; private set; }
+
+        /// <summary>
+        /// As defined in Havlak's paper on loop analysis
+        /// </summary>
         public HashSet<BasicBlock<Ti>> RedBackIn { get; private set; }
+
+        /// <summary>
+        /// As defined in Havlak's paper on loop analysis
+        /// </summary>
         public HashSet<BasicBlock<Ti>> OtherIn { get; private set; }
+
+        /// <summary>
+        /// If this basic block is part of a loop, that loop is identified by its header.
+        /// </summary>
         public BasicBlock<Ti> Header { get; private set; }
 
+        /// <summary>
+        /// Used internally during decompilation to keep track of loop unrolling
+        /// </summary>
         internal int UnrollDepth { get; set; }
 
         private List<BasicBlock<Ti>> _predecessors = new List<BasicBlock<Ti>>();
         private List<BasicBlock<Ti>> _dominatees = new List<BasicBlock<Ti>>();
         private List<BasicBlock<Ti>> _tempList;
 
+        /// <summary>
+        /// Constructs a basic block covering a specific instruction range
+        /// </summary>
+        /// <param name="startIndex">index of first instruction covered by basic block</param>
+        /// <param name="endIndex">index of last instruction covered by basic block</param>
+        /// <param name="cfg">containing control-flow graph</param>
         public BasicBlock(int startIndex, int endIndex, ControlFlowGraph<Ti> cfg)
         {
             Code = cfg;
@@ -562,12 +938,15 @@ namespace SystemSharp.Analysis
             EndIndex = endIndex;
         }
 
+        /// <summary>
+        /// Returns the instruction range covered by this basic block
+        /// </summary>
         public IList<Ti> Range
         {
             get
             {
-                Contract.Requires(EndIndex - StartIndex + 1 >= 0);
-                Contract.Requires(EndIndex < Code.Instructions.Count);
+                Contract.Requires<ArgumentOutOfRangeException>(EndIndex - StartIndex + 1 >= 0);
+                Contract.Requires<ArgumentOutOfRangeException>(EndIndex < Code.Instructions.Count);
 
                 return Code.Instructions.GetRange(StartIndex, EndIndex - StartIndex + 1);
             }
@@ -585,8 +964,6 @@ namespace SystemSharp.Analysis
             Indent(sb, indent);
             if (IsLoop)
                 sb.Append("LOOP ");
-            if (IsConditional)
-                sb.Append("COND ");
             if (IsCondition)
                 sb.Append("IF ");
             if (IsBranch)
@@ -611,6 +988,9 @@ namespace SystemSharp.Analysis
             return ToStringInternal(0);
         }
 
+        /// <summary>
+        /// Returns all possible direct successors of this basic block
+        /// </summary>
         public BasicBlock<Ti>[] Successors
         {
             get
@@ -621,6 +1001,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns all possible direct successors of this basic block, except for switch targets and the exit block
+        /// </summary>
         public BasicBlock<Ti>[] SuccessorsWithoutSwitchTargets
         {
             get
@@ -637,6 +1020,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns all possible direct successors of this basic block, except for the exit block
+        /// </summary>
         public BasicBlock<Ti>[] SuccessorsWithoutExitBlock
         {
             get
@@ -653,6 +1039,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Two basic blocks are defined to be equal iff they belong to the same control-flow graph and cover the same range of instructions.
+        /// </summary>
+        /// <param name="obj">another object</param>
+        /// <returns>whether other instance equals this instance</returns>
         public override bool Equals(object obj)
         {
             if (obj is BasicBlock<Ti>)
@@ -664,7 +1055,9 @@ namespace SystemSharp.Analysis
                     EndIndex == cb.EndIndex;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -674,6 +1067,11 @@ namespace SystemSharp.Analysis
 
         #region IComparable<CodeBlock<Ti>> Members
 
+        /// <summary>
+        /// Compares this basic block to another basic block. The ordering is defined by the indices of their respective first instructions.
+        /// </summary>
+        /// <param name="other">some other basic block</param>
+        /// <returns>-1 if this basic block comes before other basic block, 0 if they are the same, 1 is this basic block comes after other basic block</returns>
         public int CompareTo(BasicBlock<Ti> other)
         {
             if (StartIndex < other.StartIndex)
@@ -702,6 +1100,11 @@ namespace SystemSharp.Analysis
 
         #endregion
 
+        /// <summary>
+        /// Tests whether this basic block is part of a particular loop
+        /// </summary>
+        /// <param name="header">loop, specified by its header</param>
+        /// <returns>whether this basic block is part of specified loop</returns>
         public bool BelongsToLoop(BasicBlock<Ti> header)
         {
             BasicBlock<Ti> cur = this;
@@ -712,21 +1115,39 @@ namespace SystemSharp.Analysis
             return (cur != null);
         }
 
+        /// <summary>
+        /// Tests whether this basic block contains a particular instruction
+        /// </summary>
+        /// <param name="index">instruction index</param>
+        /// <returns>whether this basic block contains the instruction with specified index</returns>
         public bool Contains(int index)
         {
             return index >= StartIndex && index <= EndIndex;
         }
 
+        /// <summary>
+        /// Tests whether this basic block containts a particular instruction
+        /// </summary>
+        /// <param name="i">an instruction</param>
+        /// <returns>whether this basic block contains the specified instruction</returns>
         public bool Contains(Ti i)
         {
             return Contains(i.Index);
         }
 
+        /// <summary>
+        /// Tests whether this basic block is an ancestor of another block, due to the pre-order traversal tree
+        /// </summary>
+        /// <param name="grandChild">another basic block</param>
+        /// <returns>whether this basic block is an ancestor of specified basic block</returns>
         public bool IsAncestor(BasicBlock<Ti> grandChild)
         {
             return LoopAnalysisAdapter.IsAncestor(this, grandChild);
         }
 
+        /// <summary>
+        /// An adapter suitable for loop nesting analysis
+        /// </summary>
         public static IGraphAdapter<BasicBlock<Ti>> LoopAnalysisAdapter
         {
             get
@@ -746,13 +1167,14 @@ namespace SystemSharp.Analysis
                     x => x.OtherIn, (x, s) => x.OtherIn = s,
                     x => x.Header, (x, y) => x.Header = y,
                     x => x.IDom, (x, y) => x.IDom = y,
-                    //x => x.IPDom, (x, y) => x.IPDom = y,
                     x => x.Dominatees, (x, y) => x.Dominatees = y
-                    //,x => x.PostDominatees, (x, y) => x.PostDominatees = y
                     );
             }
         }
 
+        /// <summary>
+        /// An adapter suitable for dominance analysis
+        /// </summary>
         public static IGraphAdapter<BasicBlock<Ti>> DominanceAnalysisAdapter
         {
             get
@@ -772,37 +1194,9 @@ namespace SystemSharp.Analysis
                     x => x.OtherIn, (x, s) => x.OtherIn = s,
                     x => x.Header, (x, y) => x.Header = y,
                     x => x.IDom, (x, y) => x.IDom = y,
-                    //x => x.IPDom, (x, y) => x.IPDom = y,
                     x => x.Dominatees, (x, y) => x.Dominatees = y
-                    //,x => x.PostDominatees, (x, y) => x.PostDominatees = y
                     );
             }
         }
-
-        /*public static IGraphAdapter<BasicBlock<Ti>> PostDominanceAnalysisAdapter
-        {
-            get
-            {
-                return new DefaultTreeAdapter<BasicBlock<Ti>>(
-                    null,
-                    x => x.Successors, null,
-                    x => x.Predecessors, (x, y) => x.Predecessors = y,
-                    x => x._tempList, (x, l) => x._tempList = l,
-                    x => x.PreOrderIndex, (x, i) => x.PreOrderIndex = i,
-                    x => x.PreOrderLast, (x, y) => x.PreOrderLast = y,
-                    x => x.PostOrderIndex, (x, i) => x.PostOrderIndex = i,
-                    x => x.Type, (x, t) => x.Type = t,
-                    x => x.BackPreds, (x, s) => x.BackPreds = s,
-                    x => x.NonBackPreds, (x, s) => x.NonBackPreds = s,
-                    x => x.RedBackIn, (x, s) => x.RedBackIn = s,
-                    x => x.OtherIn, (x, s) => x.OtherIn = s,
-                    x => x.Header, (x, y) => x.Header = y,
-                    x => x.IDom, (x, y) => x.IDom = y,
-                    x => x.IPDom, (x, y) => x.IPDom = y,
-                    x => x.Dominatees, (x, y) => x.Dominatees = y,
-                    x => x.PostDominatees, (x, y) => x.PostDominatees = y
-                    );
-            }
-        }*/
     }
 }

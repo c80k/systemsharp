@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -30,8 +30,14 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This helper class is for enumerating CIL opcodes
+    /// </summary>
     public static class OpCodeReflector
     {
+        /// <summary>
+        /// Enumerates all CIL opcodes
+        /// </summary>
         public static IEnumerable<OpCode> AllOpCodes
         {
             get
@@ -46,6 +52,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class implements the classification service for CIL instructions
+    /// </summary>
     public class ILInstructionInfo : IExtendedInstructionInfo<ILInstruction>
     {
         private delegate EInstructionClass ClassifyHandler(ILInstruction ili);
@@ -53,9 +62,24 @@ namespace SystemSharp.Analysis
         private delegate ELocalVariableAccess IsLocalVariableAccessHandler(ILInstruction ili, out int localIndex);
         private delegate IEnumerable<ReferenceInfo> GetIndirectionsHandler(ILInstruction ili, ControlFlowGraph<ILInstruction> cfg);
 
+        /// <summary>
+        /// The method or constructor for which the service is constructed
+        /// </summary>
         public MethodBase Method { get; private set; }
+
+        /// <summary>
+        /// The method body of the associated method or constructor
+        /// </summary>
         public MethodBody Body { get; private set; }
+
+        /// <summary>
+        /// The instruction list of the associated method
+        /// </summary>
         public List<ILInstruction> Instructions { get; private set; }
+
+        /// <summary>
+        /// The artificial exit instruction which serves as the single exit point of the method/constructor
+        /// </summary>
         public ILInstruction Marshal { get; private set; }
 
         private ILInstruction[] _imap;
@@ -65,6 +89,10 @@ namespace SystemSharp.Analysis
         private Dictionary<OpCode, IsLocalVariableAccessHandler> _isLvaHdlMap;
         private Dictionary<OpCode, GetIndirectionsHandler> _getIndHdlMap;
 
+        /// <summary>
+        /// Constructs an instance based on a method or constructor
+        /// </summary>
+        /// <param name="mi">a method or constructor</param>
         public ILInstructionInfo(MethodBase mi)
         {
             Method = mi;
@@ -88,6 +116,11 @@ namespace SystemSharp.Analysis
             InitHandlerMaps();
         }
 
+        /// <summary>
+        /// Returns the instruction at a specific bytecode offset
+        /// </summary>
+        /// <param name="offset">a bytecode offset (NOT: instruction index!)</param>
+        /// <returns>the instruction at specified bytecode offset</returns>
         public ILInstruction this[int offset]
         {
             get { return _imap[offset]; }
@@ -439,11 +472,18 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This is a debugging aid: Any method or constructor which this attribute attached will cause design analysis to
+    /// trigger a breakpoint before control-flow analysis is performed.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Constructor | AttributeTargets.Method, Inherited = true)]
     public class BreakOnControlflowAnalysis : Attribute
     {
     }
 
+    /// <summary>
+    /// A control-flow graph specialization for CLI methods
+    /// </summary>
     public class MethodCode : 
         ControlFlowGraph<ILInstruction>,
         IHasAttributes
@@ -619,6 +659,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// A specialization for basic blocks of CLI methods
+    /// </summary>
     public class MSILCodeBlock : BasicBlock<ILInstruction>
     {
         public MSILCodeBlock(int startIndex, int endIndex, MethodCode mcode) :
@@ -646,23 +689,16 @@ namespace SystemSharp.Analysis
             get { return base.Dominatees.Cast<MSILCodeBlock>().ToArray(); }
         }
 
+        /// <summary>
+        /// Returns the difference between operands pushed on the stack and operands popped from the stack.
+        /// I.e. if this value is greater than 0, the basic block will leave new operands on the stack.
+        /// </summary>
         public int StackBilance
         {
             get
             {
                 return Code.GetPostStackDepth(EndIndex) -
                     Code.GetPreStackDepth(StartIndex);
-            }
-        }
-
-        public int AccumulatedStackBilance
-        {
-            get
-            {
-                if (Dominatees.Length == 0)
-                    return StackBilance;
-                else
-                    return StackBilance + Dominatees[0].AccumulatedStackBilance;
             }
         }
     }

@@ -31,12 +31,18 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// Very preliminary and subject to change, therefore not documented, sorry...
+    /// </summary>
     class JoinParams
     {
         public Task JoinedTask { get; set; }
         public StateInfo Continuation { get; set; }
     }
 
+    /// <summary>
+    /// Very preliminary and subject to change, therefore not documented, sorry...
+    /// </summary>
     class StateInfo
     {
         public int ILState { get; private set; }
@@ -88,6 +94,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// Very preliminary and subject to change, therefore not documented, sorry...
+    /// </summary>
     class ProceedWithStateInfo
     {
         public StateInfo TargetState { get; set; }
@@ -108,6 +117,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// Very preliminary and subject to change, therefore not documented, sorry...
+    /// </summary>
     class CoFSM
     {
         public Task CoTask;
@@ -123,6 +135,9 @@ namespace SystemSharp.Analysis
         public int Order;
     }
 
+    /// <summary>
+    /// Very preliminary and subject to change, therefore not documented, sorry...
+    /// </summary>
     struct CoFSMs
     {
         public Dictionary<Task, CoFSM> Map;
@@ -300,6 +315,13 @@ namespace SystemSharp.Analysis
             return false;
         }
 
+        /// <summary>
+        /// Given a control-flow graph of an asynchronous method, finds all state entry points.
+        /// This is done using some pattern matching and knowledge on how the compiler translates asynchronous methods.
+        /// Therefore, some special cases might not be resolved correctly, and the code might break down with future compiler revisions.
+        /// </summary>
+        /// <param name="cfg">a control-flow graph</param>
+        /// <returns>all state entry points</returns>
         public static MSILCodeBlock[] FindStateTargets(MethodCode cfg)
         {
             var entry = cfg.BasicBlocks[0];

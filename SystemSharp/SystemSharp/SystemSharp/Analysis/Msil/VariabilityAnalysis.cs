@@ -41,15 +41,38 @@ using SystemSharp.Common;
 
 namespace SystemSharp.Analysis.Msil
 {
+    /// <summary>
+    /// Variability classification
+    /// </summary>
+    /// <remarks>
+    /// Variability is associated with stack elements, local variables and method arguments.
+    /// </remarks>
     public enum EVariability
     {
+        /// <summary>
+        /// The element has a constant value.
+        /// </summary>
         Constant,
+
+        /// <summary>
+        /// The element gets assigned different values, but these values do not depend on external input.
+        /// </summary>
         LocalVariable,
+
+        /// <summary>
+        /// The element gets assigned different values which might depend on external input.
+        /// </summary>
         ExternVariable
     }
 
     public static class VariabilityOperations
     {
+        /// <summary>
+        /// Returns the stronger of two variability classifications in order Constant, LocalVariable, ExternVariable
+        /// </summary>
+        /// <param name="a">first variability</param>
+        /// <param name="b">second variability</param>
+        /// <returns>stronger of both variabilities</returns>
         public static EVariability Stronger(EVariability a, EVariability b)
         {
             switch (a)
@@ -70,17 +93,37 @@ namespace SystemSharp.Analysis.Msil
         }
     }
 
+    /// <summary>
+    /// This data structure captures the variability of an element together with its reaching definitions
+    /// </summary>
     public class VariabilityInfo
     {
+        /// <summary>
+        /// The variability classification
+        /// </summary>
         public EVariability Variability { get; private set; }
+
+        /// <summary>
+        /// Reaching definitions in terms of 0-based instruction indices
+        /// </summary>
         public IEnumerable<int> Definitions { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance given a variability and reaching definitions
+        /// </summary>
+        /// <param name="variability">Variability classification</param>
+        /// <param name="definitions">Reaching definitions</param>
         public VariabilityInfo(EVariability variability, IEnumerable<int> definitions)
         {
             Variability = variability;
             Definitions = definitions;
         }
 
+        /// <summary>
+        /// Two instances are defined to be equal iff they have the same variability and the same set of reaching definitions.
+        /// </summary>
+        /// <param name="obj">some object, possibly an instance of VariabilityInfo</param>
+        /// <returns>whether both instances meet the equality criterion</returns>
         public override bool Equals(object obj)
         {
             VariabilityInfo vi = obj as VariabilityInfo;
@@ -96,6 +139,13 @@ namespace SystemSharp.Analysis.Msil
                 Definitions.GetSequenceHashCode();
         }
 
+        /// <summary>
+        /// Merges two instances under assumption of a single reaching definition
+        /// </summary>
+        /// <param name="a">first instance</param>
+        /// <param name="b">second instance</param>
+        /// <param name="def">the one and only reaching definition</param>
+        /// <returns>merged instance, based on the stronger of both variabilities</returns>
         public static VariabilityInfo MergeByNewDef(VariabilityInfo a, VariabilityInfo b, int def)
         {
             return CreateBySingleDef(
@@ -103,11 +153,23 @@ namespace SystemSharp.Analysis.Msil
                 def);
         }
 
+        /// <summary>
+        /// Constructs an instance based on a variability and a single reaching definition
+        /// </summary>
+        /// <param name="var">variability classification</param>
+        /// <param name="def">one and only reaching definition</param>
+        /// <returns>an instance representing the supplied arguments</returns>
         public static VariabilityInfo CreateBySingleDef(EVariability var, int def)
         {
             return new VariabilityInfo(var, new int[]{ def });
         }
 
+        /// <summary>
+        /// Merges two instances based on the stronger of both variabilities and the set union of their reaching definitions
+        /// </summary>
+        /// <param name="a">first instance</param>
+        /// <param name="b">second instance</param>
+        /// <returns>instance representing the merged information of both instances</returns>
         public static VariabilityInfo MergeDefs(VariabilityInfo a, VariabilityInfo b)
         {
             Contract.Requires(a.Definitions != null);
@@ -118,23 +180,45 @@ namespace SystemSharp.Analysis.Msil
                 a.Definitions.Union(b.Definitions).Distinct().ToArray());
         }
 
+        /// <summary>
+        /// Local variables are initially assumed to be of constant variability without any reaching definition, since this represent their initial specification.
+        /// </summary>
         public static readonly VariabilityInfo DefaultLocalInit = 
             new VariabilityInfo(EVariability.Constant, new int[] { 0 });
+
+        /// <summary>
+        /// Method arguments are always classified as ExternVariable
+        /// </summary>
         public static readonly VariabilityInfo DefaultArgumentInit =
             new VariabilityInfo(EVariability.ExternVariable, new int[] { 0 });
     }
 
+    /// <summary>
+    /// Classifies stack states into those having a unique successor (e.g. arithmetic/logic instructions, unconditions jumps) 
+    /// and those who don't (e.g. conditional jumps).
+    /// </summary>
     interface IUniqueSuccessorInfo
     {
+        /// <summary>
+        /// Tells whether current element has a unique successor or not.
+        /// </summary>
         bool HasUniqueSuccessor { get; }
     }
 
+    /// <summary>
+    /// Augments a stack state with unique successor information
+    /// </summary>
     class ModifyUniqueSuccessorStackState :
         DependentStackState<VariabilityInfo>,
         IUniqueSuccessorInfo
     {
         public bool HasUniqueSuccessor { get; private set; }
 
+        /// <summary>
+        /// Constructs a new stack state based on an existing state
+        /// </summary>
+        /// <param name="pre">existing state</param>
+        /// <param name="isUnique">whether that state has a unique successor</param>
         public ModifyUniqueSuccessorStackState(AbstractStackState<VariabilityInfo> pre, bool isUnique) :
             base(pre)
         {
@@ -144,6 +228,11 @@ namespace SystemSharp.Analysis.Msil
 
     static class StackStateOfVariabilityExtensions
     {
+        /// <summary>
+        /// Tells whether a given stack state has a unique successor
+        /// </summary>
+        /// <param name="state">stack state</param>
+        /// <returns>whether stack state has a unique successor</returns>
         public static bool HasUniqueSuccessor(this AbstractStackState<VariabilityInfo> state)
         {
             IUniqueSuccessorInfo vstate = state as IUniqueSuccessorInfo;
@@ -156,6 +245,11 @@ namespace SystemSharp.Analysis.Msil
             return vstate.HasUniqueSuccessor;
         }
 
+        /// <summary>
+        /// Constructs a stack state indicating a unique successor, based on an existing stat6e
+        /// </summary>
+        /// <param name="state">a stack state</param>
+        /// <returns>the desired stack state</returns>
         public static AbstractStackState<VariabilityInfo> UniqueSuccessor(this AbstractStackState<VariabilityInfo> state)
         {
             if (!HasUniqueSuccessor(state))
@@ -164,6 +258,11 @@ namespace SystemSharp.Analysis.Msil
                 return state;
         }
 
+        /// <summary>
+        /// Constructs a stack state indicating a non-unique successor, based on an existing state
+        /// </summary>
+        /// <param name="state">a stack state</param>
+        /// <returns>the desired stack state</returns>
         public static AbstractStackState<VariabilityInfo> AmbiguousSuccessor(this AbstractStackState<VariabilityInfo> state)
         {
             if (HasUniqueSuccessor(state))
@@ -173,14 +272,28 @@ namespace SystemSharp.Analysis.Msil
         }
     }
 
+    /// <summary>
+    /// A debugging aid: Any method tagged with this attribute will cause the analysis stage to trigger a breakpoint just before variability analysis.
+    /// </summary>
     public class BreakOnVariabilityAnalysis: Attribute
     {
     }
 
+    /// <summary>
+    /// Represents a sequence of variability classifications
+    /// </summary>
     public class VariabilityPattern
     {
+        /// <summary>
+        /// The empty sequence
+        /// </summary>
         public static readonly VariabilityPattern NoArgs = new VariabilityPattern(new EVariability[0]);
 
+        /// <summary>
+        /// Creates an instance which represents the arguments of a given method. I.e. each argument is assument to be ExternVariable.
+        /// </summary>
+        /// <param name="method">A method</param>
+        /// <returns>an instance representing the supplied method</returns>
         public static VariabilityPattern CreateDefault(MethodBase method)
         {
             var pis = method.GetParameters();
@@ -188,13 +301,25 @@ namespace SystemSharp.Analysis.Msil
             return new VariabilityPattern(pat);
         }
 
+        /// <summary>
+        /// The sequence of variabilities being represented
+        /// </summary>
         public EVariability[] Pattern { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance based on a supplied sequence
+        /// </summary>
+        /// <param name="pattern"></param>
         public VariabilityPattern(EVariability[] pattern)
         {
             Pattern = pattern;
         }
 
+        /// <summary>
+        /// Two instances are defined to be equal iff the represent exactly the same sequence.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             var other = obj as VariabilityPattern;
@@ -209,6 +334,9 @@ namespace SystemSharp.Analysis.Msil
         }
     }
 
+    /// <summary>
+    /// This class analyzes the variabilities of stack elements and local variables of a given method.
+    /// </summary>
     public class VariabilityAnalyzer : FixPointAnalyzer<VariabilityInfo>
     {
         private class IndependentStackState :
@@ -247,6 +375,11 @@ namespace SystemSharp.Analysis.Msil
         private int _localizedFieldsBaseIndex;
         private FieldInfo[] _localizedFields;
 
+        /// <summary>
+        /// Constructs a new analysis algorithm based on a supplied method and a sequence of variabilities which is assumed to hold for the method arguments.
+        /// </summary>
+        /// <param name="method">a method</param>
+        /// <param name="callPattern">the assumed variabilities of the method arguments</param>
         public VariabilityAnalyzer(MethodBase method, VariabilityPattern callPattern) :
             base(method)
         {
@@ -823,11 +956,23 @@ namespace SystemSharp.Analysis.Msil
             _pmap[OpCodes.Xor] = HandleBinOp;
         }
 
+        /// <summary>
+        /// Retrieves the variability of a stack element at a given instruction index and stack index
+        /// </summary>
+        /// <param name="ilIndex">index of CIL instruction</param>
+        /// <param name="stackDepth">index of stack element (0 is top)</param>
+        /// <returns>variability classification of desired stack element</returns>
         public EVariability GetStackElementVariability(int ilIndex, int stackDepth)
         {
             return _stackStates[ilIndex][stackDepth].Variability;
         }
 
+        /// <summary>
+        /// Retrieves the variability of a local variable at a given instruction index
+        /// </summary>
+        /// <param name="ilIndex">index of CIL instruction</param>
+        /// <param name="localIndex">index of local variable</param>
+        /// <returns>variability of desired variable at desired CIL index</returns>
         public EVariability GetLocalVariableVariability(int ilIndex, int localIndex)
         {
             return _stackStates[ilIndex].GetLocal(localIndex).Variability;

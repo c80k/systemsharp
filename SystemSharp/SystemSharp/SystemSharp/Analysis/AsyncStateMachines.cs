@@ -39,6 +39,12 @@ namespace SystemSharp.Analysis
 {
     public static class AsyncStateMachines
     {
+        /// <summary>
+        /// This helper method retrieves the data type of the underlying compiler-generated state machine data structure 
+        /// for implementing an asynchronous method.
+        /// </summary>
+        /// <param name="method">an asynchronous method (i.e. tagged with keyword async)</param>
+        /// <returns>the type of the underlying state machine data structure</returns>
         public static Type GetStateMachineType(this MethodBase method)
         {
             return method.GetCustomAttribute<AsyncStateMachineAttribute>().StateMachineType;
@@ -60,6 +66,16 @@ namespace SystemSharp.Analysis
             return (Action)Action.CreateDelegate(typeof(Action), asm, "MoveNext");
         }
 
+        /// <summary>
+        /// Retrieves the actual entry point of an async method.
+        /// </summary>
+        /// <remarks>
+        /// Async methods are compiled as wrapper methods, redirecting the actual work to the MoveNext method of an underlying state
+        /// machine implementation. That MoveNext will be found and returned.
+        /// </remarks>
+        /// <param name="method">a possibly async method</param>
+        /// <returns>its actual implementation, i.e. the MoveNext method of its underlying state machine data structure in case
+        /// of an async method, the method itself in case of a "normal" method.</returns>
         public static MethodBase UnwrapEntryPoint(this MethodBase method)
         {
             var asma = method.GetCustomAttribute<AsyncStateMachineAttribute>();
@@ -69,27 +85,48 @@ namespace SystemSharp.Analysis
             return asma.StateMachineType.GetMethod("MoveNext", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
         }
 
+        /// <summary>
+        /// Tells whether a method is asynchronous, i.e. tagged with the async keyword.
+        /// </summary>
+        /// <param name="method">a method</param>
+        /// <returns>whether method is async</returns>
         public static bool IsAsync(this MethodBase method)
         {
             return method.GetCustomAttribute<AsyncStateMachineAttribute>() != null;
         }
 
+        /// <summary>
+        /// Tells whether the method inside an Action delegate is async.
+        /// </summary>
+        /// <param name="action">an Action delegate</param>
+        /// <returns>whether target method is async</returns>
         public static bool IsAsync(this Action action)
         {
             return action.Method.IsAsync();
         }
 
+        /// <summary>
+        /// Tells whether a given method is the MoveNext method of a compiler-generated state machine data structure.
+        /// </summary>
+        /// <param name="method">a method</param>
+        /// <returns>whether that method is a MoveNext method</returns>
         public static bool IsMoveNext(this MethodBase method)
         {
             return method.Name == "MoveNext" && !method.DeclaringType.IsVisible;
         }
     }
 
+    /// <summary>
+    /// The tick attribute is used to tag the Component.Tick() method which models a single clock step.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     class TickAttribute : Attribute, IDoNotAnalyze
     {
     }
 
+    /// <summary>
+    /// This class rewrites calls to the GetResult() method in the async implementation pattern, supporting the correct decompilation of async methods.
+    /// </summary>
     class RewriteGetResult :
         RewriteCall,
         IDoNotCallOnDecompilation
@@ -124,6 +161,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class rewrites calls to the IsCompleted property in the async implementation pattern, supporting the correct decompilation of async methods.
+    /// </summary>
     class RewriteIsCompleted :
         RewriteCall,
         IDoNotCallOnDecompilation
@@ -152,12 +192,25 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// The decompilation style of async methods
+    /// </summary>
     public enum EAsyncImplStyle
     {
+        /// <summary>
+        /// The method should be decompiled to a sequential representation, resembling very much the original notation
+        /// </summary>
         Sequential,
+
+        /// <summary>
+        /// The method should be decompiled to an explicit finite state machine representation
+        /// </summary>
         FSM
     }
 
+    /// <summary>
+    /// This class provides functionality to decompile async methods.
+    /// </summary>
     public class AsyncMethodDecompiler
     {
         internal void ImplementAwait(CodeDescriptor decompilee, MethodBase callee, StackElement[] args, IDecompiler stack, IFunctionBuilder builder)
@@ -844,6 +897,13 @@ namespace SystemSharp.Analysis
                 new MapToIntrinsicType(Meta.EIntrinsicTypes.IllegalRuntimeType));
         }
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="ctx">underlying design context</param>
+        /// <param name="code">code descriptor of async method to decompile</param>
+        /// <param name="instance">assumed instance on which the method is called</param>
+        /// <param name="arguments">sample instances of method arguments</param>
         public AsyncMethodDecompiler(DesignContext ctx, CodeDescriptor code, object instance, object[] arguments)
         {
             _context = ctx;
@@ -1235,6 +1295,10 @@ namespace SystemSharp.Analysis
             return cofsm;
         }
 
+        /// <summary>
+        /// Decompiles the method to an explicit state machine representation
+        /// </summary>
+        /// <returns>decopmiled method</returns>
         public IDecompilationResult DecompileToFSM()
         {
             InitializeCFGs();
@@ -1426,6 +1490,10 @@ namespace SystemSharp.Analysis
             return new Result(syncPS, calledSyncMethods, referencedFields);
         }
 
+        /// <summary>
+        /// Decompiles the method to either a sequential or an explicit state machine representation, depending on whether TransformIntoFSM attribute is set.
+        /// </summary>
+        /// <returns>decompiled method</returns>
         public IDecompilationResult Decompile()
         {
             InjectAttributes("");

@@ -38,36 +38,77 @@ using System.Diagnostics;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// Marker interface which instructs design analysis stage to assume that a certain method is called, 
+    /// taking all side effects into account which could arise from calling that method.
+    /// </summary>
     public interface IAssumeCalled
     {
     }
 
+    /// <summary>
+    /// Any method marked with this attribute is assumed to be called during design runtime,
+    /// taking all side effects into account which could arise from calling that method.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited=true, AllowMultiple=true)]
     public class AssumeCalled : Attribute, IAssumeCalled
     {
     }
 
+    /// <summary>
+    /// Any field marked with this attribute is assumed to stay constant throughout design runtime
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = true, Inherited = true)]
     public class AssumeConst : Attribute
     {
     }
 
+    /// <summary>
+    /// Processing stage of a method during design analysis
+    /// </summary>
     public enum EMethodDiscoveryStage
     {
+        /// <summary>
+        /// The method is discovered for the first time
+        /// </summary>
         FirstDiscovery,
+
+        /// <summary>
+        /// The method is now ready for processing
+        /// </summary>
         Processing
     }
 
+    /// <summary>
+    /// This marker interface instructs design analysis to call OnDiscovery method upon discovery of tagged method.
+    /// </summary>
     public interface IOnMethodDiscovery
     {
+        /// <summary>
+        /// Will be called when a tagged method is discovered by design analysis.
+        /// </summary>
+        /// <param name="method">the discovered method</param>
+        /// <param name="stage">processing stage of discovered method</param>
         void OnDiscovery(MethodBase method, EMethodDiscoveryStage stage);
     }
 
+    /// <summary>
+    /// This marker interface instructs design analysis to call OnMethodCall upon each occurence of a call to a tagged method.
+    /// </summary>
     public interface IOnMethodCall
     {
+        /// <summary>
+        /// Will be called for each occurence of a call to a tagged method.
+        /// </summary>
+        /// <param name="callerFacts">information about the method caller</param>
+        /// <param name="callee">the called method</param>
+        /// <param name="ilIndex">instruction index of method call inside caller code</param>
         void OnMethodCall(MethodFacts callerFacts, MethodBase callee, int ilIndex);
     }
 
+    /// <summary>
+    /// This is a debugging aid: Each method tagged with this attribute causes design analysis to trigger a breakpoint when the tagged method is discovered.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method|AttributeTargets.Constructor, Inherited = true, AllowMultiple = true)]
     public class BreakOnMethodDiscovery: Attribute, IOnMethodDiscovery
     {
@@ -81,11 +122,21 @@ namespace SystemSharp.Analysis
         #endregion
     }
 
+    /// <summary>
+    /// This marker interface instructs design analysis to call OnDiscovery whenever a tagged type is discovered.
+    /// </summary>
     public interface IOnTypeDiscovery
     {
+        /// <summary>
+        /// Will be called for the discovered type
+        /// </summary>
+        /// <param name="type">discovered type</param>
         void OnDiscovery(Type type);
     }
 
+    /// <summary>
+    /// This is a debugging aid: Each type tagged with this attribute causes design analysis to trigger a breakpoint when the tagged type is discovered.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = true, AllowMultiple = true)]
     public class BreakOnTypeDiscovery : Attribute, IOnTypeDiscovery
     {
@@ -99,23 +150,68 @@ namespace SystemSharp.Analysis
         #endregion
     }
 
+    /// <summary>
+    /// This class captures information on all relevant objects discovered during analysis, i.e. types, instantiated classes, called methods,
+    /// and memory allocations.
+    /// </summary>
     public class FactUniverse
     {
+        /// <summary>
+        /// An instance of this class is tied to each DesignContext instance. Therefore returns the instance belonging to the current design context.
+        /// </summary>
         public static FactUniverse Instance
         {
             get { return DesignContext.Instance.Universe; }
         }
 
+        /// <summary>
+        /// All types found by design analysis
+        /// </summary>
         public IObservable<TypeFacts> KnownTypes { get; private set; }
+
+        /// <summary>
+        /// All interface types found by design analysis
+        /// </summary>
         public IObservable<TypeFacts> KnownInterfaces { get; private set; }
+
+        /// <summary>
+        /// All abstract classes found by design analysis
+        /// </summary>
         public IObservable<TypeFacts> KnownAbstractClasses { get; private set; }
+
+        /// <summary>
+        /// All value types found by design analysis
+        /// </summary>
         public IObservable<TypeFacts> KnownValueTypes { get; private set; }
+
+        /// <summary>
+        /// All instantiable types found by design analysis, i.e. only non-abstract, non-interface types with concrete type parameters
+        /// </summary>
         public IObservable<TypeFacts> KnownInstantiables { get; private set; }
+
+        /// <summary>
+        /// All called methods found by design analysis
+        /// </summary>
         public IObservable<MethodFacts> KnownMethods { get; private set; }
+
+        /// <summary>
+        /// All called constructors found by design analysis
+        /// </summary>
         public IObservable<MethodFacts> KnownConstructors { get; private set; }
+
+        /// <summary>
+        /// The union of all called methods and constructors found by design analysis
+        /// </summary>
         public IObservable<MethodFacts> KnownMethodBases { get; private set; }
+
+        /// <summary>
+        /// All program locations where new instances are created found by design analysis
+        /// </summary>
         public IObservable<AllocationSite> KnownAllocationSites { get; private set; }
 
+        /// <summary>
+        /// Whether analysis stage is complete
+        /// </summary>
         public bool IsCompleted { get; private set; }
 
         public const string UniverseCompletedErrorMsg = "Fact universe is already completed";
@@ -184,9 +280,14 @@ namespace SystemSharp.Analysis
             KnownAllocationSites = _allocSites.AsObservable();
         }
 
+        /// <summary>
+        /// Adds a new type to the universe
+        /// </summary>
+        /// <param name="type">type to add</param>
         public void AddType(Type type)
         {
-            Contract.Requires(!IsCompleted, UniverseCompletedErrorMsg);
+            Contract.Requires<ArgumentNullException>(type != null);
+            Contract.Requires<InvalidOperationException>(!IsCompleted, UniverseCompletedErrorMsg);
             if (type.IsGenericType && !type.IsGenericTypeDefinition)
             {
                 foreach (Type atype in type.GetGenericArguments())
@@ -198,15 +299,26 @@ namespace SystemSharp.Analysis
             _knownTypes.Cache(type);
         }
 
+        /// <summary>
+        /// Adds a new method to the universe
+        /// </summary>
+        /// <param name="method">method to add</param>
         public void AddMethod(MethodBase method)
         {
-            Contract.Requires(!IsCompleted, UniverseCompletedErrorMsg);
+            Contract.Requires<ArgumentNullException>(method != null);
+            Contract.Requires<InvalidOperationException>(!IsCompleted, UniverseCompletedErrorMsg);
             var entryPoint = method.UnwrapEntryPoint();
             _knownMethods.Cache(entryPoint);
         }
 
+        /// <summary>
+        /// Adds a new method to the universe, identified by CallSite
+        /// </summary>
+        /// <param name="callSite">a CallSite instance</param>
         private void AddMethod(CallSite callSite)
         {
+            Contract.Requires<ArgumentNullException>(callSite != null);
+
             var attrs = callSite.Callee.GetCustomAndInjectedAttributes<IOnMethodCall>();
             if (attrs.Length > 0)
             {
@@ -219,21 +331,34 @@ namespace SystemSharp.Analysis
             AddMethod(callSite.Callee);
         }
 
+        /// <summary>
+        /// Adds a constructor to the universe
+        /// </summary>
+        /// <param name="ctor">the constructor to add</param>
         public void AddConstructor(ConstructorInfo ctor)
         {
-            Contract.Requires(!IsCompleted, UniverseCompletedErrorMsg);
+            Contract.Requires<InvalidOperationException>(!IsCompleted, UniverseCompletedErrorMsg);
             _knownMethods.Cache(ctor);
         }
 
+        /// <summary>
+        /// Queries whether the universe contains information on a particular method or constructor
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <returns>whether the universe contains information on supplied method/constructor</returns>
         public bool HaveFacts(MethodBase method)
         {
             var entryPoint = method.UnwrapEntryPoint(); 
             return _knownMethods.IsCached(entryPoint);
         }
 
+        /// <summary>
+        /// Completes the analysis
+        /// </summary>
         public void Complete()
         {
-            Contract.Requires(!IsCompleted, UniverseCompletedErrorMsg);
+            Contract.Requires<InvalidOperationException>(!IsCompleted, UniverseCompletedErrorMsg);
+
             _knownTypes.Complete();
             _knownMethods.Complete();
             _allocSites.Complete();
@@ -404,13 +529,6 @@ namespace SystemSharp.Analysis
                     }
                 }
             }
-            /*MethodOrdering.ComputeCallOrder(_knownMethods.Values);
-            var order = _knownMethods.Values.OrderBy(mf => mf.CallOrder);
-            foreach (MethodFacts mf in order)
-            {
-                if (mf.IsDecompilable)
-                    mf.AnalyzeVariabilities();
-            }*/
         }
 
         public void CreateHTMLReport(string path)

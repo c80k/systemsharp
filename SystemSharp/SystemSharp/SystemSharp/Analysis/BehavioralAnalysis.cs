@@ -40,7 +40,7 @@ using SystemSharp.SysDOM.Eval;
 
 namespace SystemSharp.Analysis
 {
-    public class BehavioralAnalyzer        
+    class BehavioralAnalyzer        
     {
         private class MethodKey
         {

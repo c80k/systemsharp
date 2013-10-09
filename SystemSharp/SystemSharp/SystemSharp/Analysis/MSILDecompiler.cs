@@ -105,11 +105,22 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This marker interface instructs the decompiler to call OnDecompilation just before decompilation starts.
+    /// </summary>
     public interface IOnDecompilation
     {
+        /// <summary>
+        /// Method to be called just before decompilation starts
+        /// </summary>
+        /// <param name="decomp">the decompiler context</param>
         void OnDecompilation(MSILDecompilerTemplate decomp);
     }
 
+    /// <summary>
+    /// This is a debugging aid: Any method or constructor having this attribute attached causes the decompiler to trigger
+    /// a breakpoint just before decompilation starts.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = true, AllowMultiple = true)]
     public class BreakOnDecompilation : Attribute, IOnDecompilation
     {
@@ -131,16 +142,30 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// A debugging aid for supervising the decompilation of bigger methods: Whenever the decompiler encounters a call to
+        /// BreakOnDecompilation.StopHere(), a breakpoint will be triggered.
+        /// </summary>
         [BreakOnCall]
         public static void StopHere()
         {
         }
     }
 
+    /// <summary>
+    /// This class captures a reference to a CLI method call, implementing SysDOM's ICallable interface
+    /// </summary>
     public class MSILFunctionRef : ICallable
     {
+        /// <summary>
+        /// Called method
+        /// </summary>
         public MethodBase Method { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance based on a method or contructor
+        /// </summary>
+        /// <param name="method">method or constructor being called</param>
         public MSILFunctionRef(MethodBase method)
         {
             Method = method;
@@ -157,22 +182,64 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class gathers contextual information about a method call.
+    /// </summary>
     public class MethodCallInfo
     {
+        /// <summary>
+        /// Function being called
+        /// </summary>
         public FunctionSpec FunSpec { get; private set; }
 
+        /// <summary>
+        /// CLI method being called
+        /// </summary>
         public MethodBase Method
         {
             get { return FunSpec.CILRep; }
         }
 
+        /// <summary>
+        /// Symbolic method arguments
+        /// </summary>
         public Expression[] Arguments { get; private set; }
+
+        /// <summary>
+        /// Variabilities of respective arguments
+        /// </summary>
         public EVariability[] ArgumentVariabilities { get; private set; }
+
+        /// <summary>
+        /// Sample instance on which method is called
+        /// </summary>
         public object Instance { get; private set; }
+
+        /// <summary>
+        /// Variability of sample instance
+        /// </summary>
         public EVariability InstanceVariability { get; private set; }
+
+        /// <summary>
+        /// Decompiler context
+        /// </summary>
         public MSILDecompilerTemplate CallerTemplate { get; private set; }
+
+        /// <summary>
+        /// method return value sample (null if no return value or not available)
+        /// </summary>
         public object ResultSample { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="funSpec">function to be called</param>
+        /// <param name="instance">sample instance on which function is called</param>
+        /// <param name="instanceVariability">variability of sample instance</param>
+        /// <param name="args">symbolic arguments</param>
+        /// <param name="argVar">respective argument variabilities</param>
+        /// <param name="callerTemplate">decompiler context</param>
+        /// <param name="resultSample">method return value sample (null if no return value or not available)</param>
         public MethodCallInfo(FunctionSpec funSpec,
             object instance, EVariability instanceVariability,
             Expression[] args, EVariability[] argVar,
@@ -224,6 +291,9 @@ namespace SystemSharp.Analysis
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Returns respective sample values for the arguments, including instance (if applicable)
+        /// </summary>
         public object[] EvaluatedArguments
         {
             get
@@ -234,6 +304,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns the symbolic instance on which method is called
+        /// </summary>
         public Expression CalledInstance
         {
             get
@@ -245,15 +318,23 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Assigns method descriptors
+        /// </summary>
+        /// <param name="genericImpl">descriptor of generic implementation (i.e. not taking context knowledge into account)</param>
+        /// <param name="specialImpl">descriptor of specific implementation (i.e. taking context knowledge into account)</param>
         public void Resolve(MethodDescriptor genericImpl, MethodDescriptor specialImpl)
         {
-            Contract.Requires(genericImpl != null);
-            Contract.Requires(specialImpl != null);
+            Contract.Requires<ArgumentNullException>(genericImpl != null);
+            Contract.Requires<ArgumentNullException>(specialImpl != null);
 
             FunSpec.GenericSysDOMRep = genericImpl;
             FunSpec.SpecialSysDOMRep = specialImpl;
         }
 
+        /// <summary>
+        /// Returns respective sample values for the arguments, but never including instance
+        /// </summary>
         public object[] EvaluatedArgumentsWithoutThis
         {
             get
@@ -271,6 +352,10 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Tells whether the instance is unique, i.e. the method is non-static, we could infer a sample instance 
+        /// and that instance is of constant variability.
+        /// </summary>
         public bool IsInstanceDetermined
         {
             get
@@ -281,6 +366,10 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Retrieves the method which is actually addressed by the method call, taking polymorphism and instance information into account.
+        /// </summary>
+        /// <returns>The method being actually called</returns>
         public MethodBase GetStrongestOverride()
         {
             if (IsInstanceDetermined && Method.IsVirtual)
@@ -311,6 +400,10 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Configures a compiler context using the settings of the associated compiler context.
+        /// </summary>
+        /// <param name="templ">compiler context to configure</param>
         public void Inherit(MSILDecompilerTemplate templ)
         {
             templ.DisallowConditionals = CallerTemplate.DisallowConditionals;
@@ -319,14 +412,41 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class provides contextual information to an instruction which references a field.
+    /// </summary>
     public class FieldRefInfo
     {
+        /// <summary>
+        /// The field being accessed
+        /// </summary>
         public FieldInfo Field { get; private set; }
+
+        /// <summary>
+        /// Whether the field is read
+        /// </summary>
         public bool IsRead { get; internal set; }
+
+        /// <summary>
+        /// Whether the field is written
+        /// </summary>
         public bool IsWritten { get; internal set; }
+
+        /// <summary>
+        /// Instance on which the field access happens
+        /// </summary>
         public StackElement Instance { get; private set; }
+
+        /// <summary>
+        /// Possible right-hand-side values in case of write access
+        /// </summary>
         public List<StackElement> RHSs { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="field">the field being accessed</param>
+        /// <param name="instance">instance on which field access happens</param>
         public FieldRefInfo(FieldInfo field, StackElement instance)
         {
             if (field == null)
@@ -348,6 +468,11 @@ namespace SystemSharp.Analysis
             return result;
         }
 
+        /// <summary>
+        /// Two instances are defined to be equal iff they refer to the same field and the same instance
+        /// </summary>
+        /// <param name="obj">another instance, possibly a FieldRefInfo</param>
+        /// <returns>whether given instance equals this one</returns>
         public override bool Equals(object obj)
         {
             if (obj is FieldRefInfo)
@@ -357,7 +482,9 @@ namespace SystemSharp.Analysis
                     Instance.Equals(fri.Instance);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -365,18 +492,24 @@ namespace SystemSharp.Analysis
             return Field.GetHashCode() ^ Instance.GetHashCode();
         }
 
+        /// <summary>
+        /// Merges another FieldRefInfo into this one by appending the right-hand-sides.
+        /// Only equal objects may be merged.
+        /// </summary>
+        /// <param name="other">instance to merge</param>
         public void Merge(FieldRefInfo other)
         {
-            Contract.Requires(other.RHSs != null);
-
-            if (!Equals(other))
-                throw new InvalidOperationException("Only equal objects of FieldRefInfo may be merged");
+            Contract.Requires<ArgumentNullException>(other.RHSs != null);
+            Contract.Requires<InvalidOperationException>(Equals(other), "Only equal objects of FieldRefInfo may be merged");
 
             RHSs.AddRange(other.RHSs);
         }
 
         TypeDescriptor _type;
 
+        /// <summary>
+        /// Returns the type descriptor of the field
+        /// </summary>
         public TypeDescriptor Type
         {
             get
@@ -396,6 +529,9 @@ namespace SystemSharp.Analysis
         private bool _haveValueSample;
         private object _valueSample;
 
+        /// <summary>
+        /// Returns a sample value of the field, if possible (otherwise null)
+        /// </summary>
         public object ValueSample
         {
             get
@@ -451,12 +587,36 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This structure represents a stack element, which is identified by a symbolic expression and a value sample.
+    /// </summary>
+    /// <remarks>
+    /// Expressions actually provide sample values as well. Therefore, this StackElement is subject to removal in future releases 
+    /// to avoid the redundancy.
+    /// </remarks>
     public struct StackElement
     {
+        /// <summary>
+        /// Symbolic expression
+        /// </summary>
         public Expression Expr;
+
+        /// <summary>
+        /// Sample value
+        /// </summary>
         public object Sample;
+
+        /// <summary>
+        /// Variability of this element
+        /// </summary>
         public EVariability Variability;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="expr">symbolic expression</param>
+        /// <param name="sample">sample value</param>
+        /// <param name="variability">variability classification</param>
         public StackElement(Expression expr, object sample, EVariability variability)
         {
             Expr = expr;
@@ -469,6 +629,11 @@ namespace SystemSharp.Analysis
             return Expr.ToString() + " <" + (Sample ?? "?") + ">";
         }
 
+        /// <summary>
+        /// Two stack elements are defined to be equal iff their symbolic expressions and their sample values are equal.
+        /// </summary>
+        /// <param name="obj">some instance, possibly a StackElement</param>
+        /// <returns>whether both instances are equal</returns>
         public override bool Equals(object obj)
         {
             if (obj is StackElement)
@@ -478,7 +643,9 @@ namespace SystemSharp.Analysis
                     object.Equals(Sample, other.Sample);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -492,11 +659,29 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This interface models the decompiler functionality. It is intended to be used inside method rewriters.
+    /// </summary>
     [ContractClass(typeof(DecompilerContractClass))]
     public interface IDecompiler: IAttributed
     {
+        /// <summary>
+        /// Pops an element from the expression stack
+        /// </summary>
+        /// <returns>popped element</returns>
         StackElement Pop();
+
+        /// <summary>
+        /// Pushes an element on the expression stack
+        /// </summary>
+        /// <param name="elem">element to push</param>
         void Push(StackElement elem);
+
+        /// <summary>
+        /// Pushes an element on the expressions stack. Variability is assumed to be ExternVariable.
+        /// </summary>
+        /// <param name="expr">expression to push</param>
+        /// <param name="sample">sample value to push</param>
         void Push(Expression expr, object sample);
 
         /// <summary>
@@ -529,8 +714,26 @@ namespace SystemSharp.Analysis
         /// <param name="args">Argument list</param>
         void ImplementCall(MethodBase mb, params StackElement[] args);
 
+        /// <summary>
+        /// Instructs the decompiler to hide a local variable definition
+        /// </summary>
+        /// <param name="lvi">local variable to hide</param>
         void HideLocal(LocalVariableInfo lvi);
+
+        /// <summary>
+        /// Instructs the decompiler not to evaluate a local variable during unrolling a loop.
+        /// </summary>
+        /// <param name="localIndex">index of local variable</param>
         void DoNotUnroll(int localIndex);
+
+        /// <summary>
+        /// Tries to retrieve samples of method return value and output arguments
+        /// </summary>
+        /// <param name="callee">method to call</param>
+        /// <param name="inArgs">argument list, including instance as first argument, if applicable</param>
+        /// <param name="outArgs">output argument samples</param>
+        /// <param name="result">return value sample</param>
+        /// <returns>whether call was successful</returns>
         bool TryGetReturnValueSample(MethodInfo callee, StackElement[] inArgs, out object[] outArgs, out object result);
 
         /// <summary>
@@ -546,6 +749,9 @@ namespace SystemSharp.Analysis
         void DoUnrollAt(int ilIndex);
     }
 
+    /// <summary>
+    /// This dummy class is only there to make Code Contracts happy.
+    /// </summary>
     [ContractClassFor(typeof(IDecompiler))]
     abstract class DecompilerContractClass : IDecompiler
     {
@@ -651,6 +857,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This class is for creating a private IDecompiler implementation, using its own stack.
+    /// </summary>
     public static class DecompilerStacks
     {
         class PrivateDecompilerStack : 
@@ -726,19 +935,35 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Creates a "private" IDecompiler implementation, using its own stack
+        /// </summary>
+        /// <param name="stack">current IDecompiler implementation</param>
+        /// <returns>private implementations</returns>
         public static IDecompiler CreatePrivateStack(this IDecompiler stack)
         {
             return new PrivateDecompilerStack(stack);
         }
     }
 
+    /// <summary>
+    /// This class captures the contents of a set of local variables for some program state.
+    /// </summary>
     public class LocalVariableState
     {
+        /// <summary>
+        /// The empty state where there simply are no local variables
+        /// </summary>
         public static readonly LocalVariableState Empty = new LocalVariableState();
 
         private Dictionary<int, object> _state = new Dictionary<int, object>();
         private int _hash;
 
+        /// <summary>
+        /// Constructs a new instance based on a previous state
+        /// </summary>
+        /// <param name="state">assigns a value to each local variable which is represented by its index</param>
+        /// <param name="doNotUnroll">specifies the set of local variables which should be evaluated/taken into consideration</param>
         internal LocalVariableState(IDictionary<int, object> state, ISet<int> doNotUnroll)
         {
             foreach (var kvp in state)
@@ -754,6 +979,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Constructs an empty instance
+        /// </summary>
         internal LocalVariableState()
         {
             _hash = 0;
@@ -764,6 +992,11 @@ namespace SystemSharp.Analysis
             get { return _state; }
         }
 
+        /// <summary>
+        /// Two instances are defined to be equal iff each local variable is assigned the same value.
+        /// </summary>
+        /// <param name="obj">Another instance, possibly a LocalVariableState</param>
+        /// <returns></returns>
         public override bool Equals(object obj)
         {
             LocalVariableState other = obj as LocalVariableState;
@@ -791,6 +1024,13 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// Represents a unique program location, specified by a method and instruction index, including the call stack of program locations.
+    /// </summary>
+    /// <remarks>
+    /// Using that scheme, we can establish an ordering relation between program locations. Therefore, the class implements IComparable and
+    /// comparison operators.
+    /// </remarks>
     public class ILIndexRef : IComparable<ILIndexRef>
     {
         public enum EComparisonResult
@@ -801,10 +1041,26 @@ namespace SystemSharp.Analysis
             Incomparable
         }
 
+        /// <summary>
+        /// The method containing the program location
+        /// </summary>
         public MethodBase Method { get; private set; }
+
+        /// <summary>
+        /// Instruction index of program location
+        /// </summary>
         public int ILIndex { get; private set; }
+
+        /// <summary>
+        /// The program location which called this method
+        /// </summary>
         public ILIndexRef Caller { get; internal set; }
 
+        /// <summary>
+        /// Constructs a new instance based on a method and instruction index
+        /// </summary>
+        /// <param name="method">the method</param>
+        /// <param name="ilIndex">the instruction index</param>
         public ILIndexRef(MethodBase method, int ilIndex)
         {
             Contract.Requires(method != null);
@@ -813,6 +1069,12 @@ namespace SystemSharp.Analysis
             ILIndex = ilIndex;
         }
 
+        /// <summary>
+        /// Two instances are defined to be equal iff they refer to the same method and the same instruction.
+        /// Please note that this does NOT take the call history into account.
+        /// </summary>
+        /// <param name="obj">another instance, possibly an ILIndexRef</param>
+        /// <returns>whether that instance equals this one</returns>
         public override bool Equals(object obj)
         {
             var other = obj as ILIndexRef;
@@ -835,6 +1097,9 @@ namespace SystemSharp.Analysis
             return result;
         }
 
+        /// <summary>
+        /// Returns the depth of the call stack
+        /// </summary>
         public int Depth
         {
             get
@@ -850,6 +1115,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Tries to compare this program location to another one. They might be incomparable, if they don't have any common ancestors.
+        /// </summary>
+        /// <param name="other">another program location</param>
+        /// <returns>whether this location is less, equal, greater or incomparable</returns>
         public EComparisonResult TryCompareTo(ILIndexRef other)
         {
             int mydepth = Depth;
@@ -881,6 +1151,11 @@ namespace SystemSharp.Analysis
                 return EComparisonResult.Equal;
         }
 
+        /// <summary>
+        /// Implements the IComparable interface. Please note that equal and incomparable locations will both result in return value 0.
+        /// </summary>
+        /// <param name="other">another program location</param>
+        /// <returns>-1 if this location is first, 1 if it is next or 0 if the locations are either the same or incomparable</returns>
         public int CompareTo(ILIndexRef other)
         {
             switch (TryCompareTo(other))
@@ -929,6 +1204,9 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// The decompiler context. This huge class implements the actual decompilation algorithms.
+    /// </summary>
     public class MSILDecompilerTemplate :
         AlgorithmTemplate,
         IDecompiler
@@ -1083,18 +1361,27 @@ namespace SystemSharp.Analysis
             MaxUnrollDepth = 100;
         }
 
+        /// <summary>
+        /// The code descriptor of the method being decompiled
+        /// </summary>
         public CodeDescriptor Decompilee
         {
             get { return _decompilee; }
             internal set { _decompilee = value; }
         }
 
+        /// <summary>
+        /// The method being decompiled
+        /// </summary>
         public MethodBase Method
         {
             get { return _method; }
             internal set { _method = value; }
         }
 
+        /// <summary>
+        /// The control-flow graph of the method being decompiled
+        /// </summary>
         public MethodCode Code
         {
             get { return _code; }
@@ -1105,6 +1392,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// The return type of the method being decompiled
+        /// </summary>
         public Type MethodReturnType
         {
             get
@@ -1115,23 +1405,65 @@ namespace SystemSharp.Analysis
                     return mi.ReturnType;
                 }
                 else
+                {
                     return typeof(void);
+                }
             }
         }
 
+        /// <summary>
+        /// Whether the "Return x" statement should be avoided in favor of assigning the result to an explicitly generated variable
+        /// </summary>
         public bool TreatReturnValueAsVariable { get; set; }
+
+        /// <summary>
+        /// Whether the "Return" statement must be avoided
+        /// </summary>
         public bool DisallowReturnStatements { get; set; }
+
+        /// <summary>
+        /// Whether the "this" reference should be treated as an explicit variable
+        /// </summary>
         public bool GenerateThisVariable { get; set; }
-        public bool NestLoopsDeeply { get; set; }
+
+        /// <summary>
+        /// Whether the decompiler should try to statically unroll all loops
+        /// </summary>
         public bool TryToEliminateLoops { get; set; }
+
+        /// <summary>
+        /// Admissible iteration count when statically unrolling loops
+        /// </summary>
         public int MaxUnrollDepth { get; set; }
+
+        /// <summary>
+        /// Whether statements in the form (p ? x : y) must be avoided in favor of if-then-else statements
+        /// </summary>
         public bool DisallowConditionals { get; set; }
+
+        /// <summary>
+        /// Whether loops must be avoided (might cause the decompilation to fail if static unrolling is not possible)
+        /// </summary>
         public bool DisallowLoops { get; set; }
 
+        /// <summary>
+        /// Instance on which method is being decompiled
+        /// </summary>
         public object Instance { get; internal set; }
+
+        /// <summary>
+        /// Sample values for arguments
+        /// </summary>
         public object[] ArgumentValues { get; internal set; }
+
+        /// <summary>
+        /// Variabilities of arguments
+        /// </summary>
         public EVariability[] ArgumentVariabilities { get; internal set; }
 
+        /// <summary>
+        /// Associated type library
+        /// </summary>
         public TypeLibrary TypeLib { get; private set; }
 
         protected override string FunctionName
@@ -1550,8 +1882,8 @@ namespace SystemSharp.Analysis
         public StackElement GetCallExpression(MethodInfo method, params StackElement[] args)
         {
             Type returnType;
-            if (!method.IsFunction(out returnType))
-                throw new InvalidOperationException("GetCallExpression() is only allowed on methods returning a value");
+            Contract.Requires<InvalidOperationException>(method.IsFunction(out returnType),
+                "GetCallExpression() is only allowed on methods returning a value");
 
             bool tmp = _curILIValid;
             _curILIValid = false;
@@ -2409,42 +2741,7 @@ namespace SystemSharp.Analysis
         {
             if (DisallowReturnStatements)
             {
-#if false
-                // Try to reach the exit node by breaking the current loop or case statement
-                if (NestLoopsDeeply)
-                {
-                    // Loops may incorporate a trailer, so BreakInfo.BreakNext is not reliable
-
-                    foreach (BreakInfo bi in _breakStack)
-                    {
-                        MSILCodeBlock next = skipNOPs(bi.BreakNext);
-                        if (next.Code.Instructions.First().Code == OpCodes.Ret)
-                        {
-                            if (bi.Stmt is LoopBlock)
-                                Break((LoopBlock)bi.Stmt);
-                            else if (bi.Stmt is CaseStatement)
-                                Break((CaseStatement)bi.Stmt);
-                            else
-                                throw new NotImplementedException();
-                            return;
-                        }
-                    }
-                }
-
-                // If we're at the end of the code anyway, no statement need to be generated
-                if (_curBB.Successors.Length == 1 &&
-                    _curBB.Successors.First() == _code.BasicBlocks.Last())
-                {
-                    return;
-                }
-
-                // If nothing helps, jump to the exit node
-                GotoStatement stmt = Goto();
-                _gotoTargets.Add(new KeyValuePair<GotoStatement, int>(
-                    stmt, _code.BasicBlocks.Last().StartIndex));
-#endif
                 ImplementBranch(_code.BasicBlocks.Last());
-
                 return;
             }
 
@@ -3686,6 +3983,10 @@ namespace SystemSharp.Analysis
         private int _firstTempLocalIndex;
 
         private MethodFacts _facts;
+
+        /// <summary>
+        /// Returns context information on the method being decompiled
+        /// </summary>
         public MethodFacts Facts
         {
             get
@@ -3697,6 +3998,10 @@ namespace SystemSharp.Analysis
         }
 
         private VariabilityAnalyzer _vara;
+
+        /// <summary>
+        /// Returns a variability analyzer for the method being decompiled.
+        /// </summary>
         public VariabilityAnalyzer VARA
         {
             get
@@ -3849,16 +4154,20 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns all methods which are possibly called by the method being decompiled
+        /// </summary>
         public ICollection<MethodCallInfo> CalledMethods
         {
             get
             {
-                Contract.Assume(_calledMethods != null);
-
                 return new ReadOnlyCollection<MethodCallInfo>(_calledMethods.ToList());
             }
         }
 
+        /// <summary>
+        /// Returns all fields which are possibly referenced by the method being decompiled
+        /// </summary>
         public ICollection<FieldRefInfo> ReferencedFields
         {
             get
@@ -3867,6 +4176,11 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Retrieves all symbolic expressions which are possibly assigned to a certain local variable
+        /// </summary>
+        /// <param name="item">local variable</param>
+        /// <returns>all possibly assigned symbolic expressions</returns>
         public Expression[] GetLocalVarAssignedExprs(IStorable item)
         {
             Expression[] result = (from AssignmentInfo ai in _varAsmts
@@ -3875,6 +4189,11 @@ namespace SystemSharp.Analysis
             return result;
         }
 
+        /// <summary>
+        /// Retrieves sample values which might be assigned to a certain local variable
+        /// </summary>
+        /// <param name="item">local variable</param>
+        /// <returns>possibly assigned sample values</returns>
         public object[] GetLocalVarAssignedValues(IStorable item)
         {
             object[] result = (from AssignmentInfo ai in _varAsmts
@@ -3883,6 +4202,12 @@ namespace SystemSharp.Analysis
             return result;
         }
 
+        /// <summary>
+        /// Retrieves all symbolic expressions which can reach a certain local variable at a particular program location where that variable is read
+        /// </summary>
+        /// <param name="v">local variable</param>
+        /// <param name="ilIndex">program location where variable is read</param>
+        /// <returns>all reaching symbolic expressions (possible symbolic contents) of that variable</returns>
         public Expression[] GetLocalVarAssignedExprs(Variable v, int ilIndex)
         {
             IEnumerable<int> writePoints =
@@ -3896,6 +4221,11 @@ namespace SystemSharp.Analysis
             return result.ToArray();
         }
 
+        /// <summary>
+        /// Retrieves the symbolic expression which is assigned to a local variable at a program location where that variable is written.
+        /// </summary>
+        /// <param name="index">instruction index</param>
+        /// <returns>symbolic expression</returns>
         public Expression GetLocalVarAssignedExprAtInstrIndex(int index)
         {
             return (from AssignmentInfo ai in _varAsmts
@@ -3903,6 +4233,9 @@ namespace SystemSharp.Analysis
                     select ai.RHS).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves possible sample values which might be returned by the method being decompiled
+        /// </summary>
         public ReadOnlyCollection<object> ReturnedValues
         {
             get
@@ -3911,6 +4244,9 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns all local variables which are actually referenced by the method being decompiled
+        /// </summary>
         public ReadOnlyCollection<Variable> LocalVariables
         {
             get
@@ -3922,12 +4258,13 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Returns literals for the arguments of the method being decompiled
+        /// </summary>
         public ReadOnlyCollection<IStorable> Arguments
         {
             get
             {
-                Contract.Assume(_arglist != null);
-
                 return new ReadOnlyCollection<IStorable>(_arglist.Select(x => (IStorable)x).ToList());
             }
         }
@@ -3956,13 +4293,25 @@ namespace SystemSharp.Analysis
             return expr;
         }
 
+        /// <summary>
+        /// Index of current instruction being decompiled
+        /// </summary>
         public int CurrentILIndex { get { return _curILI.Index; } }
 
+        /// <summary>
+        /// Takes a snapshot of current local variable assignment state and exports it
+        /// </summary>
+        /// <returns>exported local variable assignment state</returns>
         public LocalVariableState ExportLocalVariableState()
         {
             return new LocalVariableState(_localVarState, _doNotUnrollVars);
         }
 
+        /// <summary>
+        /// Imports a local variable assignment state, i.e. assumes that each local variable actually contains the value which is
+        /// provided by the specified object.
+        /// </summary>
+        /// <param name="lvs">local variable assignment state</param>
         public void ImportLocalVariableState(LocalVariableState lvs)
         {
             _localVarState.Clear();
@@ -4063,23 +4412,65 @@ namespace SystemSharp.Analysis
         }
     }
 
+    /// <summary>
+    /// This interface models the result of a decompilation
+    /// </summary>
     public interface IDecompilationResult
     {
+        /// <summary>
+        /// SysDOM model of decompiled method
+        /// </summary>
         Function Decompiled { get; }
+
+        /// <summary>
+        /// All methods which are possibly called by the decompiled method
+        /// </summary>
         ICollection<MethodCallInfo> CalledMethods { get; }
+
+        /// <summary>
+        /// All fields which are possibly referenced by the decompiled method
+        /// </summary>
         ICollection<FieldRefInfo> ReferencedFields { get; }
-        //IEnumerable<object> GetLocalVarAssignedValues(IStorable var);
-        //IEnumerable<object> ReturnedValues { get; }
     }
 
+    /// <summary>
+    /// This class represents a decompiler for CLI methods
+    /// </summary>
     public class MSILDecompiler : IDecompilationResult
     {
+        /// <summary>
+        /// Code descriptor of method being decompiled
+        /// </summary>
         public CodeDescriptor CodeDesc { get; private set; }
+
+        /// <summary>
+        /// Control-flow graph of method being decompiled
+        /// </summary>
         public MethodCode Code { get; private set; }
+
+        /// <summary>
+        /// Method being decompiled
+        /// </summary>
         public MethodBase Method { get; private set; }
+
+        /// <summary>
+        /// Instance on which method is assumed to execute
+        /// </summary>
         public object Instance { get; private set; }
+
+        /// <summary>
+        /// Sample values for method arguments
+        /// </summary>
         public object[] ArgumentValues { get; private set; }
+
+        /// <summary>
+        /// Variabilities of method arguments
+        /// </summary>
         public EVariability[] ArgumentVariabilities { get; private set; }
+
+        /// <summary>
+        /// Decompiler context
+        /// </summary>
         public MSILDecompilerTemplate Template { get; set; }
 
         public Function Decompiled { get; private set; }
@@ -4094,16 +4485,31 @@ namespace SystemSharp.Analysis
             get { return Template.ReferencedFields; }
         }
 
+        /// <summary>
+        /// Returns sample values which might be assigned to a particual local variable
+        /// </summary>
+        /// <param name="var">local variable</param>
+        /// <returns>sample contents</returns>
         public IEnumerable<object> GetLocalVarAssignedValues(IStorable var)
         {
             return Template.GetLocalVarAssignedValues(var);
         }
 
+        /// <summary>
+        /// Returns sample values which might be returned by decompiled method
+        /// </summary>
         public IEnumerable<object> ReturnedValues
         {
             get { return Template.ReturnedValues; }
         }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="codeDesc">code descriptor of method to decompile</param>
+        /// <param name="instance">instance on which method is assumed to execute</param>
+        /// <param name="argValues">sample values for method arguments</param>
+        /// <param name="argVariabilities">variabilities of method arguments</param>
         public MSILDecompiler(CodeDescriptor codeDesc, object instance,
             object[] argValues, EVariability[] argVariabilities)
         {
@@ -4116,6 +4522,12 @@ namespace SystemSharp.Analysis
             Template = new MSILDecompilerTemplate();
         }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="codeDesc">code descriptor of method to decompile</param>
+        /// <param name="code">control-flow graph of method to decompile</param>
+        /// <param name="instance">instance on which method is assumed to execute</param>
         public MSILDecompiler(CodeDescriptor codeDesc, MethodCode code, object instance)
         {
             CodeDesc = codeDesc;
@@ -4128,6 +4540,14 @@ namespace SystemSharp.Analysis
             Template = new MSILDecompilerTemplate();
         }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="codeDesc">code descriptor of method to decompile</param>
+        /// <param name="code">control-flow graph of method to decompile</param>
+        /// <param name="instance">instance on which method is assumed to execute</param>
+        /// <param name="argValues">sample values for method arguments</param>
+        /// <param name="argVariabilities">variabilities of method arguments</param>
         public MSILDecompiler(CodeDescriptor codeDesc, MethodCode code, object instance,
             object[] argValues, EVariability[] argVariabilities)
         {
@@ -4141,6 +4561,10 @@ namespace SystemSharp.Analysis
             Template = new MSILDecompilerTemplate();
         }
 
+        /// <summary>
+        /// Performs the actual decompilation
+        /// </summary>
+        /// <returns>decompilation result</returns>
         public IDecompilationResult Decompile()
         {
             Template.Instance = Instance;
