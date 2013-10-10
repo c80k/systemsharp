@@ -885,6 +885,9 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation introduces datatype conversions where necessary in order to make it compliant for hardware mapping.
+    /// </summary>
     public class ImplTypeRewriter: IXILSRewriter
     {
         public IList<XILSInstr> Rewrite(IList<XILSInstr> instrs)

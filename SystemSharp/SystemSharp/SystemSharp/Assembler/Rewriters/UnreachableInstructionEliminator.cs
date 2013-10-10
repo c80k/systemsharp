@@ -82,6 +82,9 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation eliminates unreachable instructions
+    /// </summary>
     public class UnreachableInstructionEliminator: IXILSRewriter
     {
         public IList<XILSInstr> Rewrite(IList<XILSInstr> instrs)

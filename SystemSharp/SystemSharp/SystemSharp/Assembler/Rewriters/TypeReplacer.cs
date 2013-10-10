@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2103 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -57,9 +57,19 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation replaces any user-specified datatype with another user-specified dataype.
+    /// </summary>
     public class TypeReplacer : IXILSRewriter
     {
+        /// <summary>
+        /// Datatype to match
+        /// </summary>
         public TypeDescriptor GenuineType { get; set; }
+
+        /// <summary>
+        /// Replacement datatype
+        /// </summary>
         public TypeDescriptor ReplacementType { get; set; }
 
         public override string ToString()
@@ -78,6 +88,9 @@ namespace SystemSharp.Assembler.Rewriters
             return impl.OutInstructions;
         }
 
+        /// <summary>
+        /// Creates a transformation which replaces any double by float
+        /// </summary>
         public static IXILSRewriter ReplaceDoubleByFloat()
         {
             return new TypeReplacer()

@@ -25,9 +25,21 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Assembler.Rewriters
 {
+    /// <summary>
+    /// This class provides a default implementation of a XIL-S code transformation.
+    /// It alleviates the user from many complicated bookkeeping tasks, such as remapping
+    /// dependencies and retargeting branch labels.
+    /// </summary>
     public class XILSRewriter
     {
+        /// <summary>
+        /// Input instruction list
+        /// </summary>
         public IList<XILSInstr> InInstructions { get; private set; }
+
+        /// <summary>
+        /// Output instruction list
+        /// </summary>
         public List<XILSInstr> OutInstructions { get; private set; }
 
         private Dictionary<int, int> _remap;
@@ -36,6 +48,10 @@ namespace SystemSharp.Assembler.Rewriters
         private Stack<TypeDescriptor> _typeStack;
         private List<XILSInstr> _curBB;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="instructions">input instruction list</param>
         public XILSRewriter(IList<XILSInstr> instructions)
         {
             InInstructions = instructions;
@@ -48,21 +64,34 @@ namespace SystemSharp.Assembler.Rewriters
             RegisterDefaultHandlers();
         }
 
+        /// <summary>
+        /// Returns the index which will we assigned to the next output instruction
+        /// </summary>
         protected int NextOutputInstructionIndex
         {
             get { return OutInstructions.Count; }
         }
 
+        /// <summary>
+        /// Returns the index which was assigned to the last output instruction
+        /// </summary>
         protected int LastOutputInstructionIndex
         {
             get { return NextOutputInstructionIndex - 1; }
         }
 
+        /// <summary>
+        /// Returns the datatype stack
+        /// </summary>
         protected Stack<TypeDescriptor> TypeStack
         {
             get { return _typeStack; }
         }
 
+        /// <summary>
+        /// Emits a XIL-S instruction and assigns an index to it.
+        /// </summary>
+        /// <param name="xilsi">instruction to emit</param>
         protected virtual void Emit(XILSInstr xilsi)
         {
             xilsi.Index = NextOutputInstructionIndex;
@@ -92,6 +121,11 @@ namespace SystemSharp.Assembler.Rewriters
             }
         }
 
+        /// <summary>
+        /// Retargets an input instruction branch label to the output side.
+        /// </summary>
+        /// <param name="label">branch label used by input instruction</param>
+        /// <returns>branch label suitable for output instruction</returns>
         protected BranchLabel Retarget(BranchLabel label)
         {
             BranchLabel newLabel = new BranchLabel();
@@ -99,11 +133,21 @@ namespace SystemSharp.Assembler.Rewriters
             return newLabel;
         }
 
+        /// <summary>
+        /// Registers a handler for a specific XIL opcode
+        /// </summary>
+        /// <param name="icode">XIL opcode</param>
+        /// <param name="handler">handler to call for each occurence of that opcode</param>
         protected void SetHandler(string icode, Action<XILSInstr> handler)
         {
             _handlers[icode] = handler;
         }
 
+        /// <summary>
+        /// Remaps input instruction dependencies to the output side
+        /// </summary>
+        /// <param name="preds">input instruction dependencies</param>
+        /// <returns>corresponding output-side dependencies</returns>
         protected InstructionDependency[] RemapPreds(InstructionDependency[] preds)
         {
             var result = new List<InstructionDependency>();
@@ -120,12 +164,20 @@ namespace SystemSharp.Assembler.Rewriters
             return result.ToArray();
         }
 
+        /// <summary>
+        /// The default handler is applied to any non-branching instruction when there is no more specific handler registered.
+        /// </summary>
+        /// <param name="i">instruction to process</param>
         virtual protected void ProcessDefault(XILSInstr i)
         {
             var preds = RemapPreds(i.Preds);
             Emit(i.Command.CreateStk(preds, i.OperandTypes, i.ResultTypes));
         }
 
+        /// <summary>
+        /// The default branch handler is applied to any branching instruction when there is no more specific handler registered.
+        /// </summary>
+        /// <param name="i">instruction to process</param>
         virtual protected void ProcessBranch(XILSInstr i)
         {
             BranchLabel label = (BranchLabel)i.StaticOperand;
@@ -135,6 +187,11 @@ namespace SystemSharp.Assembler.Rewriters
             Emit(xi.CreateStk(preds, i.OperandTypes, i.ResultTypes));
         }
 
+        /// <summary>
+        /// This method is called for any instruction. Its default behavior is to lookup handler inside the handler dictionary
+        /// and redirect the processing to that handler.
+        /// </summary>
+        /// <param name="i">instruction to process</param>
         virtual protected void ProcessInstruction(XILSInstr i)
         {
             Action<XILSInstr> handler = _handlers[i.Name];
@@ -152,10 +209,17 @@ namespace SystemSharp.Assembler.Rewriters
             SetHandler(InstructionCodes.Goto, ProcessBranch);
         }
 
+        /// <summary>
+        /// This method is called before processing all inputs instructions. It does nothing by default.
+        /// </summary>
         protected virtual void PreProcess()
         {
         }
 
+        /// <summary>
+        /// This method is called after processing all inputs instructions. Its default behavior is to
+        /// adjust all output branch labels with their actual targets.
+        /// </summary>
         protected virtual void PostProcess()
         {
             foreach (Tuple<BranchLabel, BranchLabel> pair in _remapLabels)
@@ -164,8 +228,14 @@ namespace SystemSharp.Assembler.Rewriters
             }
         }
 
+        /// <summary>
+        /// Current input instruction being processed
+        /// </summary>
         protected XILSInstr CurInstr { get; private set; }
 
+        /// <summary>
+        /// All output instructions which belong to current basic block
+        /// </summary>
         protected IEnumerable<XILSInstr> CurBB
         {
             get { return _curBB; }

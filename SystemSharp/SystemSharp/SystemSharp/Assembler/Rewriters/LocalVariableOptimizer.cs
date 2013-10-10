@@ -28,13 +28,25 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler
 {
+    /// <summary>
+    /// This XIL-S code transformation tries to eliminate unnecessary local variables. E.g. if a local variable is assigned only once
+    /// and read only once, we can replace it by its right-hand side value.
+    /// </summary>
     public class LocalVariableOptimizer : XILSRewriter
     {
+        /// <summary>
+        /// The dataflow analyzer which serves as analysis back-end.
+        /// </summary>
         public DataflowAnalyzer<XILSInstr> DflowAnalyzer { get; private set; }
 
         private Dictionary<int, Tuple<int, int>> _read2write = new Dictionary<int, Tuple<int, int>>();
         private List<Tuple<int, int>> _resultStack = new List<Tuple<int, int>>();
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="instructions">instruction list</param>
+        /// <param name="dflowAnalyzer">dataflow analyzer which serves as analysis back-end</param>
         public LocalVariableOptimizer(IList<XILSInstr> instructions,
             DataflowAnalyzer<XILSInstr> dflowAnalyzer) :
             base(instructions)

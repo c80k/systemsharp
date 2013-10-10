@@ -230,7 +230,6 @@
     <Compile Include="SystemSharp\Assembler\Rewriters\LocalVariableOptimizer.cs" />
     <Compile Include="SystemSharp\Assembler\Rewriters\MemoryMapper.cs" />
     <Compile Include="SystemSharp\Assembler\Rewriters\ParLimiter.cs" />
-    <Compile Include="SystemSharp\Assembler\Rewriters\SlotReduction.cs" />
     <Compile Include="SystemSharp\Assembler\Rewriters\TypeReducer.cs" />
     <Compile Include="SystemSharp\Assembler\Rewriters\TypeReplacer.cs" />
     <Compile Include="SystemSharp\Assembler\Rewriters\XIL3Rewriter.cs" />

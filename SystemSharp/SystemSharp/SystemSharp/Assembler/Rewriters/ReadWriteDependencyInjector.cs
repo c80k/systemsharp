@@ -152,6 +152,10 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation retroactively infers read-after-write, write-after-write and write-after-read dependencies
+    /// and "injects" them into the code.
+    /// </summary>
     public class ReadWriteDependencyInjector : IXILSRewriter
     {
         public IList<XILSInstr> Rewrite(IList<XILSInstr> instrs)

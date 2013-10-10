@@ -102,6 +102,12 @@ namespace SystemSharp.Assembler
 
     public static class _3ACToStk
     {
+        /// <summary>
+        /// Transforms the XIL-3 representation to XIL-S representation. 
+        /// New local variables will be introduced - one for each output slot.
+        /// </summary>
+        /// <param name="func">function in XIL-3 representation</param>
+        /// <returns>function in XIL-S representation</returns>
         public static XILSFunction ToXILS(this XIL3Function func)
         {
             var xform = new _3ACtoStkImpl(func);
