@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2103 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -80,6 +80,25 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation tries to reduce the amount of branch instructions.
+    /// </summary>
+    /// <remarks>
+    ///  Precisely, it looks for the following pattern:
+    /// <code>
+    /// brtrue L1
+    /// goto L2
+    /// L1: ...
+    /// L2: ...
+    /// </code>
+    /// Obviously, this pattern can be replaced by the following more efficient notation:
+    /// <code>
+    /// brfalse L2
+    /// L1: ...
+    /// L2: ...
+    /// </code>
+    /// Of course, the same applies to the dual pattern when we replace brtrue by brfalse.
+    /// </remarks>
     public class ConditionalBranchOptimizer : IXILSRewriter
     {
         public IList<XILSInstr> Rewrite(IList<XILSInstr> instrs)

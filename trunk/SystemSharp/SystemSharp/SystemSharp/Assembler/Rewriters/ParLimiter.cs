@@ -125,6 +125,10 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This static class provides a factory method for XIL-S transformations which limit the maximum parallelism of
+    /// constant-loading XIL instructions.
+    /// </summary>
     public static class ParLimiter
     {
         private class Impl :
@@ -161,6 +165,16 @@ namespace SystemSharp.Assembler.Rewriters
             }
         }
 
+        /// <summary>
+        /// Creates a XIL-S code transformation which limits the number of simultaneous constant-loading instructions.
+        /// </summary>
+        /// <remarks>
+        /// This kind of transformation is useful for horizontally microcoded architectures where each constant needs to be stored
+        /// in program ROM. The more constant-loading instructions run in parallel, the wider a row inside program ROM. Therefore,
+        /// it makes sense to limit that kind of parallelism.
+        /// </remarks>
+        /// <param name="max">maximum admissible number of simultaneous constant-loading instructions</param>
+        /// <returns>resulting transformation</returns>
         public static IXILSRewriter LimitConstantLoads(int max)
         {
             var pl = new Impl();

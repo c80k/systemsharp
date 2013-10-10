@@ -460,6 +460,14 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation makes fixed-point arithmetic compliant with several word-length restrictions which
+    /// must be obeyed in order to make the code mappable to hardware.
+    /// </summary>
+    /// <remarks>
+    /// The implementation is rather incomplete, a coding mess and sometimes introduces Xilinx-specific requirements.
+    /// It's time for revising concept and implementation.
+    /// </remarks>
     public class FixPointImplementor: IXILSRewriter
     {
         public IList<XILSInstr> Rewrite(IList<XILSInstr> instrs)

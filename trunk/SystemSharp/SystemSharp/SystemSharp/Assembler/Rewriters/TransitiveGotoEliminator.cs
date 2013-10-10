@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -56,6 +56,28 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation tries to reduce the number of branch instructions inside the code by replacing 
+    /// chains of branches with single branch instructions.
+    /// </summary>
+    /// <remarks>
+    /// Consider the following example:
+    /// <code>
+    /// goto L1
+    /// ...
+    /// L1: brtrue L2
+    /// ...
+    /// L2:
+    /// ...
+    /// </code>
+    /// Obviously, we can implement the same behavior with a more efficient code:
+    /// <code>
+    /// brtrue L2
+    /// ...
+    /// L2:
+    /// ...
+    /// </code>
+    /// </remarks>
     public class TransitiveGotoEliminator : IXILSRewriter
     {
         public IList<XILSInstr> Rewrite(IList<XILSInstr> instrs)

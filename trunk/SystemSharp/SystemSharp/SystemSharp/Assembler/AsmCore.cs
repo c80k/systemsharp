@@ -34,18 +34,41 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler
 {
+    /// <summary>
+    /// Models a XIL instruction
+    /// </summary>
     public class XILInstr
     {
+        /// <summary>
+        /// Opcode
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Optional static operand
+        /// </summary>
         public object Operand { get; private set; }
+
+        /// <summary>
+        /// Optional back-reference object which helps tracking code transformations
+        /// </summary>
         public object BackRef { get; set; }
 
+        /// <summary>
+        /// Constructs a new instance with an optional static operand
+        /// </summary>
+        /// <param name="name">opcode</param>
+        /// <param name="operand">optional static operand</param>
         public XILInstr(string name, object operand)
         {
             Name = name;
             Operand = operand;
         }
 
+        /// <summary>
+        /// Constructs a new instance without static operand
+        /// </summary>
+        /// <param name="name">opcode</param>
         public XILInstr(string name)
         {
             Name = name;
@@ -77,16 +100,37 @@ namespace SystemSharp.Assembler
             return hash;
         }
 
+        /// <summary>
+        /// Creates a XIL-3 representation of this instruction
+        /// </summary>
+        /// <param name="preds">instruction dependencies</param>
+        /// <param name="operandSlots">operand slots</param>
+        /// <param name="resultSlots">result slots</param>
+        /// <returns>the XIL-3 representation</returns>
         public XIL3Instr Create3AC(InstructionDependency[] preds, int[] operandSlots, int[] resultSlots)
         {
             return new XIL3Instr(this, preds, operandSlots, resultSlots);
         }
 
+        /// <summary>
+        /// Creates a XIL-S representation of this instruction
+        /// </summary>
+        /// <param name="preds">instruction dependencies</param>
+        /// <param name="operandTypes">operand types</param>
+        /// <param name="resultTypes">result types</param>
+        /// <returns>the XIL-S representation</returns>
         public XILSInstr CreateStk(InstructionDependency[] preds, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes)
         {
             return new XILSInstr(this, preds, operandTypes, resultTypes);
         }
 
+        /// <summary>
+        /// Creates a XIL-S representation of this instruction
+        /// </summary>
+        /// <param name="preds">instruction dependencies</param>
+        /// <param name="numOperands">number of operands</param>
+        /// <param name="types">type vector, the first numOperands describing the operand types, the rest describing the result types</param>
+        /// <returns>the XIL-S representation</returns>
         public XILSInstr CreateStk(InstructionDependency[] preds, int numOperands, params TypeDescriptor[] types)
         {
             Debug.Assert(Name != InstructionCodes.Dig || numOperands == ((int)Operand + 1));
@@ -98,34 +142,81 @@ namespace SystemSharp.Assembler
             return new XILSInstr(this, preds, operandTypes, resultTypes);
         }
 
+        /// <summary>
+        /// Creates a XIL-S representation of this instruction without any dependency
+        /// </summary>
+        /// <param name="numOperands">number of operands</param>
+        /// <param name="types">type vector, the first numOperands describing the operand types, the rest describing the result types</param>
+        /// <returns>the XIL-S representation</returns>
         public XILSInstr CreateStk(int numOperands, params TypeDescriptor[] types)
         {
             return CreateStk(new InstructionDependency[0], numOperands, types);
         }
     }
 
+    /// <summary>
+    /// Abstract base class for control and data dependencies.
+    /// </summary>
+    /// <remarks>
+    /// A dependency indicates that the execution of some instruction somehow depends on the completion of some other
+    /// instruction, thus enforcing a certain execution order and limiting the possible parallelism of instructions.
+    /// </remarks>
     public abstract class InstructionDependency
     {
+        /// <summary>
+        /// The index of the instruction we're depending on
+        /// </summary>
         public int PredIndex { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="predIndex">the index of the instruction we're depending on</param>
         public InstructionDependency(int predIndex)
         {
             PredIndex = predIndex;
         }
 
+        /// <summary>
+        /// Creates a semantically equivalent dependency for a different instruction index
+        /// </summary>
+        /// <param name="newPredIndex">new instruction index</param>
+        /// <returns>a semantically equivalent dependency for given instruction index</returns>
         public abstract InstructionDependency Remap(int newPredIndex);
     }
 
+    /// <summary>
+    /// An order dependency specifies that an instruction must either not start before another instruction has completed
+    /// or may not complete before that other instruction.
+    /// </summary>
     public class OrderDependency : InstructionDependency
     {
+        /// <summary>
+        /// Kind of dependency
+        /// </summary>
         public enum EKind
         {
+            /// <summary>
+            /// The dependent instruction must not begin before other instruction has completed.
+            /// </summary>
             BeginAfter,
+
+            /// <summary>
+            /// The dependent instruction must not complete before other instruction has completed.
+            /// </summary>
             CompleteAfter
         }
 
+        /// <summary>
+        /// The kind of dependency
+        /// </summary>
         public EKind Kind { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="predIndex">index of other instruction we're depending on</param>
+        /// <param name="kind">kind of dependency</param>
         public OrderDependency(int predIndex, EKind kind):
             base(predIndex)
         {
@@ -163,11 +254,28 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// A time dependency indicates that an instruction must begin within a certain time interval after another instruction
+    /// began executing.
+    /// </summary>
     public class TimeDependency : InstructionDependency
     {
+        /// <summary>
+        /// Minimum time to wait until dependent instruction may begin executing.
+        /// </summary>
         public long MinDelay { get; private set; }
+
+        /// <summary>
+        /// Maximum time to wait until dependent instruction must begin executing.
+        /// </summary>
         public long MaxDelay { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="predIndex">index of other instruction we're depending on</param>
+        /// <param name="minDelay">minimum time to wait until dependent instruction may begin executing</param>
+        /// <param name="maxDelay">maximum time to wait until dependent instruction must begin executing.</param>
         public TimeDependency(int predIndex, long minDelay, long maxDelay):
             base(predIndex)
         {
@@ -204,21 +312,71 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// Common interface for both XIL-S and XIL-3 instructions
+    /// </summary>
     public interface IXILxInstr : IInstruction
     {
+        /// <summary>
+        /// Opcode
+        /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Underlying XIL instruction
+        /// </summary>
         XILInstr Command { get; }
+
+        /// <summary>
+        /// Optional static operand
+        /// </summary>
         object StaticOperand { get; }
+
+        /// <summary>
+        /// Instruction dependencies
+        /// </summary>
         InstructionDependency[] Preds { get; }
     }
 
+    /// <summary>
+    /// A XIL-3 instruction
+    /// </summary>
+    /// <remarks>
+    /// XIL-3 instruction presume a three-address-code execution model, whereby the number three must be not taken too literally.
+    /// XIL-3 instructions are allowed to consume more or less than 2 operands, and they are also allowed to produce more or less than
+    /// 1 result. But they all operate on a set of theoretically unlimited registers, which are identified by numbers. These are called
+    /// slots.
+    /// </remarks>
     public class XIL3Instr: IXILxInstr
     {
+        /// <summary>
+        /// The underlying XIL instruction
+        /// </summary>
         public XILInstr Command { get; private set; }
+
+        /// <summary>
+        /// Instruction index
+        /// </summary>
         public int Index { get; set; }
+
+        /// <summary>
+        /// Instruction dependencies
+        /// </summary>
         public InstructionDependency[] Preds { get; private set; }
+
+        /// <summary>
+        /// Slots where to obtain the operands from
+        /// </summary>
         public int[] OperandSlots { get; private set; }
+
+        /// <summary>
+        /// Slots where to put the results
+        /// </summary>
         public int[] ResultSlots { get; private set; }
+
+        /// <summary>
+        /// Optional back-reference to original CIL code for debugging purpose
+        /// </summary>
         public ILIndexRef CILRef { get; internal set; }
 
         public object StaticOperand
@@ -231,6 +389,13 @@ namespace SystemSharp.Assembler
             get { return Command.Name; }
         }
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="command">underlying XIL instruction</param>
+        /// <param name="preds">instruction dependencies</param>
+        /// <param name="operandSlots">operand slots</param>
+        /// <param name="resultSlots">result slots</param>
         public XIL3Instr(XILInstr command,
             InstructionDependency[] preds, int[] operandSlots, int[] resultSlots)
         {
@@ -266,13 +431,46 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// A XIL-S instruction
+    /// </summary>
+    /// <remarks>
+    /// XIL-S instructions presume a stack machine execution model - very much like Java bytecode and CIL. A XIL-S instruction
+    /// pops 0 or more operands from stack stack and finally pushes 0 or more results onto the stack. Stack elements are not restricted
+    /// to have any particular size (as opposed to Java VM, where the stack is strictly 32 bit words). In fact, a stack element can represent
+    /// any data item, from a simple bool to a 10^6 bit wide fixed point number. Therefore it is of utmost importance that any XIL-S
+    /// instruction clearly indicates the types of operands it expects on the stack and the types of operands it will put on the stack.
+    /// </remarks>
     public class XILSInstr: IXILxInstr
     {
+        /// <summary>
+        /// Underlying XIL instruction
+        /// </summary>
         public XILInstr Command { get; private set; }
+
+        /// <summary>
+        /// Instruction index
+        /// </summary>
         public int Index { get; set; }
+
+        /// <summary>
+        /// Instruction dependencies
+        /// </summary>
         public InstructionDependency[] Preds { get; private set; }
+
+        /// <summary>
+        /// Types of operands expected on the stack, from bottom (index 0) to top
+        /// </summary>
         public TypeDescriptor[] OperandTypes { get; private set; }
+
+        /// <summary>
+        /// Result types to be pushed on the stack, from bottom (index 0) to top
+        /// </summary>
         public TypeDescriptor[] ResultTypes { get; private set; }
+
+        /// <summary>
+        /// Optional back-reference to CIL instruction for debugging purpose
+        /// </summary>
         public ILIndexRef CILRef { get; internal set; }
 
         public object StaticOperand
@@ -285,6 +483,13 @@ namespace SystemSharp.Assembler
             get { return Command.Name; }
         }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="command">XIL instruction</param>
+        /// <param name="preds">instruction dependencies</param>
+        /// <param name="operandTypes">operand types expected on the stack</param>
+        /// <param name="resultTypes">result types to appear on the stack</param>
         public XILSInstr(XILInstr command, InstructionDependency[] preds,
             TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes)
         {
@@ -354,13 +559,31 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// A comparer which defines two instructions to be equal iff their opcodes, static operands, operand and result types are equal
+        /// </summary>
         public static readonly IEqualityComparer<XILSInstr> ContentComparer = new CompareByContent();
+
+        /// <summary>
+        /// A comparer which defines two instructions to be equal iff they have the same instruction index
+        /// </summary>
         public static readonly IEqualityComparer<XILSInstr> IndexComparer = new CompareByIndex();
     }
 
+    /// <summary>
+    /// A branch label
+    /// </summary>
+    /// <remarks>
+    /// Branch labels are used to identify the targets of XIL, XIL-S and XIL-3 branch instructions. A branch label is assigned
+    /// as static operand.
+    /// </remarks>
     public class BranchLabel
     {
         private int _instructionIndex;
+
+        /// <summary>
+        /// Index of target instruction, -1 if undefined
+        /// </summary>
         public int InstructionIndex 
         {
             get { return _instructionIndex; }
@@ -371,8 +594,14 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// corresponding c-step after scheduling, -1 if undefined
+        /// </summary>
         public int CStep { get; internal set; }
 
+        /// <summary>
+        /// Constructs a new instance with undefined target instruction
+        /// </summary>
         public BranchLabel()
         {
             _instructionIndex = -1;
@@ -398,7 +627,9 @@ namespace SystemSharp.Assembler
                 return InstructionIndex == other.InstructionIndex;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -407,8 +638,19 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// A XIL-3 function
+    /// </summary>
     public class XIL3Function : ICallable
     {
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="name">function name</param>
+        /// <param name="args">function arguments</param>
+        /// <param name="locals">local variables</param>
+        /// <param name="instrs">instruction sequence</param>
+        /// <param name="slotTypes">datatypes of slots</param>
         public XIL3Function(string name, ArgumentDescriptor[] args, Variable[] locals, 
             XIL3Instr[] instrs, TypeDescriptor[] slotTypes)
         {
@@ -424,11 +666,29 @@ namespace SystemSharp.Assembler
             SlotTypes = slotTypes;
         }
 
+        /// <summary>
+        /// Function arguments
+        /// </summary>
         public ArgumentDescriptor[] Arguments { get; private set; }
+
+        /// <summary>
+        /// Local variables
+        /// </summary>
         public Variable[] Locals { get; private set; }
+
+        /// <summary>
+        /// Instruction sequence
+        /// </summary>
         public XIL3Instr[] Instructions { get; private set; }
+
+        /// <summary>
+        /// Datatypes of slots
+        /// </summary>
         public TypeDescriptor[] SlotTypes { get; private set; }
 
+        /// <summary>
+        /// Number of slots
+        /// </summary>
         public int NumSlots
         {
             get { return SlotTypes.Length; }
@@ -532,11 +792,20 @@ namespace SystemSharp.Assembler
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Returns the datatypes of a specified subset of slots
+        /// </summary>
+        /// <param name="slots">desired slot subset</param>
+        /// <returns>the datatypes for the queried subset</returns>
         public TypeDescriptor[] GetSlotTypes(int[] slots)
         {
             return slots.Select(i => SlotTypes[i]).ToArray();
         }
 
+        /// <summary>
+        /// Segments the instruction sequence into basic blocks and returns their boundaries.
+        /// </summary>
+        /// <returns>Instruction indices of basic block boundaries</returns>
         public int[] GetBasicBlockBoundaries()
         {
             HashSet<int> bbs = new HashSet<int>();
@@ -563,6 +832,9 @@ namespace SystemSharp.Assembler
             return bbs.OrderBy(i => i).ToArray();
         }
 
+        /// <summary>
+        /// Checks the data structure for consistency.
+        /// </summary>
         public void SanityCheck()
         {
             foreach (var xil3i in Instructions)
@@ -583,8 +855,18 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// A XIL-S function
+    /// </summary>
     public class XILSFunction : ICallable
     {
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="name">function name</param>
+        /// <param name="args">function arguments</param>
+        /// <param name="locals">local variables</param>
+        /// <param name="instrs">instruction sequence</param>
         public XILSFunction(string name, ArgumentDescriptor[] args, Variable[] locals, XILSInstr[] instrs)
         {
             Name = name;
@@ -593,8 +875,19 @@ namespace SystemSharp.Assembler
             Instructions = instrs;
         }
 
+        /// <summary>
+        /// Function arguments
+        /// </summary>
         public ArgumentDescriptor[] Arguments { get; private set; }
+
+        /// <summary>
+        /// Local variables
+        /// </summary>
         public Variable[] Locals { get; private set; }
+
+        /// <summary>
+        /// Instruction sequence
+        /// </summary>
         public XILSInstr[] Instructions { get; private set; }
 
         #region ICallable Member
@@ -626,6 +919,9 @@ namespace SystemSharp.Assembler
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Checks the data structure for consistency.
+        /// </summary>
         public void SanityCheck()
         {
             foreach (var xilsi in Instructions)
@@ -646,38 +942,23 @@ namespace SystemSharp.Assembler
         }
     }
 
-    public class XILAssembly
-    {
-        public Component Top { get; set; }
-        public MemoryMapper MemoryLayout { get; set; }
-        public TypeDescriptor[] OperandTypes { get; set; }
-        public XIL3Instr[] Instructions { get; set; }
-
-        public TypeDescriptor[] GetOperandTypes(XIL3Instr i)
-        {
-            Contract.Requires(i.OperandSlots != null);
-
-            return (from int slot in i.OperandSlots
-                    select OperandTypes[slot]).ToArray();
-        }
-
-        public TypeDescriptor[] GetResultTypes(XIL3Instr i)
-        {
-            Contract.Requires(i.OperandSlots != null);
-
-            return (from int slot in i.ResultSlots
-                    select OperandTypes[slot]).ToArray();
-        }
-    }
-
+    /// <summary>
+    /// Models a memory access
+    /// </summary>
     public class MemAccessInfo
     {
+        /// <summary>
+        /// Kind of memory access
+        /// </summary>
         public enum EMemAccessKind
         {
             Read,
             Write
         }
 
+        /// <summary>
+        /// Kind of data dependency
+        /// </summary>
         public enum EDependencyKind
         {
             NoDependency,
@@ -686,10 +967,27 @@ namespace SystemSharp.Assembler
             WriteAfterRead
         }
 
+        /// <summary>
+        /// Kind of memory access
+        /// </summary>
         public EMemAccessKind Kind { get; private set; }
+
+        /// <summary>
+        /// Lower boundary for memory address
+        /// </summary>
         public ulong MinAddress { get; private set; }
+
+        /// <summary>
+        /// Upper boundary for memory address
+        /// </summary>
         public ulong MaxAddress { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="kind">kind of access</param>
+        /// <param name="minAddress">lower boundary for memory address</param>
+        /// <param name="maxAddress">upper boundary for memory address</param>
         public MemAccessInfo(EMemAccessKind kind, ulong minAddress, ulong maxAddress)
         {
             Kind = kind;
@@ -697,11 +995,22 @@ namespace SystemSharp.Assembler
             MaxAddress = MaxAddress;
         }
 
+        /// <summary>
+        /// Checks whether this access might refer to the same address as another access
+        /// </summary>
+        /// <param name="mac">another memory access</param>
+        /// <returns>whether both accesses might overlap (i.e. refer to the same memory location)</returns>
         public bool Overlaps(MemAccessInfo mac)
         {
             return MaxAddress >= mac.MinAddress && mac.MaxAddress >= MinAddress;
         }
 
+        /// <summary>
+        /// Analyzes the possible data dependency which might arise from two memory accesses.
+        /// </summary>
+        /// <param name="first">some memory access</param>
+        /// <param name="second">some other memory access</param>
+        /// <returns>kind of data dependency</returns>
         public static EDependencyKind AanalyzeDependency(MemAccessInfo first, MemAccessInfo second)
         {
             bool overlap = first.Overlaps(second);
@@ -718,10 +1027,20 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// Models a local variable as instruction resource
+    /// </summary>
     class VariableResource : IInstructionResource
     {
+        /// <summary>
+        /// The local variable
+        /// </summary>
         public Variable Var { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="v">local variable</param>
         public VariableResource(Variable v)
         {
             Var = v;
@@ -735,12 +1054,23 @@ namespace SystemSharp.Assembler
                 return Var.Equals(vr.Var);
             }
             else
+            {
                 return false;
+            }
         }
     }
 
+    /// <summary>
+    /// Implements the instruction information service for XIL instructions
+    /// </summary>
     public class XILInstructionInfo: IInstructionInfo<XILInstr>
     {
+        /// <summary>
+        /// Checks whether a given XIL instruction is a memory access
+        /// </summary>
+        /// <param name="i">XIL instruction</param>
+        /// <param name="mac">memory access information (null if instruction is not a memory access)</param>
+        /// <returns>whether given XIL instruction is a memory access</returns>
         public bool IsMemAccess(XILInstr i, out MemAccessInfo mac)
         {
             switch (i.Name)
@@ -865,6 +1195,9 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// Implements the instruction information service for XIL-S instructions
+    /// </summary>
     public class XILSInstructionInfo : IInstructionInfo<XILSInstr>
     {
         private XILInstructionInfo _xilii = new XILInstructionInfo();
@@ -889,6 +1222,11 @@ namespace SystemSharp.Assembler
             return _xilii.UsesResource(i.Command, out resource);
         }
 
+        /// <summary>
+        /// Segments a sequence of XIL-S instructions into basic blocks and returns their boundaries.
+        /// </summary>
+        /// <param name="instrs">sequence of XIL-S instructions</param>
+        /// <returns>instruction indices of basic block boundaries</returns>
         public static IEnumerable<int> GetBasicBlockBoundaries(IEnumerable<XILSInstr> instrs)
         {
             HashSet<int> bbs = new HashSet<int>();
@@ -914,6 +1252,11 @@ namespace SystemSharp.Assembler
             return bbs.OrderBy(i => i);
         }
 
+        /// <summary>
+        /// Segments a sequence of XIL-S instructions into basic blocks and returns an enumeration of basic block instruction lists
+        /// </summary>
+        /// <param name="instrs">sequence of XIL-S instruction</param>
+        /// <returns>an enumeration of enumerations with each sequence enumerating the instructions which belong to a basic block</returns>
         public static IEnumerable<IEnumerable<XILSInstr>> GetBasicBlocks(IEnumerable<XILSInstr> instrs)
         {
             var bbs = GetBasicBlockBoundaries(instrs);
@@ -924,6 +1267,9 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// Implements the instruction information service for XIL-3 instructions
+    /// </summary>
     public class XIL3InstructionInfo : IInstructionInfo<XIL3Instr>
     {
         private XILInstructionInfo _xilii = new XILInstructionInfo();

@@ -678,18 +678,35 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation maps array operations to memory operations.
+    /// Optionally, it can also map constants and variables to memory.
+    /// </summary>
     public class XILMemoryMapper : 
         IXILSRewriter,
         IReportingXILRewriter
     {
+        /// <summary>
+        /// The memory mapper implements the serialization and data layout policy.
+        /// </summary>
         public MemoryMapper Mapper { get; set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
         public XILMemoryMapper()
         {
             Mapper = new MemoryMapper();
         }
 
+        /// <summary>
+        /// Whether to map constants to memory
+        /// </summary>
         public bool MapConstantsToNemory { get; set; }
+
+        /// <summary>
+        /// Whether to map variables to memory
+        /// </summary>
         public bool MapVariablesToMemory { get; set; }
 
         public override string ToString()

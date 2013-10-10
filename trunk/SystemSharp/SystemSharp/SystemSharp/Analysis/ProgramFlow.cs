@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -30,6 +30,9 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// This class provides static methods which affect the degree of parallelization after decompilation and reassembly
+    /// </summary>
     public static class ProgramFlow
     {
         public enum EBarrierType
@@ -89,23 +92,39 @@ namespace SystemSharp.Analysis
             }
         }
 
+        /// <summary>
+        /// Introduces a barrier at the program location where this method is called. Parallelization across barriers is inhibited. Thus, a barrier
+        /// enforces that any operation preceeding the barrier must complete before any operation following the barrier starts.
+        /// </summary>
         [CompileBarrier(EBarrierType.Global)]
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.Barrier, EBarrierType.Global)]
         public static void Barrier()
         {
         }
 
+        /// <summary>
+        /// Introduces an I/O barrier at the program location where this method is called. It enforces that I/O operations, i.e. reading/writing
+        /// ports, occur exactly in the ordering they are specified. Any I/O operation preceeding the barrier must complete before any I/O operation
+        /// following the barrier starts. However, the compiler may arbitrarily move any other operations, such as arithmetic/logic computations,
+        /// across the barrier, given that the data dependencies permit it.
+        /// </summary>
         [CompileBarrier(EBarrierType.PortIO)]
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.Barrier, EBarrierType.PortIO)]
         public static void IOBarrier()
         {
         }
 
+        /// <summary>
+        /// Placed inside a loop body, this method instructs the decompiler to statically unroll the surrounding loop.
+        /// </summary>
         [UnrollControl(true)]
         public static void Unroll()
         {
         }
 
+        /// <summary>
+        /// Placed inside a loop body, this method instructs the decompiler not to unroll the surrounding loop.
+        /// </summary>
         [UnrollControl(false)]
         public static void DoNotUnroll()
         { 

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -33,11 +33,26 @@ using System.Diagnostics.Contracts;
 
 namespace SystemSharp.Analysis
 {
+    /// <summary>
+    /// Describes context information on types used during runtime
+    /// </summary>
     public class TypeFacts
     {
+        /// <summary>
+        /// Associated universe
+        /// </summary>
         public FactUniverse Universe { get; private set; }
+
+        /// <summary>
+        /// Described type
+        /// </summary>
         public Type TheType { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="universe">associated universe</param>
+        /// <param name="type">described type</param>
         internal TypeFacts(FactUniverse universe, Type type)
         {
             Universe = universe;
@@ -45,6 +60,10 @@ namespace SystemSharp.Analysis
         }
 
         private bool _isMutable;
+
+        /// <summary>
+        /// Whether the type has fields which are modified during runtime
+        /// </summary>
         public bool IsMutable 
         {
             get { return _isMutable; }

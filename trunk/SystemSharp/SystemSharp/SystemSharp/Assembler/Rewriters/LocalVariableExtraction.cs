@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,8 +25,20 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.Rewriters
 {
+    /// <summary>
+    /// This static class provides helper methods for re-indexing all local variables which are referenced in XIL code
+    /// </summary>
     public static class LocalVariableExtraction
     {
+        /// <summary>
+        /// Re-indexes all local variables which are referenced by a sequence of XIL instructions
+        /// </summary>
+        /// <remarks>
+        /// Re-indexing means that the method assigns a new index to each local variable, starting from 0.
+        /// This ensures that all indices form a contiguous sequence.
+        /// </remarks>
+        /// <param name="instrs">XIL instruction sequence</param>
+        /// <returns>all referenced local variables</returns>
         public static IEnumerable<Variable> RenumerateLocalVariables(this IEnumerable<XILInstr> instrs)
         {
             var dic = new Dictionary<Variable, int>();
@@ -45,11 +57,29 @@ namespace SystemSharp.Assembler.Rewriters
             return dic.Keys;
         }
 
+        /// <summary>
+        /// Re-indexes all local variables which are referenced by a sequence of XIL-S instructions
+        /// </summary>
+        /// <remarks>
+        /// Re-indexing means that the method assigns a new index to each local variable, starting from 0.
+        /// This ensures that all indices form a contiguous sequence.
+        /// </remarks>
+        /// <param name="instrs">XIL-S instruction sequence</param>
+        /// <returns>all referenced local variables</returns>
         public static IEnumerable<Variable> RenumerateLocalVariables(this IEnumerable<XILSInstr> instrs)
         {
             return instrs.Select(_ => _.Command).RenumerateLocalVariables();
         }
 
+        /// <summary>
+        /// Re-indexes all local variables which are referenced by a sequence of XIL-3 instructions
+        /// </summary>
+        /// <remarks>
+        /// Re-indexing means that the method assigns a new index to each local variable, starting from 0.
+        /// This ensures that all indices form a contiguous sequence.
+        /// </remarks>
+        /// <param name="instrs">XIL-3 instruction sequence</param>
+        /// <returns>all referenced local variables</returns>
         public static IEnumerable<Variable> RenumerateLocalVariables(this IEnumerable<XIL3Instr> instrs)
         {
             return instrs.Select(_ => _.Command).RenumerateLocalVariables();

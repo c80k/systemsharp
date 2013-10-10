@@ -28,6 +28,15 @@ using SystemSharp.Analysis.M2M;
 
 namespace SystemSharp.Assembler.Rewriters
 {
+    /// <summary>
+    /// This XIL-3 code transformation identifies and eliminates common subexpressions.
+    /// </summary>
+    /// <remarks>
+    /// In fact, the XIL-3 representation makes it quite straightforward to implement common subexpression elimination.
+    /// The algorithm resembles pretty much the procedure described in the following paper:
+    /// John Cocke. "Global Common Subexpression Elimination." 
+    /// Proceedings of a Symposium on Compiler Construction, ACM SIGPLAN Notices 5(7), July 1970, pages 850-856.
+    /// </remarks>
     public class CommonSubExpressionEliminator: XIL3Rewriter
     {
         private class XIL3Comparer : IEqualityComparer<XIL3Instr>
@@ -103,7 +112,10 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
-    [AttributeUsage(AttributeTargets.Method, Inherited=false, AllowMultiple=false)]
+    /// <summary>
+    /// This attribute instructs the XIL compiler to perform common subexpression elimination on the transformed code.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited=false, AllowMultiple=false)]
     public class EliminateCommonSubexpressions: 
         Attribute,
         IXIL3Rewriter

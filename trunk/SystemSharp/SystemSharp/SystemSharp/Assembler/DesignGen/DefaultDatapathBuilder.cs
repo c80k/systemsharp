@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -28,6 +28,10 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This class provides a default implementation of the IDatapathBuilder interface. By the way, it is questionable whether
+    /// there will ever be a different implementation required.
+    /// </summary>
     public class DefaultDatapathBuilder: IDatapathBuilder
     {
         private class FUBinderProxy : IAutoBinder

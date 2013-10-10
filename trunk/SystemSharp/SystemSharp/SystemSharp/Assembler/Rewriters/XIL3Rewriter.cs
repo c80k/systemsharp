@@ -27,9 +27,21 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Assembler.Rewriters
 {
+    /// <summary>
+    /// This class provides a default implementation of a XIL-3 code transformation.
+    /// It alleviates the user from many complicated bookkeeping tasks, such as remapping
+    /// operand slots and retargeting branch labels.
+    /// </summary>
     public class XIL3Rewriter : IXIL3Rewriter
     {
+        /// <summary>
+        /// Input instruction list
+        /// </summary>
         public IList<XIL3Instr> InInstructions { get; private set; }
+
+        /// <summary>
+        /// Output instruction list
+        /// </summary>
         public List<XIL3Instr> OutInstructions { get; private set; }
 
         private Dictionary<int, int> _remap;
@@ -40,6 +52,9 @@ namespace SystemSharp.Assembler.Rewriters
         private IList<TypeDescriptor> _orgSlotTypes;
         private List<TypeDescriptor> _slotTypes;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
         public XIL3Rewriter()
         {
             OutInstructions = new List<XIL3Instr>();
@@ -51,28 +66,47 @@ namespace SystemSharp.Assembler.Rewriters
             RegisterDefaultHandlers();
         }
 
+        /// <summary>
+        /// Returns all slot datatypes associated with the input instructions
+        /// </summary>
         public IList<TypeDescriptor> InSlotTypes
         {
             get { return _orgSlotTypes; }
         }
 
+        /// <summary>
+        /// Returns all slot datatypes associated with the output instructions
+        /// </summary>
         public IList<TypeDescriptor> OutSlotTypes
         {
             get { return _slotTypes; }
         }
 
+        /// <summary>
+        /// Returns the index which will be assigned to the next emitted instruction
+        /// </summary>
         protected int NextOutputInstructionIndex
         {
             get { return OutInstructions.Count; }
         }
 
+        /// <summary>
+        /// Returns the index of the last emitted instruction
+        /// </summary>
         protected int LastOutputInstructionIndex
         {
             get { return NextOutputInstructionIndex - 1; }
         }
 
+        /// <summary>
+        /// Returns current input instruction
+        /// </summary>
         protected XIL3Instr CurInstr { get; private set; }
 
+        /// <summary>
+        /// Emits an instruction and assigns an index to it
+        /// </summary>
+        /// <param name="i">instruction to emit</param>
         protected void Emit(XIL3Instr i)
         {
             i.Index = NextOutputInstructionIndex;
@@ -80,22 +114,42 @@ namespace SystemSharp.Assembler.Rewriters
             OutInstructions.Add(i);
         }
 
+        /// <summary>
+        /// Allocates a new instruction output slot
+        /// </summary>
+        /// <param name="type">datatype of slot</param>
+        /// <returns>index of newly allocated output slot</returns>
         protected virtual int AllocSlot(TypeDescriptor type)
         {
             _slotTypes.Add(type);
             return _curSlot++;
         }
 
+        /// <summary>
+        /// Announces that a slot of the input instruction list and a slot of the output instruction list belong together.
+        /// </summary>
+        /// <param name="oldSlot">slot of the input instruction list</param>
+        /// <param name="newSlot">slot of the output instruction list</param>
         protected void RemapSlot(int oldSlot, int newSlot)
         {
             _slotRemap[oldSlot] = newSlot;
         }
 
+        /// <summary>
+        /// For a given slot of the input instruction list, returns the corresponding slot of the output instruction list.
+        /// </summary>
+        /// <param name="oldSlot">slot of the input instruction list</param>
+        /// <returns>corresponding slot of the output instruction list</returns>
         protected int GetMappedSlot(int oldSlot)
         {
             return _slotRemap[oldSlot];
         }
 
+        /// <summary>
+        /// Retargets a branch label used in the input instruction list to the new location inside the output instruction list.
+        /// </summary>
+        /// <param name="label">branch label of input instruction list</param>
+        /// <returns>corresponding branch label of output instruction list</returns>
         protected BranchLabel Retarget(BranchLabel label)
         {
             BranchLabel newLabel = new BranchLabel();
@@ -103,11 +157,21 @@ namespace SystemSharp.Assembler.Rewriters
             return newLabel;
         }
 
+        /// <summary>
+        /// Registers a handler function for a specific XIL opcode
+        /// </summary>
+        /// <param name="icode">XIL opcode</param>
+        /// <param name="handler">handler function to call for each occurence of specified opcode</param>
         protected void SetHandler(string icode, Action<XIL3Instr> handler)
         {
             _handlers[icode] = handler;
         }
 
+        /// <summary>
+        /// Remaps the data dependencies from input instructions to output instructions.
+        /// </summary>
+        /// <param name="preds">dependencies of input instruction</param>
+        /// <returns>corresponding dependencies for output instruction</returns>
         protected InstructionDependency[] RemapPreds(InstructionDependency[] preds)
         {
             var result = new List<InstructionDependency>();
@@ -124,6 +188,12 @@ namespace SystemSharp.Assembler.Rewriters
             return result.ToArray();
         }
 
+        /// <summary>
+        /// Given the result slots of an input instruction, allocates new slots on the output side and
+        /// remembers the mapping between input-side and output-side slots.
+        /// </summary>
+        /// <param name="slots">result slots of input instruction</param>
+        /// <returns>newly allocated result slots for output instruction</returns>
         protected int[] RemapResultSlots(int[] slots)
         {
             int[] rslots = new int[slots.Length];
@@ -136,6 +206,11 @@ namespace SystemSharp.Assembler.Rewriters
             return rslots;
         }
 
+        /// <summary>
+        /// Maps the operand slots of an input instruction to the corresponding operand slots for the output side.
+        /// </summary>
+        /// <param name="slots">operand slots of input instruction</param>
+        /// <returns>corresponding operand slots at output side</returns>
         protected int[] RemapOperandSlots(int[] slots)
         {
             int[] oslots = new int[slots.Length];
@@ -146,6 +221,10 @@ namespace SystemSharp.Assembler.Rewriters
             return oslots;
         }
 
+        /// <summary>
+        /// The default handler is applied to any non-branching instruction when there is no more specific handler registered.
+        /// </summary>
+        /// <param name="i">instruction to process</param>
         virtual protected void ProcessDefault(XIL3Instr i)
         {
             int[] rslots = RemapResultSlots(i.ResultSlots);
@@ -154,6 +233,10 @@ namespace SystemSharp.Assembler.Rewriters
             Emit(i.Command.Create3AC(preds, oslots, rslots));
         }
 
+        /// <summary>
+        /// The default branch handler is applied to any branching instruction when there is no more specific handler registered.
+        /// </summary>
+        /// <param name="i">instruction to process</param>
         virtual protected void ProcessBranch(XIL3Instr i)
         {
             BranchLabel label = (BranchLabel)i.StaticOperand;
@@ -165,6 +248,11 @@ namespace SystemSharp.Assembler.Rewriters
             Emit(xi.Create3AC(preds, oslots, rslots));
         }
 
+        /// <summary>
+        /// This method is called for any instruction. Its default behavior is to lookup handler inside the handler dictionary
+        /// and redirect the processing to that handler.
+        /// </summary>
+        /// <param name="i">instruction to process</param>
         virtual protected void ProcessInstruction(XIL3Instr i)
         {
             Action<XIL3Instr> handler = _handlers[i.Name];
@@ -182,6 +270,10 @@ namespace SystemSharp.Assembler.Rewriters
             SetHandler(InstructionCodes.Goto, ProcessBranch);
         }
 
+        /// <summary>
+        /// This method is called after processing all inputs instructions. Its default behavior is to
+        /// adjust all output branch labels with their actual targets.
+        /// </summary>
         protected virtual void PostProcess()
         {
             foreach (Tuple<BranchLabel, BranchLabel> pair in _remapLabels)
@@ -190,6 +282,9 @@ namespace SystemSharp.Assembler.Rewriters
             }
         }
 
+        /// <summary>
+        /// This method implements the complete transformation.
+        /// </summary>
         protected virtual void Rewrite()
         {
             _remap[-1] = -1;

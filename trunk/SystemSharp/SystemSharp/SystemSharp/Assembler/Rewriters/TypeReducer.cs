@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -29,7 +29,7 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.Rewriters
 {
-    public class TypeReducerS : XILSRewriter
+    class TypeReducerS : XILSRewriter
     {
         private static TypeDescriptor[] ReduceTypes(TypeDescriptor[] types)
         {
@@ -70,6 +70,9 @@ namespace SystemSharp.Assembler.Rewriters
         }
     }
 
+    /// <summary>
+    /// This XIL-S code transformation converts each datatype to a hardware-compliant datatype.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public class ReduceTypes :
         Attribute,
