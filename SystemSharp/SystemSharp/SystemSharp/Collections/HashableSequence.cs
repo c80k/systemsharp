@@ -25,10 +25,19 @@ using System.Threading.Tasks;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// A wrapper around IEnumerable&lt;T&gt; which implements GetHashCode() and Equals() in a way that two instances are considered
+    /// equal whenever x.SequenceEqual(y) holds for their underlying sequences.
+    /// </summary>
+    /// <typeparam name="T">element type inside wrapped sequence</typeparam>
     public class HashableSequence<T>
     {
         private IEnumerable<T> _items;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="items">sequence to wrap</param>
         public HashableSequence(IEnumerable<T> items)
         {
             _items = items;

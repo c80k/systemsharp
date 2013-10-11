@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,10 +24,20 @@ using System.Text;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// Syntactic sugar which emulates a dynamic array, i.e. a data structure where we can set an element at an arbitrary position.
+    /// They structure automatically grows when an index beyond its current size is accessed.
+    /// </summary>
+    /// <typeparam name="T">element type</typeparam>
     public class DynamicArray<T>: IList<T>
     {
         private List<T> _items = new List<T>();
 
+        /// <summary>
+        /// Gets or sets element at given index
+        /// </summary>
+        /// <param name="index">index (&gt;= 0)</param>
+        /// <returns>element at specified index</returns>
         public T this[int index]
         {
             get
@@ -104,11 +114,17 @@ namespace SystemSharp.Collections
             get { return _items.Count; }
         }
 
+        /// <summary>
+        /// Returns false
+        /// </summary>
         public bool IsReadOnly
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Throws an exception, removing elements is not allowed!
+        /// </summary>
         public bool Remove(T item)
         {
             throw new InvalidOperationException();

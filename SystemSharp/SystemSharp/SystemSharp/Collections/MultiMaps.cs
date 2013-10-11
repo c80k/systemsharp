@@ -25,8 +25,19 @@ using System.Text;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// This static class provides extension methods which turn dictionaries into multi-maps, i.e. mapping keys to multiple values.
+    /// </summary>
     public static class MultiMaps
     {
+        /// <summary>
+        /// Queries the multi-map for a given key and creates an new empty list if key doesn't exist.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value list</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <returns>value list associated with key</returns>
         public static List<TValue> Get<TKey, TValue>(this IDictionary<TKey, List<TValue>> map, TKey key)
         {
             List<TValue> list;
@@ -38,12 +49,28 @@ namespace SystemSharp.Collections
             return list;
         }
 
+        /// <summary>
+        /// Adds a single value to the multi-map.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value list</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <param name="value">value to add</param>
         public static void Add<TKey, TValue>(this IDictionary<TKey, List<TValue>> map, TKey key, TValue value)
         {
             List<TValue> list = Get(map, key);
             list.Add(value);
         }
 
+        /// <summary>
+        /// Adds a single value to the multi-map, but only if that value is not yet contained in the value list.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value list</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <param name="value">value to add</param>
         public static void AddIfNew<TKey, TValue>(this IDictionary<TKey, List<TValue>> map, TKey key, TValue value)
         {
             List<TValue> list = Get(map, key);
@@ -51,6 +78,14 @@ namespace SystemSharp.Collections
                 list.Add(value);
         }
 
+        /// <summary>
+        /// Queries the multi-map for a given key and creates an new empty set if key doesn't exist.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <returns>value set associated with key</returns>
         public static ISet<TValue> Get<TKey, TValue>(this IDictionary<TKey, ISet<TValue>> map, TKey key)
         {
             ISet<TValue> set;
@@ -62,12 +97,29 @@ namespace SystemSharp.Collections
             return set;
         }
 
+        /// <summary>
+        /// Adds a single value to the multi-map.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <param name="value">value to add</param>
+        /// <returns>true if the value was added, false if it was already contained</returns>
         public static bool Add<TKey, TValue>(this IDictionary<TKey, ISet<TValue>> map, TKey key, TValue value)
         {
             ISet<TValue> set = Get(map, key);
             return set.Add(value);
         }
 
+        /// <summary>
+        /// Queries the multi-map for a given key and creates an new empty set if key doesn't exist.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <returns>value set associated with key</returns>
         public static HashSet<TValue> Get<TKey, TValue>(this IDictionary<TKey, HashSet<TValue>> map, TKey key)
         {
             HashSet<TValue> set;
@@ -79,12 +131,29 @@ namespace SystemSharp.Collections
             return set;
         }
 
+        /// <summary>
+        /// Adds a single value to the multi-map.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <param name="value">value to add</param>
+        /// <returns>true if the value was added, false if it was already contained</returns>
         public static bool Add<TKey, TValue>(this IDictionary<TKey, HashSet<TValue>> map, TKey key, TValue value)
         {
             HashSet<TValue> set = Get(map, key);
             return set.Add(value);
         }
 
+        /// <summary>
+        /// Queries the multi-map for a given key and creates an new empty sorted set if key doesn't exist.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <returns>value set associated with key</returns>
         public static SortedSet<TValue> Get<TKey, TValue>(this IDictionary<TKey, SortedSet<TValue>> map, TKey key)
         {
             SortedSet<TValue> set;
@@ -96,12 +165,28 @@ namespace SystemSharp.Collections
             return set;
         }
 
+        /// <summary>
+        /// Adds a single value to the multi-map.
+        /// </summary>
+        /// <typeparam name="TKey">type of key</typeparam>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">a multi-map</param>
+        /// <param name="key">a key</param>
+        /// <param name="value">value to add</param>
+        /// <returns>true if the value was added, false if it was already contained</returns>
         public static bool Add<TKey, TValue>(this IDictionary<TKey, SortedSet<TValue>> map, TKey key, TValue value)
         {
             SortedSet<TValue> set = Get(map, key);
             return set.Add(value);
         }
 
+        /// <summary>
+        /// Queries the array-based multi-map for a given key and creates an new empty sorted set if key doesn't exist.
+        /// </summary>
+        /// <typeparam name="TValue">type of single value inside value list</typeparam>
+        /// <param name="map">a array-based multi-map</param>
+        /// <param name="key">a key</param>
+        /// <returns>value set associated with key</returns>
         public static ISet<TValue> Get<TValue>(this ISet<TValue>[] map, int key)
         {
             ISet<TValue> set = map[key];
@@ -113,6 +198,14 @@ namespace SystemSharp.Collections
             return set;
         }
 
+        /// <summary>
+        /// Adds a single value to the array-based multi-map.
+        /// </summary>
+        /// <typeparam name="TValue">type of single value inside value set</typeparam>
+        /// <param name="map">an array-based multi-map</param>
+        /// <param name="key">a key</param>
+        /// <param name="value">value to add</param>
+        /// <returns>true if the value was added, false if it was already contained</returns>
         public static bool Add<TValue>(this ISet<TValue>[] map, int key, TValue value)
         {
             ISet<TValue> set = Get(map, key);

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,6 +26,11 @@ using System.Reactive.Linq;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// Provides a basic implementation of IObserver&lt;T&gt; interface which automatically disposes the IObservable&lt;T&gt;-returned
+    /// IDisposable upon completion or error.
+    /// </summary>
+    /// <typeparam name="T">element type of observable sequence</typeparam>
     public class AutoDisposeObserver<T> : IObserver<T>
     {
         private IDisposable _disp;
@@ -33,6 +38,9 @@ namespace SystemSharp.Collections
 
         public readonly object SyncRoot = new object();
 
+        /// <summary>
+        /// Set this property to the IObservable&lt;T&gt;-returned IDisposable instance, and the object will manage the disposal for you.
+        /// </summary>
         public IDisposable Disp
         {
             set
@@ -52,6 +60,9 @@ namespace SystemSharp.Collections
                 _completed = true;
         }
 
+        /// <summary>
+        /// Whether observable sequence is completed
+        /// </summary>
         public bool IsCompleted
         {
             get { return _completed; }
@@ -177,6 +188,13 @@ namespace SystemSharp.Collections
 
     public static class ObservableExtensions
     {
+        /// <summary>
+        /// Converts IObservable&lt;T&gt; to IEnumerable&lt;T&gt;, using an intermediate storage buffer. You may not enumerate before
+        /// the observable sequence has completed.
+        /// </summary>
+        /// <typeparam name="T">type of sequence element</typeparam>
+        /// <param name="obj">observable sequence</param>
+        /// <returns>enumerable sequence</returns>
         public static IEnumerable<T> ToBufferedEnumerable<T>(this IObservable<T> obj)
         {
             List<T> list = new List<T>();
@@ -188,8 +206,10 @@ namespace SystemSharp.Collections
             return result;
         }
 
+        [Obsolete("probably not necessary anymore, Do<>(...) should do the job...")]
         public static void AutoDo<T>(this IObservable<T> obj, Action<T> onNext)
         {
+            
             AutoDisposeAction<T> obs = new AutoDisposeAction<T>(onNext);
             IDisposable disp = obj.Subscribe(obs);
             lock (obs.SyncRoot)
@@ -201,6 +221,7 @@ namespace SystemSharp.Collections
             }
         }
 
+        [Obsolete("probably not necessary anymore, Do<>(...) should do the job...")]
         public static void AutoDo<T>(this IObservable<T> obj, Action<T> onNext, Action onCompleted, Action<Exception> onError)
         {
             AutoDisposeAction<T> obs = new AutoDisposeAction<T>(onNext, onCompleted, onError);
@@ -214,13 +235,16 @@ namespace SystemSharp.Collections
             }
         }
 
-        public static Dictionary<TKey, TValue> ToDictionary<T, TKey, TValue>(this IObservable<T> obj, Func<T, TKey> key, Func<T, TValue> val)
-        {
-            Dictionary<TKey, TValue> result = new Dictionary<TKey, TValue>();
-            obj.AutoDo(e => result[key(e)] = val(e));
-            return result;
-        }
-
+        /// <summary>
+        /// Converts observable sequence to multi-map by creating a key/value pair from each element and storing it inside the structure
+        /// </summary>
+        /// <typeparam name="T">type of sequence element</typeparam>
+        /// <typeparam name="TKey">type of key for multi-map</typeparam>
+        /// <typeparam name="TValue">type of single element for multi-map</typeparam>
+        /// <param name="obj">observable sequence</param>
+        /// <param name="key">key creator</param>
+        /// <param name="val">value creator</param>
+        /// <returns></returns>
         public static Dictionary<TKey, HashSet<TValue>> ToMultiMap<T, TKey, TValue>(this IObservable<T> obj, Func<T, TKey> key, Func<T, TValue> val)
         {
             Dictionary<TKey, HashSet<TValue>> result = new Dictionary<TKey, HashSet<TValue>>();

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -22,6 +22,7 @@
  * 2011-12-04 CK fixed computation to tolerate zero elements
  * 2012-02-19 CK added GetSetHashCode
  * 2012-09-20 CK added int GetSequenceHashCode<T>(this IEnumerable<T> seq, Func<T, int> elemHashCode)
+ * 2013-10-11 CK fixed GetSetHashCode<T>(...) to tolerate duplicated elements
  * */
 
 using System;
@@ -32,24 +33,48 @@ using System.Text;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// This static class provides extension methods to operate on IEnumerable&lt;T&gt;
+    /// </summary>
     public static class Enumerables
     {
+        /// <summary>
+        /// Computes a hash code on the sequence, such that from x.SequenceEqual(y) it follows that 
+        /// x.GetSequenceHashCode() == y.GetSequenceHashCode().
+        /// </summary>
+        /// <typeparam name="T">element type inside sequence</typeparam>
+        /// <param name="seq">a sequence</param>
+        /// <returns>computed hash code</returns>
         public static int GetSequenceHashCode<T>(this IEnumerable<T> seq)
         {
             Contract.Requires(seq != null);
             return seq.Aggregate(0, (h, e) => (int)(((uint)h << 1) | ((uint)h >> 31)) ^ (e == null ? 0 : e.GetHashCode()));
         }
 
+        /// <summary>
+        /// Computes a hash code on the sequence, using a caller-supplied hash function.
+        /// </summary>
+        /// <typeparam name="T">element type inside sequence</typeparam>
+        /// <param name="seq">a sequence</param>
+        /// <param name="elemHashCode">hash function</param>
+        /// <returns>computed hash code</returns>
         public static int GetSequenceHashCode<T>(this IEnumerable<T> seq, Func<T, int> elemHashCode)
         {
             Contract.Requires(seq != null);
             return seq.Aggregate(0, (h, e) => (int)(((uint)h << 1) | ((uint)h >> 31)) ^ (elemHashCode(e)));
         }
 
+        /// <summary>
+        /// Computes a hash code on the sequence, such that its hash code equals any other sequence containing the same
+        /// set of elements (regardless of their order and possible duplications).
+        /// </summary>
+        /// <typeparam name="T">element type inside sequence</typeparam>
+        /// <param name="seq">a sequence</param>
+        /// <returns>computed hash code</returns>
         public static int GetSetHashCode<T>(this IEnumerable<T> seq)
         {
             Contract.Requires(seq != null);
-            return seq.Aggregate(0, (h, e) => h ^ (e == null ? 0 : e.GetHashCode()));
+            return seq.Distinct().Aggregate(0, (h, e) => h ^ (e == null ? 0 : e.GetHashCode()));
         }
     }
 }

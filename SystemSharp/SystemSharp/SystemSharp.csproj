@@ -245,7 +245,6 @@
     <Compile Include="SystemSharp\Collections\EmilStefanov\TestDisjointSets.cs" />
     <Compile Include="SystemSharp\Collections\Enumerables.cs" />
     <Compile Include="SystemSharp\Collections\IntervalSet.cs" />
-    <Compile Include="SystemSharp\Collections\Lists.cs" />
     <Compile Include="SystemSharp\Collections\MultiMaps.cs" />
     <Compile Include="SystemSharp\Collections\ObservableCache.cs" />
     <Compile Include="SystemSharp\Collections\ObservableExtensions.cs" />

@@ -36,15 +36,25 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Assembler
 {
+    /// <summary>
+    /// Serves as an aggregate XIL mapper. From all registered mappers, this class selects the first suitable mapper.
+    /// </summary>
     public class XILMapperManager : IXILMapper
     {
         private List<IXILMapper> _mappers = new List<IXILMapper>();
         private Dictionary<string, List<IXILMapper>> _mlookup = new Dictionary<string, List<IXILMapper>>();
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public XILMapperManager()
         {
         }
 
+        /// <summary>
+        /// Registers a XIL mapper
+        /// </summary>
+        /// <param name="mapper">mapper to register</param>
         public void AddMapper(IXILMapper mapper)
         {
             _mappers.Add(mapper);
@@ -82,29 +92,88 @@ namespace SystemSharp.Assembler
             return null;
         }
 
+        /// <summary>
+        /// Creates a functional unit allocator
+        /// </summary>
+        /// <param name="host">component which will host all created functional units</param>
+        /// <param name="targetProject">project being generated</param>
+        /// <returns>functional unit allocator</returns>
         public XILAllocator CreateAllocator(Component host, IProject targetProject)
         {
             return new XILAllocator(this, host, targetProject);
         }
     }
 
+    /// <summary>
+    /// Models the outcome of functional unit allocation policy
+    /// </summary>
     public enum EAllocationDecision
     {
+        /// <summary>
+        /// Map instruction to existing functional unit (re-use)
+        /// </summary>
         UseExisting,
+
+        /// <summary>
+        /// Map instruction to new functional unit
+        /// </summary>
         AllocateNew
     }
 
+    /// <summary>
+    /// Generic interface of allocation policy for hardware functional units
+    /// </summary>
+    /// <remarks>
+    /// The interaction between the resource allocator and allocation policy follows a two-step scheme: For each XIL-3 instruction
+    /// to be mapped to hardware, the resource allocator asks (<see cref="SelectBestMapping"/>) the allocation policy to pick the most 
+    /// suitable mapping from a sequence of possible mappings. The policy either selects a mapping or opts to create a new functional unit
+    /// for the given instruction. In the latter case, the resource allocator constructs a suitable unit and maps the instruction to that unit.
+    /// In any case, the resource allocator informs the allocation policy about the mapping via <see cref="TellMapping"/>.
+    /// </remarks>
     public interface IAllocationPolicy
     {
+        /// <summary>
+        /// Selects the most suitable functional unit and the best mapping for a given instruction or opts to allocate a new functional unit.
+        /// </summary>
+        /// <remarks>
+        /// The algorithm implementing the policy tries to solve an optimization problem: Since selected mapping implies interconnections
+        /// between functional units, a good policy tries to minimize the quantities and sizes of datapath multiplexers or even tries to
+        /// optimize the overall place-and-route result of the datapath being constructed. Moreover, there might be alternative mappings to the
+        /// same functional unit. For example, addition is a commutative operation. Depending on how we connect operands to the ports of the adder,
+        /// we might either re-use existing connections (good) or introduce new input multiplexers (bad). A limitation of this interface is that we are
+        /// currently restricted a greedy heuristics: once a mapping decision is made, it cannot be altered in the future. Therefore, we cannot
+        /// guarantee to find a globally optimal solution.
+        /// </remarks>
+        /// <param name="instr">XIL-3 instruction to be mapped</param>
+        /// <param name="cstep">c-step at which instruction is scheduled</param>
+        /// <param name="mappings">sequence of possible mappings</param>
+        /// <param name="bestMapping">the mapping from <paramref name="mappings"/> found to be most suitable by the policy</param>
+        /// <returns>whether it is best to use one of the supplied mappings or to allocate a new functional unit</returns>
         EAllocationDecision SelectBestMapping(XIL3Instr instr, long cstep, IEnumerable<IXILMapping> mappings, out IXILMapping bestMapping);
+
+        /// <summary>
+        /// Informs the allocation policy about the actual mapping used by resource allocator.
+        /// </summary>
+        /// <param name="instr">mapped XIL-3 instruction</param>
+        /// <param name="cstep">c-step at which instruction is scheduled</param>
+        /// <param name="mapping">selected mapping</param>
         void TellMapping(XIL3Instr instr, long cstep, IXILMapping mapping);
     }
 
+    /// <summary>
+    /// Factory pattern for hardware functional unit allocation policy
+    /// </summary>
     public interface IAllocationPolicyFactory
     {
+        /// <summary>
+        /// Creates an allocation policy
+        /// </summary>
         IAllocationPolicy Create();
     }
 
+    /// <summary>
+    /// Implements a default allocation policy, without any optimality.
+    /// </summary>
     public class DefaultAllocationPolicy :
         IAllocationPolicy
     {
@@ -116,6 +185,9 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// Factory instance for creating a default allocation policy
+        /// </summary>
         public static readonly IAllocationPolicyFactory Factory = new FactoryImpl();
 
         public EAllocationDecision SelectBestMapping(XIL3Instr instr, long cstep, IEnumerable<IXILMapping> mappings, out IXILMapping bestMapping)
@@ -129,6 +201,9 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// Resource allocator, responsible for mapping XIL-3 instructions to hardware functional units with the help of an allocation policy.
+    /// </summary>
     public class XILAllocator
     {
         private XILMapperManager _xmm;
@@ -140,6 +215,12 @@ namespace SystemSharp.Assembler
         private Component _host;
         private IProject _targetProject;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="xmm">XIL mapper manager</param>
+        /// <param name="host">component instance to host all created functional units</param>
+        /// <param name="targetProject">target project</param>
         internal XILAllocator(XILMapperManager xmm, Component host, IProject targetProject)
         {
             _xmm = xmm;
@@ -149,6 +230,9 @@ namespace SystemSharp.Assembler
             Policy = new DefaultAllocationPolicy();
         }
 
+        /// <summary>
+        /// Resource allocation policy
+        /// </summary>
         public IAllocationPolicy Policy { get; set; }
 
         private ReservationTable CreateReservationTable(ITransactionSite taSite)
@@ -156,12 +240,24 @@ namespace SystemSharp.Assembler
             return new ReservationTable();
         }
 
+        /// <summary>
+        /// Triggered whenever a new functional unit was created
+        /// </summary>
         public event Action<IXILMapping> OnFUAllocation
         {
             add { _onAllocation += value; }
             remove { _onAllocation -= value; }
         }
 
+        /// <summary>
+        /// Tries to map the given XIL instruction to any suitable functional unit. This call will not create any actual hardware. It is used by the
+        /// scheduler to query basic instruction metrics, namely initiation interval and latency.
+        /// </summary>
+        /// <param name="instr">XIL instruction</param>
+        /// <param name="operandTypes">operand types of XIL instruction</param>
+        /// <param name="resultTypes">result types of XIL instruction</param>
+        /// <param name="binder">binder service</param>
+        /// <returns>a hardware mapping for the supplied instruction or null if no such exists</returns>
         public IXILMapping TryMap(XILInstr instr, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes, IAutoBinder binder)
         {
             var xilsi = instr.CreateStk(new InstructionDependency[0], operandTypes, resultTypes);
@@ -199,6 +295,14 @@ namespace SystemSharp.Assembler
             return null;
         }
 
+        /// <summary>
+        /// Tries to map and bind a given XIL-3 instruction to hardware
+        /// </summary>
+        /// <param name="instr">XIL-3 instruction to be mapped and bound</param>
+        /// <param name="cstep">c-step at which instruction is scheduled</param>
+        /// <param name="operandTypes">operand types of instruction</param>
+        /// <param name="resultTypes">result types of instruction</param>
+        /// <returns>a hardware mapping for the supplied instruction or null if no such exists</returns>
         public IXILMapping TryBind(XIL3Instr instr, long cstep, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes)
         {
             ReservationTable rtbl;
@@ -299,6 +403,8 @@ namespace SystemSharp.Assembler
 
             public override bool Equals(object obj)
             {
+                //FIXME: Shouldn't that be "return obj == this"???
+
                 var other = obj as ClassifyCookie;
                 if (other == null)
                     return false;
@@ -307,6 +413,16 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// Classifies a given XIL instruction, such that all instructions which may be mapped to the same type of hardware functional unit
+        /// belong to the same group.
+        /// </summary>
+        /// <param name="instr">XIL instruction</param>
+        /// <param name="operandTypes">types of instruction operands</param>
+        /// <param name="resultTypes">types of instruction results</param>
+        /// <param name="binder">binder service</param>
+        /// <returns>Opaque group identifier. Do not make any assumptions on the content or type of the returned object.
+        /// The important thing is that any instructions belonging to the same group will see the same object.</returns>
         public object Classify(XILInstr instr, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes, IAutoBinder binder)
         {
             var mapping = TryMap(instr, operandTypes, resultTypes, binder);
@@ -323,27 +439,41 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// Returns the current resource allocation
+        /// </summary>
         public IEnumerable<Tuple<Component, ReservationTable>> Allocation
         {
             get { return _resTables.Select(kvp => Tuple.Create(kvp.Key.Host, kvp.Value)); }
         }
 
+        /// <summary>
+        /// Computes statistics on resource allocation and returns them in a dedicated data structure
+        /// </summary>
+        /// <param name="scheduleLength">schedule length</param>
+        /// <returns>resource allocation statistics</returns>
         public AllocationStatistics CreateAllocationStatistics(long scheduleLength)
         {
             return new AllocationStatistics(Allocation, scheduleLength);
         }
-
-        public void Reset()
-        {
-            _taBindLookup.Clear();
-            _resTables.Clear();
-        }
     }
 
+    /// <summary>
+    /// Reports statistics on hardware resource allocation
+    /// </summary>
     public class AllocationStatistics
     {
+        /// <summary>
+        /// Reports statistics on a specific hardware functional unit instance
+        /// </summary>
         public class FUStatistics
         {
+            /// <summary>
+            /// Constructs a new instance
+            /// </summary>
+            /// <param name="owner">superordinate statistics object</param>
+            /// <param name="fu">hardware functional unit instance</param>
+            /// <param name="reservation">reservation table</param>
             internal FUStatistics(AllocationStatistics owner, Component fu, ReservationTable reservation)
             {
                 Owner = owner;
@@ -351,36 +481,74 @@ namespace SystemSharp.Assembler
                 Reservation = reservation;
             }
 
+            /// <summary>
+            /// Superordinate statistics object
+            /// </summary>
             public AllocationStatistics Owner { get; private set; }
+
+            /// <summary>
+            /// Hardware functional unit instance
+            /// </summary>
             public Component FU { get; private set; }
+
+            /// <summary>
+            /// Reservation table
+            /// </summary>
             public ReservationTable Reservation { get; private set; }
 
+            /// <summary>
+            /// The occupation is the total number of c-steps where the functional unit is actually performing work.
+            /// </summary>
             public long Occupation
             {
                 get { return Reservation.GetOccupation(); }
             }
 
+            /// <summary>
+            /// The utilization is the ratio of occupation to total schedule length.
+            /// </summary>
             public double Utilization
             {
                 get { return Reservation.GetUtilization(Owner.ScheduleLength); }
             }
         }
 
+        /// <summary>
+        /// Reports aggregated statistics for a certain class of hardware functional units.
+        /// </summary>
         public class FUTypeStatistics
         {
+            /// <summary>
+            /// Class of functional unit
+            /// </summary>
             public Type FUType { get; private set; }
+
+            /// <summary>
+            /// List of per-instance statistics belonging to the class
+            /// </summary>
             public IList<FUStatistics> FUs { get; private set; }
+
+            /// <summary>
+            /// Functional unit class name
+            /// </summary>
             public string FUTypeName
             {
                 get { return FUType.Name; }
             }
 
+            /// <summary>
+            /// Constructs an instance
+            /// </summary>
+            /// <param name="fuType">class of functional unit</param>
             internal FUTypeStatistics(Type fuType)
             {
                 FUType = fuType;
                 FUs = new List<FUStatistics>();
             }
 
+            /// <summary>
+            /// Average utilization of all per-instance utilizations
+            /// </summary>
             public double AvgUtilization
             {
                 get { return FUs.Average(fu => fu.Utilization); }
@@ -390,7 +558,12 @@ namespace SystemSharp.Assembler
 
         private CacheDictionary<Type, FUTypeStatistics> _stats;
 
-        public AllocationStatistics(IEnumerable<Tuple<Component, ReservationTable>> allocation,
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="allocation">resource allocation information</param>
+        /// <param name="scheduleLength">schedule length</param>
+        internal AllocationStatistics(IEnumerable<Tuple<Component, ReservationTable>> allocation,
             long scheduleLength)
         {
             Allocation = allocation;
@@ -404,7 +577,14 @@ namespace SystemSharp.Assembler
             return new FUTypeStatistics(fuType);
         }
 
+        /// <summary>
+        /// Allocation information (data basis for these statistics)
+        /// </summary>
         public IEnumerable<Tuple<Component, ReservationTable>> Allocation { get; private set; }
+
+        /// <summary>
+        /// Schedule length
+        /// </summary>
         public long ScheduleLength { get; private set; }
 
         private void Setup()
@@ -416,6 +596,9 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// Statistical (and detailed) data grouped by functional unit class
+        /// </summary>
         public IEnumerable<FUTypeStatistics> FUTypeStats
         {
             get { return _stats.Values; }

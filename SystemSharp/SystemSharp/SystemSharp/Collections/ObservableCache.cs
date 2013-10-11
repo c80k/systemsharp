@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,6 +26,13 @@ using System.Diagnostics;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// An observable cache behaves like a cache dictionary, but additionally implements the IObservable&lt;T&gt; interface
+    /// to let external observers subscribe on the sequence of created values. To fulfill the contract, it implements a Complete()
+    /// method which sets the object to an unmodifiable state and notifies all observers.
+    /// </summary>
+    /// <typeparam name="TKey">type of key</typeparam>
+    /// <typeparam name="TValue">type of value</typeparam>
     public class ObservableCache<TKey, TValue>: 
         CacheDictionary<TKey, TValue>,
         IObservable<TValue>
@@ -34,6 +41,10 @@ namespace SystemSharp.Collections
         private List<IObserver<TValue>> _observers = new List<IObserver<TValue>>();
         private bool _complete;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="creator">functor which creates a value for given key</param>
         public ObservableCache(Func<TKey, TValue> creator):
             base(creator)
         {
@@ -41,6 +52,11 @@ namespace SystemSharp.Collections
             OnItemAdded += OnItemAddedHandler;
         }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="comparer">equality comparer for keys</param>
+        /// <param name="creator">functor which creates a value for given key</param>
         public ObservableCache(IEqualityComparer<TKey> comparer, Func<TKey, TValue> creator) :
             base(comparer, creator)
         {
@@ -85,6 +101,9 @@ namespace SystemSharp.Collections
                 obs.OnNext(item);
         }
 
+        /// <summary>
+        /// Puts the object to unmodifiable state and notifies all observers.
+        /// </summary>
         public void Complete()
         {
             if (_complete)
