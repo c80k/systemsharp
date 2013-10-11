@@ -1,6 +1,5 @@
 ﻿/**
- * Copyright 2011-2013
- * Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -37,19 +36,59 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Assembler
 {
+#if false
+    /// <summary>
+    /// Represents a data structure capable of storing schedule for XIL-3 instructions. It is intended to be modified by the actual
+    /// scheduling algorithm and to provide efficient access to the scheduling result.
+    /// </summary>
     public interface IXILSchedule
     {
+        /// <summary>
+        /// Total number of instructions
+        /// </summary>
         int InstructionCount { get; }
+
+        /// <summary>
+        /// Number of c-steps required by schedule
+        /// </summary>
+        /// <remarks>
+        /// c-step is short for control step. c-steps are a fundamental abstraction of high-level synthesis: any scheduling algorithm
+        /// assigns each instruction to a discrete time step, the c-step. Having synchronous hardware in mind, each c-step lasts exactly one
+        /// clock period. Therefore, we could also call that thing "clock step".
+        /// </remarks>
         int CStepCount { get; }
 
+        /// <summary>
+        /// Maps instruction indes to XIL-3 instruction
+        /// </summary>
         IPropMap<int, XIL3Instr> Instructions { get; }
+
+        /// <summary>
+        /// Maps instruction index to c-step (actual scheduling result)
+        /// </summary>
         IPropMap<int, int> CStep { get; }
+
+        /// <summary>
+        /// Maps instruction index to initiation interval
+        /// </summary>
         IPropMap<int, int> InitiationInterval { get; }
+
+        /// <summary>
+        /// Maps instruction index to latency
+        /// </summary>
         IPropMap<int, int> Latency { get; }
 
+        /// <summary>
+        /// Returns all instructions mapped to a given c-step
+        /// </summary>
+        /// <param name="cstep">c-step to query</param>
+        /// <returns>all instructions mapped to that c-step</returns>
         IEnumerable<int> GetInstructionsOfCStep(int cstep);
     }
 
+    /// <summary>
+    /// Default implementation of <see cref="IXILSchedule"/> interface
+    /// </summary>
     public class XILScheduleMonitor : IXILSchedule
     {
         private int[] _csteps;
@@ -103,7 +142,11 @@ namespace SystemSharp.Assembler
                    select xil3i.Index;
         }
     }
+#endif
 
+    /// <summary>
+    /// Provides a scheduling adapter for XIL-3 instructions
+    /// </summary>
     public class XILSchedulingAdapter : ISchedulingAdapter<XIL3Instr>
     {
         private class DummyBinder : IAutoBinder
@@ -143,6 +186,13 @@ namespace SystemSharp.Assembler
         private Dictionary<object, int> _maxFUs = new Dictionary<object, int>();
         private Dictionary<Tuple<object, long>, int> _resTable = new Dictionary<Tuple<object, long>, int>();
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="func">XIL-3 function</param>
+        /// <param name="xmm">mapper manager</param>
+        /// <param name="host">component instance to host allocated functional units</param>
+        /// <param name="targetProject">code generation target project</param>
         public XILSchedulingAdapter(XIL3Function func, XILMapperManager xmm, Component host, IProject targetProject)
         {
             _func = func;
@@ -232,35 +282,57 @@ namespace SystemSharp.Assembler
             _succs = PropMaps.CreateForArray<XIL3Instr, ScheduleDependency<XIL3Instr>[]>(_succsBack, i => i.Index, EAccess.ReadOnly);
         }
 
+        /// <summary>
+        /// Returns the control-flow graph of scheduled instructions
+        /// </summary>
         public ControlFlowGraph<XIL3Instr> CFG
         {
             get { return _cfg; }
         }
 
         private IPropMap<XIL3Instr, ScheduleDependency<XIL3Instr>[]> _preds;
+
+        /// <summary>
+        /// Maps each instruction to its predecessor dependencies
+        /// </summary>
         public IPropMap<XIL3Instr, ScheduleDependency<XIL3Instr>[]> Preds
         {
             get { return _preds; }
         }
 
         private IPropMap<XIL3Instr, ScheduleDependency<XIL3Instr>[]> _succs;
+
+        /// <summary>
+        /// Maps each instruction to its successor dependencies
+        /// </summary>
         public IPropMap<XIL3Instr, ScheduleDependency<XIL3Instr>[]> Succs
         {
             get { return _succs; }
         }
 
         private IPropMap<XIL3Instr, int[]> _operands;
+
+        /// <summary>
+        /// Maps each instruction to its operand slots
+        /// </summary>
         public IPropMap<XIL3Instr, int[]> Operands
         {
             get { return _operands; }
         }
 
         private IPropMap<XIL3Instr, int[]> _results;
+
+        /// <summary>
+        /// Maps each instruction to its result slots
+        /// </summary>
         public IPropMap<XIL3Instr, int[]> Results
         {
             get { return _results; }
         }
 
+        /// <summary>
+        /// Returns the resource allocator
+        /// </summary>
         public XILAllocator Allocator
         {
             get { return _alloc; }
@@ -297,29 +369,51 @@ namespace SystemSharp.Assembler
         }
 
         private IPropMap<XIL3Instr, long> _latency;
+
+        /// <summary>
+        /// Maps each instruction to its latency
+        /// </summary>
         public IPropMap<XIL3Instr, long> Latency
         {
             get { return _latency; }
         }
 
         private IPropMap<XIL3Instr, object> _iclass;
+
+        /// <summary>
+        /// Maps each instruction to its equivalence class (all instruction of same class can be mapped to same type
+        /// of functional unit).
+        /// </summary>
         public IPropMap<XIL3Instr, object> IClass
         {
             get { return _iclass; }
         }
 
         private IPropMap<XIL3Instr, int> _index;
+
+        /// <summary>
+        /// Maps each instruction to its positional index
+        /// </summary>
         public IPropMap<XIL3Instr, int> Index
         {
             get { return _index; }
         }
 
         private IPropMap<XIL3Instr, long> _cstep;
+
+        /// <summary>
+        /// Maps each instruction to the c-step at which it is scheduled
+        /// </summary>
         public IPropMap<XIL3Instr, long> CStep
         {
             get { return _cstep; }
         }
 
+        /// <summary>
+        /// Constrains the maximum quantity of functional units for a given instruction class.
+        /// </summary>
+        /// <param name="iclass">instruction class</param>
+        /// <param name="max">upper limit of functional unit instances</param>
         public void SetMaxFUAllocation(object iclass, int max)
         {
             _maxFUs[iclass] = max;
@@ -396,11 +490,19 @@ namespace SystemSharp.Assembler
             Array.Clear(_cstepBack, 0, _cstepBack.Length);
         }
 
+        /// <summary>
+        /// Returns the total number of c-steps required by the schedule.
+        /// </summary>
         public long ComputeCStepCount()
         {
             return _mappingCache.Zip(_cstepBack, (m, n) => n + m.Latency).Max();
         }
 
+        /// <summary>
+        /// Performs resource allocation and binding.
+        /// </summary>
+        /// <param name="dpb">datapath builder to use</param>
+        /// <returns>resulting flow matrix</returns>
         public FlowMatrix Allocate(IDatapathBuilder dpb)
         {
             // Step 1: create intermediate storage for each instruction output slot
@@ -470,6 +572,9 @@ namespace SystemSharp.Assembler
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Returns a textual report on the found schedule
+        /// </summary>
         public string GetScheduleReport()
         {
             var sb = new StringBuilder();
@@ -488,6 +593,9 @@ namespace SystemSharp.Assembler
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Returns a textual report on the found resource binding
+        /// </summary>
         public string GetBindingReport()
         {
             var sb = new StringBuilder();

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,12 +26,23 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler
 {
-    [AttributeUsage(AttributeTargets.Method|AttributeTargets.Constructor, Inherited=true, AllowMultiple=false)]
+    /// <summary>
+    /// This attribute instructs the XIL compiler to translate calls to the attributed method in a user-defined manner.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited=true, AllowMultiple=false)]
     public abstract class CompileMethodCall: Attribute
     {
+        /// <summary>
+        /// Compiles the method call
+        /// </summary>
+        /// <param name="call">method call statement</param>
+        /// <param name="backend">compiler interface to emit XIL instructions</param>
         public abstract void Compile(CallStatement call, ICompilerBackend backend);
     }
 
+    /// <summary>
+    /// This attribute instructs the XIL compiler to ignore calls to the attributed method.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, Inherited = true, AllowMultiple = true)]
     public class XILIgnore : CompileMethodCall
     {

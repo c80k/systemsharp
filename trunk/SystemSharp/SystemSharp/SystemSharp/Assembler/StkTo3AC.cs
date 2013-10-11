@@ -153,6 +153,11 @@ namespace SystemSharp.Assembler
 
     public static class StkTo3AC
     {
+        /// <summary>
+        /// Converts XIL-S function to XIL-3 function
+        /// </summary>
+        /// <param name="xils">XIL-S function to convert</param>
+        /// <returns>resulting XIL-3 function</returns>
         public static XIL3Function ToXIL3(this XILSFunction xils)
         {
             return StkTo3ACImpl.ToXIL3(xils);

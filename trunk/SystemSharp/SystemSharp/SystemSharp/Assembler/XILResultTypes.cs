@@ -30,6 +30,12 @@ namespace SystemSharp.Assembler
 {
     public static class XILResultTypes
     {
+        /// <summary>
+        /// Returns a sequence of adminissible result types, given instruction operand types.
+        /// </summary>
+        /// <param name="instr">XIL instruction</param>
+        /// <param name="operandTypes">operand types</param>
+        /// <returns>admissible result types</returns>
         public static IEnumerable<TypeDescriptor> GetDefaultResultTypes(this XILInstr instr, TypeDescriptor[] operandTypes)
         {
             switch (instr.Name)

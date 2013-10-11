@@ -40,14 +40,37 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Assembler
 {
+    /// <summary>
+    /// XIL compiler backend interface
+    /// </summary>
     public interface ICompilerBackend
     {
+        /// <summary>
+        /// Returns the instruction indices of all instructions which belong to current basic block
+        /// </summary>
         IEnumerable<int> PredsInCurBB { get; }
+
+        /// <summary>
+        /// Emits a barrier instruction which depends on all instructions in current basic block with specified opcodes.
+        /// </summary>
+        /// <param name="instrCodes">opcodes for which the barrier is to be installed</param>
         void InstallBarrier(params string[] instrCodes);
+
+        /// <summary>
+        /// Emits a barrier instruction which depends an all instructions in current basic block, regardless of their opcodes.
+        /// </summary>
         void InstallBarrier();
+
+        /// <summary>
+        /// Emits an instruction
+        /// </summary>
+        /// <param name="instr">instruction to emit</param>
         void Emit(XILSInstr instr);
     }
 
+    /// <summary>
+    /// Implements the XIL compiler which transforms SysDOM to XIL-S
+    /// </summary>
     public class Compiler: 
         IStatementVisitor, 
         IExpressionVisitor<int>,
@@ -96,8 +119,16 @@ namespace SystemSharp.Assembler
             Write
         }
 
+        /// <summary>
+        /// Instruction set
+        /// </summary>
         public IInstructionSet<XILInstr> ISet { get; private set; }
+
+        /// <summary>
+        /// SysDOM function to be compiler
+        /// </summary>
         public Function Compilee { get; private set; }
+
         private List<XILSInstr> _instrs = new List<XILSInstr>();
         private Stack<TypeDescriptor> _typeStack = new Stack<TypeDescriptor>();
         private Dictionary<Statement, BranchLabel> _stmt2label = new Dictionary<Statement, BranchLabel>();
@@ -110,11 +141,19 @@ namespace SystemSharp.Assembler
         private Backend _backend;
         private Dictionary<string, int> _barriers = new Dictionary<string, int>();
         
+        /// <summary>
+        /// Resulting instruction list
+        /// </summary>
         public List<XILSInstr> Result
         {
             get { return _instrs; }
         }
 
+        /// <summary>
+        /// Constructs a compiler instance
+        /// </summary>
+        /// <param name="iset">instruction set</param>
+        /// <param name="func">SysDOM function to be compiled</param>
         public Compiler(IInstructionSet<XILInstr> iset, Function func)
         {
             ISet = iset;
@@ -933,8 +972,16 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// This static class provides helper methods that deal with XIL compilation
+    /// </summary>
     public static class Compilation
     {
+        /// <summary>
+        /// Given a XIL-S control-flow graph, removes all unreachable instructions
+        /// </summary>
+        /// <param name="cfg">XIL-S control-flow graph</param>
+        /// <returns>resulting instruction list</returns>
         public static List<XILSInstr> TrimUnreachable(ControlFlowGraph<XILSInstr> cfg)
         {
             IEnumerable<BasicBlock<XILSInstr>> reachableBBs = cfg.BasicBlocks.Where(bb => bb.IsReachable);
@@ -942,6 +989,11 @@ namespace SystemSharp.Assembler
             return reachableInstrs;
         }
 
+        /// <summary>
+        /// Tries to reduce the number of local variables by replacing them with their right-hand side expressions where possible
+        /// </summary>
+        /// <param name="cfg">XIL-S control-flow graph</param>
+        /// <returns>resulting instruction list</returns>
         public static List<XILSInstr> OptimizeLocals(ControlFlowGraph<XILSInstr> cfg)
         {
             var locals = cfg.Instructions.RenumerateLocalVariables();
@@ -957,6 +1009,12 @@ namespace SystemSharp.Assembler
             return lva.OutInstructions;
         }
 
+        /// <summary>
+        /// Compiles given SysDOM function to XIL-S code
+        /// </summary>
+        /// <param name="func">SysDOM function</param>
+        /// <param name="iset">instruction set</param>
+        /// <returns>compiled XIL-S function</returns>
         public static XILSFunction Compile(this Function func,
             IInstructionSet<XILInstr> iset)
         {
@@ -983,11 +1041,21 @@ namespace SystemSharp.Assembler
             return result;
         }
 
+        /// <summary>
+        /// Compiles given SysDOM function to XIL-S code using default instruction set
+        /// </summary>
+        /// <param name="func">SysDOM function</param>
+        /// <returns>compiled XIL-S function</returns>
         public static XILSFunction Compile(this Function func)
         {
             return Compile(func, DefaultInstructionSet.Instance);
         }
 
+        /// <summary>
+        /// Creates a control-flow graph from a given XIL-3 instruction list
+        /// </summary>
+        /// <param name="ilist">XIL-3 instruction list</param>
+        /// <returns>XIL-3 control-flow graph</returns>
         public static ControlFlowGraph<XIL3Instr> CreateCFG(IList<XIL3Instr> ilist)
         {
             XIL3Instr marshal = DefaultInstructionSet
@@ -1002,6 +1070,11 @@ namespace SystemSharp.Assembler
             return new ControlFlowGraph<XIL3Instr>(ilist, marshal, iinfo);
         }
 
+        /// <summary>
+        /// Creates a control-flow graph from a given XIL-S instruction list
+        /// </summary>
+        /// <param name="ilist">XIL-S instruction list</param>
+        /// <returns>XIL-S control-flow graph</returns>
         public static ControlFlowGraph<XILSInstr> CreateCFG(IList<XILSInstr> ilist)
         {
             XILSInstr marshal = DefaultInstructionSet
@@ -1017,8 +1090,15 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// This exception is thrown when the scheduling fails for some reason
+    /// </summary>
     public class XILSchedulingFailedException : Exception
     {
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="reason">fail reason</param>
         public XILSchedulingFailedException(string reason) :
             base(reason)
         {
