@@ -44,11 +44,14 @@ If you want to rebuild System# from scratch, please follow these instructions:
 
 === Download and Setup ===
 
-The easiest way to install System#: Change to the [http://code.google.com/p/systemsharp/downloads/list Downloads] tab, obtain the most recent Windows Installer download and launch it. The download will contain the complete System# sources, pre-compiled binaries and a Visual Studio solution with some examples.
+The easiest way to install System#: Create a new C# project inside Visual Studio, open the NuGet package manager console and type:
+{{{
+Install-Package systemsharp
+}}}
 
 = Getting Started =
 
-The first thing you may want to do is to browse the examples. These will give you a good starting point to see how things work in System#. If you installed System# using the Windows Installer download, there will be a shortcut in your start menu: Browse for _Programs_, _FZI Forschungszentrum Informatik_, _System#_, _Open Examples.sln_. You will find this Visual Studio solution in a _System#_-prefixed sub-directory of your personal _Documents_ folder.
+The first thing you may want to do is to browse the examples. These will give you a good starting point to see how things work in System#. If you  download the current repository trunk, there will be some examples included.
 
 Most of the examples are composed of two execution phases: The first phase is a delta-cycle simulation. During the simulation, you can observe the example design action by its console outputs (sorry, not wave viewer yet). So far, nothing special. The second phase constitutes the actual magic: The design is being analyzed by the System# reflection engine and then transformed into VHDL. The examples hard-code the output directory to `.\hdl_output`, so you will find the generated sources in 
 
