@@ -19,7 +19,9 @@ using namespace System::Security::Permissions;
 [assembly:AssemblyCopyrightAttribute("Copyright (c) Christian Köllner 2011-2013")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];
+#ifdef INCLUDE_DIGITAL_SIGNATURE
 [assembly:AssemblyKeyFileAttribute("graphalgorithmlib.snk")];
+#endif
 
 //
 // Version information for an assembly consists of the following four values:

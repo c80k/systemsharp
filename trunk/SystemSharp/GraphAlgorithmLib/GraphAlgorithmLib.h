@@ -40,7 +40,7 @@ namespace GraphAlgorithms {
 	ref class Digraph;
 
 	///<summary>Represents a maximum matching inside an undirected graph.</summary>
-	///<remarks>This class cannot be constructed by the user. Instead it is returned as a result of GetMaximumMatching of class Graph.</remark>
+	///<remarks>This class cannot be constructed by the user. Instead it is returned as a result of GetMaximumMatching of class Graph.</remarks>
 	public ref class Matching
 	{
 		!Matching()
@@ -66,7 +66,7 @@ namespace GraphAlgorithms {
 		{
 			int get(int v)
 			{
-				if (v < 0 || v >= m_pMate->size())
+				if (v < 0 || v >= (int)m_pMate->size())
 					return -1;
 				if ((*m_pMate)[v] == graph_traits<graph_t>::null_vertex())
 					return -1;
@@ -136,7 +136,7 @@ namespace GraphAlgorithms {
 		{
 			int get(int v)
 			{
-				if (v < 0 || v >= m_pComponent->size())
+				if (v < 0 || v >= (int)m_pComponent->size())
 					return -1;
 				else
 					return (*m_pComponent)[v];
@@ -186,7 +186,7 @@ namespace GraphAlgorithms {
 		{
 			int get(int idx)
 			{
-				if (idx < 0 || idx >= m_pOrder->size())
+				if (idx < 0 || idx >= (int)m_pOrder->size())
 					return -1;
 				else
 					return (*m_pOrder)[idx];
@@ -272,7 +272,7 @@ namespace GraphAlgorithms {
 		}
 
 		///<summary>Adds a new vertex the graph</summary>
-		///<returns>Identifier of that vertex</return>
+		///<returns>Identifier of that vertex</returns>
 		int AddNode()
 		{
 			return add_vertex(*m_pGraph);
@@ -327,7 +327,7 @@ namespace GraphAlgorithms {
 		}
 
 		///<summary>Determines the strongly connected components of the graph.</summary>
-		///<returns>A data structure for querying the strongly connected components</return>
+		///<returns>A data structure for querying the strongly connected components</returns>
 		StrongComponents^ GetStrongComponents()
 		{
 			StrongComponents^ sc = gcnew StrongComponents(m_pGraph);
@@ -335,7 +335,7 @@ namespace GraphAlgorithms {
 		}
 
 		///<summary>Determines a topological sorting of the graph.</summary>
-		///<returns>A data structure for querying the topological sorting</return>
+		///<returns>A data structure for querying the topological sorting</returns>
 		TopologicalSorting^ GetTopologicalSorting()
 		{
 			TopologicalSorting^ ts = gcnew TopologicalSorting(m_pGraph);
