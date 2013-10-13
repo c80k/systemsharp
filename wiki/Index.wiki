@@ -11,19 +11,35 @@ System# is being developed using Visual Studio and the .NET framework. That's wh
 
 === Prerequisites ===
 
-Before you install System#, please make sure your machines meet the following prerequisites:
+Before you install System#, please make sure your machine meet the following prerequisites:
 
-  * *Visual Studio 2010 SP1*. If you're missing Service Pack 1, try http://www.microsoft.com/download/en/details.aspx?id=23691.
+  * *Visual Studio 2012*
 
-  * *.NET Framework 4* (usually installed along with Visual Studio 2010)
+  * *.NET Framework 4.5* (usually installed along with Visual Studio 2012)
 
-  * *Reactive Extensions (Rx)* Try http://www.microsoft.com/download/en/details.aspx?id=26649 to obtain the Rx SDK.
-
-  * Recommended, but not mandatory: *Code Contracts*. Try http://research.microsoft.com/en-us/projects/contracts/.
-
-  * Only if you want to rebuild System# from scratch: The *boost libraries, v1.46.1* Try http://www.boost.org/.
+  * NuGet Package Manager
 
   * System# supports Xilinx IP Cores and generates a Xilinx ISE project along with the VHDL sources. *Xilinx ISE Design Suite 11.x, 12.x* or *13.x* is recommended (no matter what edition). *14.x* should also work (it will offer you to convert the project to the newer version).
+
+=== How to build ===
+
+If you want to rebuild System# from scratch, please follow these instructions:
+ 
+  * Recommended, but not mandatory: Install *Code Contracts*. Try http://research.microsoft.com/en-us/projects/contracts/.
+
+  * Download the *boost library, v1.46* (legacy version is mandatory if you don't like to fix tons of compiler errors) from http://www.boost.org/ and extract the contents of the `boost` folder to `SystemSharp\GraphAlgorithmLib\boost` (path is relative to repository trunk).
+
+  * Open solution `AllInOne`.
+
+  * Open project settings of `GraphAlgorithmLib_VC2012`. Remove preprocessor definition `INCLUDE_DIGITAL_SIGNATURE` for all build configurations. _Background_: This option is for digitally signing the assembly. It requires a strong key file, which is not included in the repository. Since the intent of a digital key is to uniquely identify the author of an assembly, it will never be included in the repository. If you require a digital signature for some reason, feel free to create your own `systemsharp.pfx`.
+
+  * Open project settings of `SystemSharp`. Select tab "Signing" and uncheck option "Sign the assembly". Again, this is because you don't have the keyfile.
+
+  * Build the solution. Usually, NuGet will detect that there are some dependencies on external libraries and should normally download and install them automatically. If this does not work for some reasons (or you're getting errors because of missing assemblies), here is an overview:
+
+|| *Project* || *Dependencies* || *NuGet package manager console command* ||
+|| SystemSharp || Microsoft Reactive Extensions || `Install-Package Rx-Main` ||
+|| XilinxSupportLib || SQLite || `Install-Package System.Data.SQLite` ||
 
 
 === Download and Setup ===
