@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,6 +24,11 @@ using System.Text;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// Constructs a multi-map from observing a sequence of key/value tuples.
+    /// </summary>
+    /// <typeparam name="TKey">datatype of key</typeparam>
+    /// <typeparam name="TValue">datatype of value</typeparam>
     public class ObservingMultiMap<TKey, TValue>
     {
         private class SingleValueObserver : IObserver<Tuple<TKey, TValue>>
@@ -132,28 +137,53 @@ namespace SystemSharp.Collections
 
         private Dictionary<TKey, HashSet<TValue>> _rel = new Dictionary<TKey, HashSet<TValue>>();
 
+        /// <summary>
+        /// Adds a new element to the multi-map for a given key.
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="value">value</param>
         public void Add(TKey key, TValue value)
         {
             _rel.Add(key, value);
         }
 
+        /// <summary>
+        /// Adds multiple elements to the multi-map for a given key.
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <param name="values">elements to add</param>
         public void Add(TKey key, IEnumerable<TValue> values)
         {
             foreach (TValue value in values)
                 Add(key, value);
         }
 
+        /// <summary>
+        /// Returns all elements associated with specified key
+        /// </summary>
+        /// <param name="key">key</param>
+        /// <returns>all associated elements, or empty enumeration if key not found</returns>
         public IEnumerable<TValue> this[TKey key]
         {
             get { return _rel.Get(key).AsEnumerable(); }
         }
 
+        /// <summary>
+        /// Attaches this instance to a key/value pair observation. Each new tuple will automatically get inserted in the
+        /// underlying multi-map.
+        /// </summary>
+        /// <param name="obs">key/value pair observation</param>
         public void Subscribe(IObservable<Tuple<TKey, TValue>> obs)
         {
             SingleValueObserver svo = new SingleValueObserver(this);
             svo.Disp = obs.Subscribe(svo);
         }
 
+        /// <summary>
+        /// Attaches this instance to a key/multi-value pair observation. Each new tuple will automatically get inserted in the
+        /// underlying multi-map.
+        /// </summary>
+        /// <param name="obs">key/multi-value pair observation</param>
         public void Subscribe(IObservable<Tuple<TKey, IEnumerable<TValue>>> obs)
         {
             MultiValueObserver mvo = new MultiValueObserver(this);
