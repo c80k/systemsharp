@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -28,6 +28,12 @@ using SystemSharp.Common;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// An observable set behaves like a set and additionally implements the IObservable&lt;T&gt; interface to let subscribers know about
+    /// the contained elements. To fulfill the contract, it implements a Complete() method which broadcasts a completion event to all
+    /// subscribers and puts the object to unmodifiable state.
+    /// </summary>
+    /// <typeparam name="T">type of contained elements</typeparam>
     public class ObservableSet<T> : ISet<T>, ICollection<T>, IEnumerable<T>, IEnumerable, 
         IObservable<T>
     {
@@ -35,11 +41,18 @@ namespace SystemSharp.Collections
         private List<IObserver<T>> _observers = new List<IObserver<T>>();
         private bool _complete;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
         public ObservableSet()
         {
             _set = new HashSet<T>();
         }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="comparer">element equality comparer</param>
         public ObservableSet(IEqualityComparer<T> comparer)
         {
             _set = new HashSet<T>(comparer);
@@ -121,6 +134,9 @@ namespace SystemSharp.Collections
             Add(item);
         }
 
+        /// <summary>
+        /// This method is not implemented, since it is not possible to revoke elements with respect to subscribers.
+        /// </summary>
         public void Clear()
         {
             throw new NotImplementedException();
@@ -177,6 +193,10 @@ namespace SystemSharp.Collections
             }
         }
 
+        /// <summary>
+        /// Broadcasts a completion message to all subscribers and puts the object to unmodifiable state.
+        /// I.e. once called, adding new elements is not permitted anymore. May only be called once. 
+        /// </summary>
         public void Complete()
         {
             if (_complete)
