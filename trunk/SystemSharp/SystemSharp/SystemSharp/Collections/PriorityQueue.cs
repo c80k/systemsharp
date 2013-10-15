@@ -25,8 +25,25 @@ using System.Text;
 
 namespace SystemSharp.Collections
 {
+    /// <summary>
+    /// A priority queue implementation which resolves collisions (i.e. multiple elements for same key) using
+    /// a user-defined resolution function.
+    /// </summary>
+    /// <typeparam name="T">datatype of priority queue element</typeparam>
     public class PriorityQueue<T>
     {
+        /// <summary>
+        /// Resolution function delegate
+        /// </summary>
+        /// <remarks>
+        /// Depending on your use case, there are multiple possibilities of implementing a resolution function. The most simple
+        /// and stupid option is to either keep the existing element (return <paramref name="v1"/>) or to replace the existing
+        /// element by the new one (return <paramref name="v2"/>). A more advanced approach is to specify some collection or
+        /// set type, e.g. a HashSet, and to construct the set-union of both parameters.
+        /// </remarks>
+        /// <param name="v1">an element</param>
+        /// <param name="v2">another element</param>
+        /// <returns>some element representing the union of both elements</returns>
         public delegate T ResolveFunc(T v1, T v2);
 
         private class PQItem
@@ -43,6 +60,10 @@ namespace SystemSharp.Collections
             }
         }
 
+        /// <summary>
+        /// Resolution function which is called in case of an element being inserted for an existing key.
+        /// It is mandatory to set this property to a non-null value when there is a possibility of key collisions.
+        /// </summary>
         public ResolveFunc Resolve { get; set; }
 
         private PQItem _root;
@@ -72,6 +93,11 @@ namespace SystemSharp.Collections
             }
         }
 
+        /// <summary>
+        /// Inserts element <paramref name="value"/> for specified <paramref name="key"/>. Lower key means higher priority.
+        /// </summary>
+        /// <param name="key">key for which to insert the value</param>
+        /// <param name="value">element to insert</param>
         public void Enqueue(long key, T value)
         {
             PQItem pqi = new PriorityQueue<T>.PQItem(key, value);
@@ -81,6 +107,9 @@ namespace SystemSharp.Collections
                 Enqueue(pqi, _root);
         }
 
+        /// <summary>
+        /// Removes and returns the element with highest priority, i.e. lowest key.
+        /// </summary>
         public KeyValuePair<long, T> Dequeue()
         {
             if (_root == null)
@@ -106,6 +135,9 @@ namespace SystemSharp.Collections
             return new KeyValuePair<long, T>(cur.Key, cur.Value);
         }
 
+        /// <summary>
+        /// Returns the element with highest priority, i.e. lowest key, but does not remove it.
+        /// </summary>
         public KeyValuePair<long, T> Peek()
         {
             if (_root == null)
@@ -122,6 +154,9 @@ namespace SystemSharp.Collections
             return new KeyValuePair<long, T>(cur.Key, cur.Value);
         }
 
+        /// <summary>
+        /// Whether queue contains any element.
+        /// </summary>
         public bool IsEmpty
         {
             get

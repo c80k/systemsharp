@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,7 +26,13 @@ namespace SystemSharp.Collections
 {
     public static class Sets
     {
-        public static void AddRange<T>(this ISet<T> me, IEnumerable<T> items)
+        /// <summary>
+        /// Adds a sequence of elements to the collection
+        /// </summary>
+        /// <typeparam name="T">type of element</typeparam>
+        /// <param name="me">a collection</param>
+        /// <param name="items">sequence of elements to be added</param>
+        public static void AddRange<T>(this ICollection<T> me, IEnumerable<T> items)
         {
             foreach (T item in items)
                 me.Add(item);
