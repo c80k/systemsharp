@@ -31,11 +31,19 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Common
 {
+    /// <summary>
+    /// This static class provides some specialized mathematical operations.
+    /// </summary>
     public static class MathExt
     {
+        /// <summary>
+        /// Returns the smallest number P, such that P &gt;= <paramref name="number"/> and P is a power of 2.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="number"/> &lt; 0 or result would overflow</exception>
+        /// <param name="number">a non-negative number</param>
         public static int CeilPow2(int number)
         {
-            Contract.Requires(number >= 0 && number <= int.MaxValue/2);
+            Contract.Requires<ArgumentOutOfRangeException>(number >= 0 && number <= int.MaxValue/2, "number");
 
             int pow2 = 1;
             while (pow2 < number)
@@ -44,9 +52,14 @@ namespace SystemSharp.Common
             return pow2;
         }
 
+        /// <summary>
+        /// Returns the smallest number P, such that P &gt;= <paramref name="number"/> and P is a power of 2.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if result would overflow</exception>
+        /// <param name="number">some number</param>
         public static uint CeilPow2(uint number)
         {
-            Contract.Requires(number >= 0 && number <= uint.MaxValue / 2);
+            Contract.Requires<ArgumentOutOfRangeException>(number <= uint.MaxValue / 2 + 1, "number");
 
             uint pow2 = 1;
             while (pow2 < number)
@@ -55,9 +68,14 @@ namespace SystemSharp.Common
             return pow2;
         }
 
+        /// <summary>
+        /// Returns the smallest number P, such that P &gt;= <paramref name="number"/> and P is a power of 2.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if result would overflow</exception>
+        /// <param name="number">some number</param>
         public static ulong CeilPow2(ulong number)
         {
-            Contract.Requires(number >= 0 && number < ulong.MaxValue / 2 + 1);
+            Contract.Requires<ArgumentOutOfRangeException>(number <= ulong.MaxValue / 2 + 1, "number");
 
             ulong pow2 = 1;
             while (pow2 < number)
@@ -66,9 +84,14 @@ namespace SystemSharp.Common
             return pow2;
         }
 
+        /// <summary>
+        /// Returns the smallest number P, such that P &gt;= <paramref name="number"/> and P is a power of 2.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="number"/> &lt; 0 or result would overflow</exception>
+        /// <param name="number">some number</param>
         public static ulong CeilPow2(double number)
         {
-            Contract.Requires(number >= 0 && number < 0.5 * double.MaxValue);
+            Contract.Requires<ArgumentOutOfRangeException>(number >= 0 && number <= ulong.MaxValue / 2 + 1, "number");
 
             ulong pow2 = 1;
             while (pow2 < number)
@@ -77,9 +100,17 @@ namespace SystemSharp.Common
             return pow2;
         }
 
+        /// <summary>
+        /// Returns the largest number P, such that P &lt;= <paramref name="number"/> and P is a power of 2.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="number"/> &lt; 0 or result would overflow</exception>
+        /// <param name="number">a non-negative number</param>
         public static int FloorPow2(int number)
         {
-            Contract.Requires(number >= 0 && number < int.MaxValue / 2 + 1);
+            Contract.Requires<ArgumentOutOfRangeException>(number >= 0, "number");
+
+            if (number > (int.MaxValue / 2 + 1))
+                return int.MaxValue / 2 + 1;
 
             int pow2 = 1;
             while (pow2 < number)
@@ -90,9 +121,14 @@ namespace SystemSharp.Common
             return pow2;
         }
 
+        /// <summary>
+        /// Returns the largest number P, such that P &lt;= <paramref name="number"/> and P is a power of 2.
+        /// </summary>
+        /// <param name="number">some number</param>
         public static ulong FloorPow2(ulong number)
         {
-            Contract.Requires(number >= 0 && number < ulong.MaxValue / 2 + 1);
+            if (number > (ulong.MaxValue / 2 + 1))
+                return ulong.MaxValue / 2 + 1;
 
             ulong pow2 = 1;
             while (pow2 < number)
@@ -104,14 +140,13 @@ namespace SystemSharp.Common
         }
 
         /// <summary>
-        /// Computes floor(log2(number))
+        /// Computes floor(log2(<paramref name="number"/>)) for positive numbers, returns -1 otherwise
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">some number</param>
         public static int FloorLog2(long number)
         {
             int result = -1;
-            while (number != 0)
+            while (number > 0)
             {
                 number /= 2;
                 result++;
@@ -120,14 +155,13 @@ namespace SystemSharp.Common
         }
 
         /// <summary>
-        /// Computes floor(log2(number))
+        /// Computes floor(log2(<paramref name="number"/>)) for positive numbers, returns -1 otherwise
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">some number</param>
         public static int FloorLog2(ulong number)
         {
             int result = -1;
-            while (number != 0)
+            while (number > 0)
             {
                 number /= 2;
                 result++;
@@ -136,64 +170,70 @@ namespace SystemSharp.Common
         }
 
         /// <summary>
-        /// Computes ceil(log2(number))
+        /// Computes ceil(log2(<paramref name="number"/>)) for positive numbers, returns -1 otherwise
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">some number</param>
         public static int CeilLog2(int number)
         {
-            if (IsPow2(number))
+            if (number <= 0)
+                return -1;
+            else if (IsPow2(number))
                 return FloorLog2(number);
             else
                 return FloorLog2(number) + 1;
         }
 
         /// <summary>
-        /// Computes ceil(log2(number))
+        /// Computes ceil(log2(<paramref name="number"/>)) for positive numbers, returns -1 otherwise
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">some number</param>
         public static int CeilLog2(ulong number)
         {
-            if (IsPow2(number))
+            if (number == 0)
+                return -1;
+            else if (IsPow2(number))
                 return FloorLog2(number);
             else
                 return FloorLog2(number) + 1;
         }
 
+        /// <summary>
+        /// Computes ceil(log2(<paramref name="number"/>)) for positive numbers
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="number"/> &lt;= 0</exception>
+        /// <param name="number">some number</param>
         public static int CeilLog2(double number)
         {
-            Contract.Requires(number >= 0);
+            Contract.Requires<ArgumentOutOfRangeException>(number > 0, "number");
 
-            if (number == 0.0)
-                return -1;
             return (int)Math.Ceiling(Math.Log(number, 2.0));
         }
 
+        /// <summary>
+        /// Computes floor(log2(<paramref name="number"/>)) for positive numbers
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="number"/> &lt;= 0</exception>
+        /// <param name="number">some number</param>
         public static int FloorLog2(double number)
         {
-            Contract.Requires(number >= 0);
+            Contract.Requires<ArgumentOutOfRangeException>(number > 0, "number");
 
-            if (number == 0.0)
-                return -1;
             return (int)Math.Floor(Math.Log(number, 2.0));
         }
 
         /// <summary>
-        ///  Determines whether number is a power of 2
+        /// Determines whether <paramref name="number"/> is a power of 2
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">some number</param>
         public static bool IsPow2(long number)
         {
             return (number & (number - 1)) == 0;
         }
 
         /// <summary>
-        ///  Determines whether number is a power of 2
+        /// Determines whether <paramref name="number"/> is a power of 2
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">some number</param>
         public static bool IsPow2(ulong number)
         {
             return (number & (number - 1)) == 0;
