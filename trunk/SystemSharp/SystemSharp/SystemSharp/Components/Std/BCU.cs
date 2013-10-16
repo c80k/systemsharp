@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using SystemSharp.Assembler;
@@ -237,9 +238,41 @@ namespace SystemSharp.Components.Std
     /// two possible addresses of next instruction. One of them is just the address of the physically next instruction,
     /// the other one may be arbitrary. Therefore, the BCU provides an "alternative address" input (<c>AltAddr</c>) and branch
     /// flags (<c>BrP</c> and <c>BrN</c>) which indicate whether to take the branch or not in positive and negative logic, respectively.
-    /// From this information, the BCU computes the next output address:
+    /// From this information, the BCU computes the next output address based on the following truth table:
     /// <list type="table">
+    /// <listheader>
+    /// <description><c>Rst</c> value</description>
+    /// <description><c>BrP</c> value</description>
+    /// <description><c>BrN</c> value</description>
+    /// <description>Output address <c>OutAddr</c></description>
+    /// </listheader>
+    /// <item>
+    /// <description>1</description>
+    /// <description>-</description>
+    /// <description>-</description>
+    /// <description><c>StartupAddr</c> value</description>
+    /// </item>
+    /// <item>
+    /// <description>0</description>
+    /// <description>0</description>
+    /// <description>1</description>
+    /// <description>last output address + 1</description>
+    /// </item>
+    /// <item>
+    /// <description>0</description>
+    /// <description>1</description>
+    /// <description>-</description>
+    /// <description><c>AltAddr</c> value</description>
+    /// </item>
+    /// <item>
+    /// <description>0</description>
+    /// <description>-</description>
+    /// <description>0</description>
+    /// <description><c>AltAddr</c> value</description>
+    /// </item>
     /// </list>
+    /// The BCU can account for program ROM latency in that it ignores <c>BrP</c> and <c>BrN</c> during the first 
+    /// <c>Latency</c> c-steps after reset.
     /// </remarks>
     public class BCU: Component
     {
@@ -338,17 +371,26 @@ namespace SystemSharp.Components.Std
         /// </summary>
         public Out<StdLogicVector> OutAddr { internal get; set; }
 
+        /// <summary>
+        /// Address width
+        /// </summary>
         [PerformanceRelevant]
         public int AddrWidth 
         { 
             [StaticEvaluation] get; [AssumeNotCalled] set; 
         }
 
+        /// <summary>
+        /// Startup (reset) address
+        /// </summary>
         public StdLogicVector StartupAddr 
         { 
             [StaticEvaluation] get; [AssumeNotCalled] set; 
         }
 
+        /// <summary>
+        /// Latency of program ROM. The BCU ignores <c>BrP</c> and <c>BrN</c> during the first <c>Latency</c> clocks after reset.
+        /// </summary>
         [PerformanceRelevant]
         public int Latency
         {
@@ -356,6 +398,9 @@ namespace SystemSharp.Components.Std
             private set;
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IBCUTransactionSite TASite { get; private set; }
 
         private SLVSignal _lastAddr;
@@ -363,8 +408,14 @@ namespace SystemSharp.Components.Std
         private SLVSignal _rstq;
         private StdLogicVector _rstPat;
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="latency">Latency of program ROM, at least 1</param>
         public BCU(int latency = 1)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(latency >= 1, "latency <= 0 does not make sense.");
+
             TASite = new BCUTransactionSite(this);
             Latency = latency;
         }

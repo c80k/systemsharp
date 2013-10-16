@@ -27,16 +27,46 @@ using SystemSharp.DataTypes;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Generic register transfer level interface for read-only memory
+    /// </summary>
     [ContractClass(typeof(ROMContractClass))]
     public interface IROM
     {
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         In<StdLogic> Clk { get; set;  }
+
+        /// <summary>
+        /// Address input
+        /// </summary>
         In<StdLogicVector> Addr { get; set;  }
+
+        /// <summary>
+        /// Read enable
+        /// </summary>
         In<StdLogic> RdEn { get; set; }
+
+        /// <summary>
+        /// Data output
+        /// </summary>
         Out<StdLogicVector> DataOut { get; set; }
+
+        /// <summary>
+        /// ROM size (i.e. number of words)
+        /// </summary>
         uint Depth { get; }
+
+        /// <summary>
+        /// Width of data word
+        /// </summary>
         uint Width { get; }
 
+        /// <summary>
+        /// Pre-initializes the ROM with word <paramref name="data"/> at address <paramref name="addr"/>.
+        /// Called during elaboration, never at model runtime.
+        /// </summary>
         void PreWrite(StdLogicVector addr, StdLogicVector data);
     }
 
