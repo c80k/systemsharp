@@ -319,7 +319,7 @@ namespace SystemSharp.Assembler
                     {
                         if (mapping.InitiationInterval > 0)
                         {
-                            if (!rtbl.IsReserved(cstep, cstep + mapping.InitiationInterval - 1, instr))
+                            if (!rtbl.IsReserved(cstep, cstep + mapping.InitiationInterval - 1))
                                 viableMappings.Add(mapping);
                             else if (mapping.ResourceKind == EMappingKind.ExclusiveResource)
                                 return null;

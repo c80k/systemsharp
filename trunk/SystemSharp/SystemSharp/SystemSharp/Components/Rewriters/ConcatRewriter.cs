@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -28,6 +28,16 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// Rewrites .NET compiler-generated code for string concatenation to the SysDOM-intrinsic StringConcat operation.
+    /// </summary>
+    /// <remarks>
+    /// .NET compiler-generated code for string concatenation conceptually allocates a new array, assigns each individual string 
+    /// (or object) to an array element and finally calls <c>string.Concat(...)</c>. This scheme is ugly if we want to reconstruct a
+    /// clean SysDOM representation, allowing us to generate source code for a different target language. Thus, this rewriter does a
+    /// little bit of pattern matching: It eliminates the array allocation/element assignment procedure and directly puts the operands
+    /// into the StringConcat function instead.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     class ConcatRewriter: RewriteCall
     {

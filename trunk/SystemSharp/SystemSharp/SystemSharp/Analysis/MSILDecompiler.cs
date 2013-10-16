@@ -2969,11 +2969,11 @@ namespace SystemSharp.Analysis
             else if (_curILI.Code.Equals(OpCodes.Clt))
                 Push(Expression.LessThan(e1, e2), TypeConversions.PrimitiveLessThan(o1, o2));
             else if (_curILI.Code.Equals(OpCodes.Clt_Un))
-                Push(Expression.LessThan(e1, e2), TypeConversions.PrimitiveLessThan_Un(o1, o2));
+                Push(Expression.LessThan(e1, e2), TypeConversions.PrimitiveLessThan(o1, o2));
             else if (_curILI.Code.Equals(OpCodes.Cgt))
                 Push(Expression.GreaterThan(e1, e2), TypeConversions.PrimitiveGreaterThan(o1, o2));
             else if (_curILI.Code.Equals(OpCodes.Cgt_Un))
-                Push(Expression.GreaterThan(e1, e2), TypeConversions.PrimitiveGreaterThan_Un(o1, o2));
+                Push(Expression.GreaterThan(e1, e2), TypeConversions.PrimitiveGreaterThan(o1, o2));
             else
                 throw new InvalidOperationException();
         }

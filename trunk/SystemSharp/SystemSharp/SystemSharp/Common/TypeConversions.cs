@@ -32,97 +32,57 @@ namespace SystemSharp.Common
 {
     public static class TypeConversions
     {
+        /// <summary>
+        /// Converts <paramref name="v"/> to IEEE 754 double precision format, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix and UFix are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="v"/> == null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion from type of <paramref name="v"/>.</exception>
         public static double ToDouble(object v)
         {
-            Contract.Requires<ArgumentNullException>(v != null);
-
-            if (v is sbyte)
-                return (double)(sbyte)v;
-            else if (v is byte)
-                return (double)(byte)v;
-            else if (v is short)
-                return (double)(short)v;
-            else if (v is ushort)
-                return (double)(ushort)v;
-            else if (v is int)
-                return (double)(int)v;
-            else if (v is uint)
-                return (double)(uint)v;
-            else if (v is long)
-                return (double)(long)v;
-            else if (v is ulong)
-                return (double)(ulong)v;
-            else if (v is float)
-                return (double)(float)v;
-            else if (v is double)
-                return (double)v;
-            else
-                throw new NotImplementedException();
+            Contract.Requires<ArgumentNullException>(v != null, "v");
+            return (double)ConvertValue(v, typeof(double));
         }
 
+        /// <summary>
+        /// Converts <paramref name="v"/> to "long" datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix and UFix are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="v"/> == null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion from type of <paramref name="v"/>.</exception>
         public static long ToLong(object v)
         {
-            Contract.Requires<ArgumentNullException>(v != null);
-
-            if (v is sbyte)
-                return (long)(sbyte)v;
-            else if (v is byte)
-                return (long)(byte)v;
-            else if (v is short)
-                return (long)(short)v;
-            else if (v is ushort)
-                return (long)(ushort)v;
-            else if (v is int)
-                return (long)(int)v;
-            else if (v is uint)
-                return (long)(uint)v;
-            else if (v is long)
-                return (long)v;
-            else if (v is ulong)
-                return (long)(ulong)v;
-            else if (v is float)
-                return (long)(float)v;
-            else if (v is double)
-                return (long)(double)v;
-            else if (v is char)
-                return (long)(char)v;
-            else if (v is bool)
-                return (bool)v ? 1 : 0;
-            else
-                throw new NotImplementedException();
+            Contract.Requires<ArgumentNullException>(v != null, "v");
+            return (long)ConvertValue(v, typeof(long));
         }
 
+        /// <summary>
+        /// Converts <paramref name="v"/> to "ulong" datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix and UFix are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="v"/> == null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion from type of <paramref name="v"/>.</exception>
         public static ulong ToULong(object v)
         {
-            Contract.Requires<ArgumentNullException>(v != null);
-
-            if (v is sbyte)
-                return (ulong)(sbyte)v;
-            else if (v is byte)
-                return (ulong)(byte)v;
-            else if (v is short)
-                return (ulong)(short)v;
-            else if (v is ushort)
-                return (ulong)(ushort)v;
-            else if (v is int)
-                return (ulong)(int)v;
-            else if (v is uint)
-                return (ulong)(uint)v;
-            else if (v is long)
-                return (ulong)(long)v;
-            else if (v is ulong)
-                return (ulong)v;
-            else if (v is float)
-                return (ulong)(float)v;
-            else if (v is double)
-                return (ulong)(double)v;
-            else
-                throw new NotImplementedException();
+            Contract.Requires<ArgumentNullException>(v != null, "v");
+            return (ulong)ConvertValue(v, typeof(ulong));
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to the enumeration literal of <paramref name="dstType"/> whose ordinal number
+        /// is <paramref name="src"/>. Values being a combination of multiple literals of a [Flag] enum are NOT supported.
+        /// </summary>
+        /// <param name="src">ordinal value</param>
+        /// <param name="dstType">target enumeration type</param>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="ArgumentException">if <paramref name="dstType"/> is not an enum</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if there is no corresponding literal</exception>
         public static object ConvertToEnum(long src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
             Contract.Requires<ArgumentException>(dstType.IsEnum, "Destination type is not an enum type");
 
             Array enumValues = dstType.GetEnumValues();
@@ -139,14 +99,20 @@ namespace SystemSharp.Common
                 }
             }
             if (conv == null)
-                throw new InvalidOperationException("No matching enum value");
+                throw new ArgumentOutOfRangeException("No matching enum value");
 
             return conv;
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertLong(long src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.Equals(typeof(bool)))
                 return src != 0 ? true : false;
@@ -177,12 +143,19 @@ namespace SystemSharp.Common
             else if (dstType.Equals(typeof(object)))
                 return src;
             else
-                throw new NotImplementedException();
+                throw new NotImplementedException(string.Format("Don't know how to convert 'long' value to {0}", dstType));
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertLong(long src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(Signed)))
                 return Signed.FromLong(src, SFix.GetFormat(dstType).IntWidth);
@@ -196,9 +169,15 @@ namespace SystemSharp.Common
                 return ConvertLong(src, dstType.CILType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertULong(ulong src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.Equals(typeof(sbyte)))
                 return (sbyte)src;
@@ -220,9 +199,16 @@ namespace SystemSharp.Common
                 throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertULong(ulong src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(Unsigned)))
                 return Unsigned.FromULong(src, UFix.GetFormat(dstType).IntWidth);
@@ -234,9 +220,15 @@ namespace SystemSharp.Common
                 return ConvertULong(src, dstType.CILType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertSigned(Signed src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.Equals(typeof(double)))
                 return SFix.FromSigned(src, 0).DoubleValue;
@@ -244,9 +236,16 @@ namespace SystemSharp.Common
                 return ConvertValue(src.LongValue, dstType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertSigned(Signed src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(Signed)))
                 return src.Resize(SFix.GetFormat(dstType).IntWidth);
@@ -256,9 +255,15 @@ namespace SystemSharp.Common
                 return ConvertSigned(src, dstType.CILType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertUnsigned(Unsigned src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.Equals(typeof(double)))
                 return UFix.FromUnsigned(src, 0).DoubleValue;
@@ -266,9 +271,16 @@ namespace SystemSharp.Common
                 return ConvertValue(src.ULongValue, dstType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertUnsigned(Unsigned src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(Unsigned)))
                 return src.Resize(UFix.GetFormat(dstType).IntWidth);
@@ -278,9 +290,15 @@ namespace SystemSharp.Common
                 return ConvertUnsigned(src, dstType.CILType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertSFix(SFix src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.Equals(typeof(double)))
                 return src.DoubleValue;
@@ -304,9 +322,16 @@ namespace SystemSharp.Common
                 throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertSFix(SFix src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(SFix)))
                 return src.Resize(SFix.GetFormat(dstType).IntWidth, SFix.GetFormat(dstType).FracWidth);
@@ -318,9 +343,15 @@ namespace SystemSharp.Common
                 return ConvertSFix(src, dstType.CILType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertUFix(UFix src, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.Equals(typeof(double)))
                 return src.DoubleValue;
@@ -344,9 +375,16 @@ namespace SystemSharp.Common
                 throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertUFix(UFix src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(UFix)))
                 return src.Resize(UFix.GetFormat(dstType).IntWidth, UFix.GetFormat(dstType).FracWidth);
@@ -358,9 +396,16 @@ namespace SystemSharp.Common
                 return ConvertUFix(src, dstType.CILType);
         }
 
+        /// <summary>
+        /// Converts <paramref name="src"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion to <paramref name="dstType"/></exception>
         public static object ConvertDouble(double src, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
 
             if (dstType.CILType.Equals(typeof(SFix)))
             {
@@ -378,10 +423,16 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Converts <paramref name="srcValue"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types and enum types are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion from type of <paramref name="srcValue"/> to <paramref name="dstType"/></exception>
         public static object ConvertValue(object srcValue, Type dstType)
         {
-            Contract.Requires<ArgumentNullException>(srcValue != null);
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
+            Contract.Requires<ArgumentNullException>(!dstType.IsValueType || srcValue != null, "srcValue");
 
             if (srcValue == null)
                 return null;
@@ -456,10 +507,20 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Converts <paramref name="srcValue"/> to <paramref name="dstType"/> datatype, possibly with loss of precision or overflow.
+        /// </summary>
+        /// <remarks>Currently, conversions between all primitive numeric CIL types, enum types, and System#-intrinsic datatypes
+        /// Signed, Unsigned, SFix, UFix and StdLogicVector are supported.</remarks>
+        /// <exception cref="ArgumentNullException">if <paramref name="dstType"/> is null</exception>
+        /// <exception cref="NotImplementedException">if there is no known conversion from type of <paramref name="srcValue"/> to <paramref name="dstType"/></exception>
         public static object ConvertValue(object srcValue, TypeDescriptor dstType)
         {
-            Contract.Requires<ArgumentNullException>(srcValue != null);
-            Contract.Requires<ArgumentNullException>(dstType != null);
+            Contract.Requires<ArgumentNullException>(dstType != null, "dstType");
+            Contract.Requires<ArgumentNullException>(!dstType.CILType.IsValueType || srcValue != null, "srcValue");
+
+            if (srcValue == null)
+                return null;
 
             if (!dstType.IsConstrained)
                 return ConvertValue(srcValue, dstType.CILType);
@@ -515,8 +576,23 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Converts each parameter of <paramref name="args"/> to the type expected by <paramref name="method"/> and
+        /// invokes <paramref name="method"/> on <paramref name="instance"/>.
+        /// </summary>
+        /// <returns>method call return value, or null if void method</returns>
+        /// <exception cref="ArgumentNullException">if method or args is null, if instance is required and null, 
+        /// or if some method argument is required and null</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if parameter count inside args array does not match method parameter count</exception>
+        /// <exception cref="NotImplementedException">if unknown/impossible conversion from any argument</exception>
         public static object ConvertArgumentsAndInvoke(this MethodBase method, object instance, params object[] args)
         {
+            Contract.Requires<ArgumentNullException>(method != null, "method");
+            Contract.Requires<ArgumentNullException>(method.IsConstructor || method.IsStatic || instance != null, "instance");
+            Contract.Requires<ArgumentNullException>(args != null, "args");
+            Contract.Requires<ArgumentOutOfRangeException>(args.Length == method.GetParameters().Length, 
+                "length of args must match parameter count of method");
+
             object[] cargs = new object[args.Length];
             ParameterInfo[] pis = method.GetParameters();
             for (int i = 0; i < args.Length; i++)
@@ -557,6 +633,11 @@ namespace SystemSharp.Common
                 throw new ArgumentException("The types of the specified arguments do not match");
         }
 
+        /// <summary>
+        /// Adds <paramref name="v1"/> and <paramref name="v2"/> either by primitive addition or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveAdd(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -566,6 +647,11 @@ namespace SystemSharp.Common
             return r;
         }
 
+        /// <summary>
+        /// Computes bitwise "and" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveAnd(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -575,6 +661,11 @@ namespace SystemSharp.Common
             return r;
         }
 
+        /// <summary>
+        /// Computes bitwise "or" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveOr(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -584,6 +675,11 @@ namespace SystemSharp.Common
             return r;
         }
 
+        /// <summary>
+        /// Computes bitwise "xor" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveXor(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -593,6 +689,11 @@ namespace SystemSharp.Common
             return r;
         }
 
+        /// <summary>
+        /// Subtracts <paramref name="v1"/> and <paramref name="v2"/> either by primitive subtraction or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveSub(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -602,6 +703,11 @@ namespace SystemSharp.Common
             return r;
         }
 
+        /// <summary>
+        /// Multiplies <paramref name="v1"/> and <paramref name="v2"/> either by primitive multiplaction or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveMul(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -610,6 +716,13 @@ namespace SystemSharp.Common
             return (dynamic)v1 * (dynamic)v2;
         }
 
+        /// <summary>
+        /// Divides <paramref name="v1"/> and <paramref name="v2"/> either by primitive division or 
+        /// by invoking an appropriate operator. Returns null if either operand is null. Returns 0 in the representation of
+        /// <paramref name="v1"/>'s type in case of division by zero.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
+        /// <exception cref="NotImplementedException">if division by zero was detected, but 0 could not be converted the <paramref name="v1"/>'s type</exception>
         public static object PrimitiveDiv(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -625,14 +738,33 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Computes the modulus of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null. Returns 0 in the representation of
+        /// <paramref name="v1"/>'s type in case of division by zero.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
+        /// <exception cref="NotImplementedException">if division by zero was detected, but 0 could not be converted the <paramref name="v1"/>'s type</exception>
         public static object PrimitiveRem(object v1, object v2)
         {
             if (v1 == null || v2 == null)
                 return null;
 
-            return (dynamic)v1 % (dynamic)v2;
+            try
+            {
+                return (dynamic)v1 % (dynamic)v2;
+            }
+            catch (DivideByZeroException)
+            {
+                return ConvertValue(0, v1.GetType());
+            }
         }
 
+        /// <summary>
+        /// Computes "shift left" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveShl(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -641,6 +773,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 << (dynamic)v2;
         }
 
+        /// <summary>
+        /// Computes "shift right" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveShr(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -649,6 +786,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 >> (dynamic)v2;
         }
 
+        /// <summary>
+        /// Computes "less than" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveLessThan(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -657,14 +799,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 < (dynamic)v2;
         }
 
-        public static object PrimitiveLessThan_Un(object v1, object v2)
-        {
-            if (v1 == null || v2 == null)
-                return null;
-
-            return (dynamic)v1 < (dynamic)v2;
-        }
-
+        /// <summary>
+        /// Computes "less than or equal" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveLessThanOrEqual(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -673,6 +812,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 <= (dynamic)v2;
         }
 
+        /// <summary>
+        /// Computes "equality" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveEqual(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -681,6 +825,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 == (dynamic)v2;
         }
 
+        /// <summary>
+        /// Computes "inequality" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveUnequal(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -689,6 +838,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 != (dynamic)v2;
         }
 
+        /// <summary>
+        /// Computes "greater than or equal" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveGreaterThanOrEqual(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -697,6 +851,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 >= (dynamic)v2;
         }
 
+        /// <summary>
+        /// Computes "greater than" of <paramref name="v1"/> and <paramref name="v2"/> either by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if either operand is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveGreaterThan(object v1, object v2)
         {
             if (v1 == null || v2 == null)
@@ -705,14 +864,11 @@ namespace SystemSharp.Common
             return (dynamic)v1 > (dynamic)v2;
         }
 
-        public static object PrimitiveGreaterThan_Un(object v1, object v2)
-        {
-            if (v1 == null || v2 == null)
-                return null;
-
-            return (dynamic)v1 > (dynamic)v2;
-        }
-
+        /// <summary>
+        /// Negates <paramref name="v"/> by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if <paramref name="v"/> is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveNeg(object v)
         {
             if (v == null)
@@ -721,6 +877,11 @@ namespace SystemSharp.Common
             return -(dynamic)v;
         }
 
+        /// <summary>
+        /// Computes "logical not" of <paramref name="v"/> by primitive operation or 
+        /// by invoking an appropriate operator. Returns null if <paramref name="v"/> is null.
+        /// </summary>
+        /// <exception cref="RuntimeBinderException">if there is no operator implemented to perform the operation</exception>
         public static object PrimitiveNot(object v)
         {
             if (v == null)
