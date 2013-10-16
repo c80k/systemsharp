@@ -20,9 +20,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+/* If the compiler complains about missing namespace System.Reactive, this is because you are missing the
+ * Microsoft Reactive extensions ("Rx"). Please follow instructions below.
+ * */
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+/* Actually, NuGet should automatically detect the missing references and install them from the Internet. 
+ * It *should*... *actually*... Unfortunately, I observed some weird behavior where even re-installing Rx 
+ *  did not fix the issue. If you get this particular problem, try this:
+ * 
+ *   1. In solution explorer, expand "References" and delete all references starting with "System.Reactive".
+ *      REMARK: These should me marked with a yellow explanation mark symbol - if they're not you either don't 
+ *              have a problem, or you have a different problem.
+ *   2. Open the package manager console (Tools -> Library Package Manager -> Package Manager Console)
+ *      - Make sure "SystemSharp" is selected as "Default project"
+ *      - Type: 
+ *        PM> Uninstall-Package Rx-Main
+ *   3. In solution explorer, double click "packages.config" which will open a text editor.
+ *      - Delete all lines starting with "<package id="Rx-"
+ *      - Save
+ *   4. Change back to the package manager console
+ *      - Type: 
+ *        PM> Install-Package Rx-Main
+ *      
+ * The last step should make the references to System.Reactive reappear without exclamation mark.
+ * If it doesn't - I'm sorry - I have no clue...
+ * */
+
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
