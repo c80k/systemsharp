@@ -30,13 +30,35 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface of branch control unit (BCU)
+    /// </summary>
     public interface IBCUTransactionSite: ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction for an unconditional branch
+        /// </summary>
+        /// <param name="target">branch target</param>
         IEnumerable<TAVerb> Branch(BranchLabel target);
+
+        /// <summary>
+        /// Returns a transaction for a conditional branch: "branch if some condition is true"-style
+        /// </summary>
+        /// <param name="cond">condition source</param>
+        /// <param name="target">branch target</param>
         IEnumerable<TAVerb> BranchIf(ISignalSource<StdLogicVector> cond, BranchLabel target);
+
+        /// <summary>
+        /// Returns a transaction for a conditional branch: "branch if some condition is false"-style
+        /// </summary>
+        /// <param name="cond">condition source</param>
+        /// <param name="target">branch target</param>
         IEnumerable<TAVerb> BranchIfNot(ISignalSource<StdLogicVector> cond, BranchLabel target);
     }
 
+    /// <summary>
+    /// Implements a service for mapping XIL instructions to branch control units (i.e. instances of BCU).
+    /// </summary>
     public class BCUMapper : IXILMapper
     {
         private abstract class BCUMapping : IXILMapping
@@ -131,12 +153,20 @@ namespace SystemSharp.Components.Std
         private BCU _host;
         private int _latency;
 
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="host">the branch control unit</param>
+        /// <param name="latency">desired latency</param>
         public BCUMapper(BCU host, int latency = 1)
         {
             _host = host;
             _latency = latency;
         }
 
+        /// <summary>
+        /// Returns goto, brtrue, brfalse
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Goto(null);
@@ -197,6 +227,20 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A synthesizable implementation of a branch control unit. It is intended to be used during high-level synthesis
+    /// for mapping branch instructions.
+    /// </summary>
+    /// <remarks>
+    /// The purpose of a branch control unit (BCU) is to drive the output address towards program memory. If we consider a
+    /// conditional branch, there are two possibilities: either the branch is taken or not. Therefore, we have to choose between
+    /// two possible addresses of next instruction. One of them is just the address of the physically next instruction,
+    /// the other one may be arbitrary. Therefore, the BCU provides an "alternative address" input (<c>AltAddr</c>) and branch
+    /// flags (<c>BrP</c> and <c>BrN</c>) which indicate whether to take the branch or not in positive and negative logic, respectively.
+    /// From this information, the BCU computes the next output address:
+    /// <list type="table">
+    /// </list>
+    /// </remarks>
     public class BCU: Component
     {
         private class BCUTransactionSite : 
@@ -264,11 +308,34 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// Synchronous reset input
+        /// </summary>
         public In<StdLogic> Rst { private get; set; }
+
+        /// <summary>
+        /// Positive branch flag input
+        /// </summary>
         public In<StdLogicVector> BrP { internal get; set; }
+
+        /// <summary>
+        /// Negative branch flag input
+        /// </summary>
         public In<StdLogicVector> BrN { internal get; set; }
+
+        /// <summary>
+        /// Branch address
+        /// </summary>
         public In<StdLogicVector> AltAddr { internal get; set; }
+
+        /// <summary>
+        /// Address output
+        /// </summary>
         public Out<StdLogicVector> OutAddr { internal get; set; }
 
         [PerformanceRelevant]

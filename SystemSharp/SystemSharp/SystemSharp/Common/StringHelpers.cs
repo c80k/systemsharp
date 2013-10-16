@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 
@@ -26,42 +27,36 @@ namespace SystemSharp.Common
 {
     public static class StringHelpers
     {
-#if false
-        [Obsolete("Use string.Join() instead")]
-        public static string ToStringList<T>(this IEnumerable<T> objs, string sep = ", ")
-        {
-            StringBuilder sb = new StringBuilder();
-            bool first = true;
-            foreach (T obj in objs)
-            {
-                if (first)
-                    first = false;
-                else
-                    sb.Append(sep);
-                sb.Append(obj);
-            }
-            return sb.ToString();
-        }
-#endif
-
+        /// <summary>
+        /// Returns a string of <paramref name="n"/> zeros.
+        /// </summary>
         public static string Zeros(long n)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(n >= 0);
             return ManyOf("0", n);
         }
 
+        /// <summary>
+        /// Returns a string of <paramref name="n"/> space characters.
+        /// </summary>
         public static string Spaces(long n)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(n >= 0);
             return ManyOf(" ", n);
         }
 
+        /// <summary>
+        /// Returns a string which consists of literal <paramref name="lit"/> being <paramref name="n"/> times repeated.
+        /// </summary>
         public static string ManyOf(string lit, long n)
         {
+            Contract.Requires<ArgumentNullException>(lit != null, "lit");
+            Contract.Requires<ArgumentOutOfRangeException>(n >= 0, "n");
+
             if (n == 0)
                 return "";
             else if (n == 1)
                 return lit;
-            else if (n < 0)
-                throw new ArgumentException();
             else
                 return ManyOf(lit, n / 2) + ManyOf(lit, n - (n / 2));
         }

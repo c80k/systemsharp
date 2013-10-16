@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -86,6 +86,12 @@ namespace SystemSharp.Common
             return !returnType.Equals(typeof(void));
         }
 
+        /// <summary>
+        /// Returns true if specified method is either a method with non-void return type or a constructor.
+        /// </summary>
+        /// <param name="returnType">type returned by method or class type instantiated by constructor, respectively</param>
+        /// <exception cref="NotImplementedException">if <paramref name="mb"/> is neither method nor constructor
+        /// (FIXME: can this actually happen?)</exception>
         public static bool IsFunctionOrCtor(this MethodBase mb, out Type returnType)
         {
             if (mb is MethodInfo)
@@ -97,6 +103,10 @@ namespace SystemSharp.Common
             return !returnType.Equals(typeof(void));
         }
 
+        /// <summary>
+        /// Returns true if specified method is either a method with non-void return type or a constructor.
+        /// </summary>
+        /// <param name="returnType">type returned by method or class type instantiated by constructor, respectively</param>
         public static bool ReturnsSomething(this MethodBase mb, out Type returnType)
         {
             if (mb is MethodInfo)
@@ -131,23 +141,9 @@ namespace SystemSharp.Common
                 return false;
         }
 
-        public static bool IsInherited(this MethodInfo method)
-        {
-            return !method.DeclaringType.GetMethods(
-                BindingFlags.Public | BindingFlags.NonPublic |
-                BindingFlags.Static | BindingFlags.Instance |
-                BindingFlags.DeclaredOnly).Contains(method);
-        }
-
-        public static MethodInfo GetOriginalDefinition(this MethodInfo method)
-        {
-            MethodInfo basedef = method.GetBaseDefinition();
-            if (!basedef.IsAbstract)
-                return basedef;
-            else
-                return method;
-        }
-
+        /// <summary>
+        /// Returns the chain of method base definitions, i.e. methods being overwritten by specified method.
+        /// </summary>
         public static IEnumerable<MethodInfo> GetAncestorDefinitions(this MethodInfo method)
         {
             MethodInfo basemethod = method;
@@ -159,6 +155,9 @@ namespace SystemSharp.Common
             } while (!basemethod.Equals(method));
         }
 
+        /// <summary>
+        /// Returns the chain of method base definitions, i.e. methods being overwritten by specified method.
+        /// </summary>
         public static IEnumerable<MethodBase> GetAncestorDefinitions(this MethodBase method)
         {
             if (method is MethodInfo)
@@ -167,6 +166,9 @@ namespace SystemSharp.Common
                 return Enumerable.Repeat(method, 1);
         }
 
+        /// <summary>
+        /// Returns all base types and their respective type parameters of specified type.
+        /// </summary>
         public static IEnumerable<Type> GetBaseTypeChain(this Type type)
         {
             Type oldType;
@@ -188,8 +190,8 @@ namespace SystemSharp.Common
         /// <returns>A method which is defined on instance and implements the given method. null if no such method exists.</returns>
         public static MethodInfo FindImplementation(this MethodInfo method, object instance)
         {
-            Contract.Requires(method != null);
-            Contract.Requires(instance != null);
+            Contract.Requires<ArgumentNullException>(method != null, "method");
+            Contract.Requires<ArgumentNullException>(instance != null, "instance");
 
             List<Type> argTypes = new List<Type>();
             argTypes.AddRange(
@@ -255,10 +257,21 @@ namespace SystemSharp.Common
             #endregion
         }
 
+        /// <summary>
+        /// An equality comparer which defines methods to be the same if their method handles or equal.
+        /// </summary>
         public static readonly IEqualityComparer<MethodBase> MethodEqualityComparer = 
             new MethodEqualityComparerImpl();
+
+        /// <summary>
+        /// An equality comparer which defines types to be the same if their type handles or equal.
+        /// </summary>
         public static readonly IEqualityComparer<Type> TypeEqualityComparer =
             new TypeEqualityComparerImpl();
+
+        /// <summary>
+        /// An equality comparer which defines fields to be the same if their field handles or equal.
+        /// </summary>
         public static readonly IEqualityComparer<FieldInfo> FieldEqualityComparer =
             new FieldEqualityComparerImpl();
     }

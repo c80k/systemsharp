@@ -239,11 +239,23 @@ namespace SystemSharp.Common
             return (number & (number - 1)) == 0;
         }
 
+        /// <summary>
+        /// Finds the largest integer N, such that N &lt;= <paramref name="number"/> and N is divisble by <paramref name="alignment"/>.
+        /// </summary>
+        /// <exception cref="DivideByZeroException">if <paramref name="alignment"/> == 0</exception>
         public static ulong Align(ulong number, ulong alignment)
         {
+            Contract.Requires<DivideByZeroException>(alignment != 0, "alignment");
+
             return (number + alignment - 1) / alignment * alignment;
         }
 
+        /// <summary>
+        /// Returns the sign of <paramref name="number"/> as Signed: 
+        /// Signed.FromInt(-1, 2) if <paramref name="number"/> &lt; 0, 
+        /// Signed.FromInt(1, 2) if <paramref name="number"/> &gt; 0, 
+        /// Signed.FromInt(0, 2) if <paramref name="number"/> == 0.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sign)]
         public static Signed SignedSign(float number)
         {
@@ -255,6 +267,12 @@ namespace SystemSharp.Common
                 return Signed.FromInt(0, 2);
         }
 
+        /// <summary>
+        /// Returns the sign of <paramref name="number"/> as Signed: 
+        /// Signed.FromInt(-1, 2) if <paramref name="number"/> &lt; 0, 
+        /// Signed.FromInt(1, 2) if <paramref name="number"/> &gt; 0, 
+        /// Signed.FromInt(0, 2) if <paramref name="number"/> == 0.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sign)]
         public static Signed SignedSign(double number)
         {
@@ -266,6 +284,12 @@ namespace SystemSharp.Common
                 return Signed.FromInt(0, 2);
         }
 
+        /// <summary>
+        /// Returns the sign of <paramref name="number"/> as Signed: 
+        /// Signed.FromInt(-1, 2) if <paramref name="number"/> &lt; 0, 
+        /// Signed.FromInt(1, 2) if <paramref name="number"/> &gt; 0, 
+        /// Signed.FromInt(0, 2) if <paramref name="number"/> == 0.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sign)]
         public static Signed SignedSign(Signed number)
         {
@@ -277,6 +301,12 @@ namespace SystemSharp.Common
                 return Signed.FromInt(0, 2);
         }
 
+        /// <summary>
+        /// Returns the sign of <paramref name="number"/> as Signed: 
+        /// Signed.FromInt(-1, 2) if <paramref name="number"/> &lt; 0, 
+        /// Signed.FromInt(1, 2) if <paramref name="number"/> &gt; 0, 
+        /// Signed.FromInt(0, 2) if <paramref name="number"/> == 0.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sign)]
         public static Signed SignedSign(SFix number)
         {
@@ -305,6 +335,9 @@ namespace SystemSharp.Common
                 value.Resize(value.Size + 1);
         }
 #else
+        /// <summary>
+        /// Returns the absolute value of <paramref name="value"/>. The result will have exactly the same bitwidth as the operand.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Abs)]
         public static Unsigned Abs(Signed value)
         {
@@ -313,6 +346,10 @@ namespace SystemSharp.Common
                 Unsigned.FromBigInt(value.BigIntValue, value.Size);
         }
 
+        /// <summary>
+        /// Returns the absolute value of <paramref name="value"/> as Signed datatype. Consequently, the most significant bit
+        /// of the returned result is always 0. The result bitwidth will be 1 bit more than the operand bitwidth.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Abs)]
         public static Signed SignedAbs(Signed value)
         {
@@ -322,6 +359,10 @@ namespace SystemSharp.Common
         }
 #endif
 
+        /// <summary>
+        /// Returns the absolute value of <paramref name="value"/>. 
+        /// The result will have exactly the same integer and fractional bitwidth as the operand.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Abs)]
         public static UFix Abs(SFix value)
         {
@@ -330,6 +371,11 @@ namespace SystemSharp.Common
                 value.Format.FracWidth);
         }
 
+        /// <summary>
+        /// Returns the absolute value of <paramref name="value"/> as SFix datatype. Consequently, the most significant bit
+        /// of the returned result is always 0. The result integer width is 1 bit more than the operand integer width.
+        /// Fractional width stays the same.
+        /// </summary>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Abs)]
         public static SFix SignedAbs(SFix value)
         {
@@ -338,6 +384,15 @@ namespace SystemSharp.Common
                 value.Format.FracWidth);
         }
 
+        /// <summary>
+        /// Computes the square root of <paramref name="value"/>. The result format is as follows:
+        /// Result integer width is ceil(<paramref name="value.Format.IntWidth"/> / 2).
+        /// Result fractional width is <paramref name="value.Format.TotalWidth"/> - ceil(<paramref name="value.Format.IntWidth"/>).
+        /// </summary>
+        /// <remarks>
+        /// This routine internally uses IEEE 754 double precision floating-point arithmetic. Therefore,
+        /// it is not guaranteed that the result is precise, especially for high fractional widths (&gt; 52).
+        /// </remarks>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sqrt)]
         public static UFix Sqrt(UFix value)
         {
@@ -348,36 +403,80 @@ namespace SystemSharp.Common
                 value.Format.TotalWidth - iw);
         }
 
+        /// <summary>
+        /// Computes the sine of <paramref name="value"/>. The result integer width is always 2 bits, 
+        /// result fractional width is specified by <paramref name="fracWidth"/>.
+        /// </summary>
+        /// <remarks>
+        /// This routine internally uses IEEE 754 double precision floating-point arithmetic. Therefore,
+        /// it is not guaranteed that the result is precise, especially for high fractional widths (&gt; 52).
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="fracWidth"/> &lt; 0</exception>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sin)]
         public static SFix Sin(SFix value, int fracWidth)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(fracWidth >= 0, "fracWidth");
+
             return SFix.FromDouble(
                 Math.Sin(value.DoubleValue),
                 2,
                 fracWidth);
         }
 
+        /// <summary>
+        /// Computes the cosine of <paramref name="value"/>. The result integer width is always 2 bits, 
+        /// result fractional width is specified by <paramref name="fracWidth"/>.
+        /// </summary>
+        /// <remarks>
+        /// This routine internally uses IEEE 754 double precision floating-point arithmetic. Therefore,
+        /// it is not guaranteed that the result is precise, especially for high fractional widths (&gt; 52).
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="fracWidth"/> &lt; 0</exception>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Cos)]
         public static SFix Cos(SFix value, int fracWidth)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(fracWidth >= 0, "fracWidth");
+
             return SFix.FromDouble(
                 Math.Cos(value.DoubleValue),
                 2,
                 fracWidth);
         }
 
+        /// <summary>
+        /// Computes the sine of <paramref name="value"/>. The result integer width is always 2 bits, 
+        /// result fractional width is that of <paramref name="value"/>.
+        /// </summary>
+        /// <remarks>
+        /// This routine internally uses IEEE 754 double precision floating-point arithmetic. Therefore,
+        /// it is not guaranteed that the result is precise, especially for high fractional widths (&gt; 52).
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="value.Format.FracWidth"/> &lt; 0</exception>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Sin)]
         public static SFix Sin(SFix value)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(value.Format.FracWidth >= 0, "value.Format.FracWidth");
+
             return SFix.FromDouble(
                 Math.Sin(value.DoubleValue),
                 2,
                 value.Format.FracWidth);
         }
 
+        /// <summary>
+        /// Computes the cosine of <paramref name="value"/>. The result integer width is always 2 bits, 
+        /// result fractional width is that of <paramref name="value"/>.
+        /// </summary>
+        /// <remarks>
+        /// This routine internally uses IEEE 754 double precision floating-point arithmetic. Therefore,
+        /// it is not guaranteed that the result is precise, especially for high fractional widths (&gt; 52).
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="value.Format.FracWidth"/> &lt; 0</exception>
         [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Cos)]
         public static SFix Cos(SFix value)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(value.Format.FracWidth >= 0, "value.Format.FracWidth");
+
             return SFix.FromDouble(
                 Math.Sin(value.DoubleValue),
                 2,
@@ -403,12 +502,24 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Computes both sine and cosine of <paramref name="value"/>, specified in scaled radians. The conversion to radians
+        /// is done by multiplying <paramref name="value"/> by PI. <paramref name="value"/> must be in the range from -1 to 1.
+        /// The first element of the returned tuple is cosine, the second is sine. Integer width of sine/cosine result is
+        /// 2, fractional width is specified by <paramref name="resultFracBits"/>.
+        /// </summary>
+        /// <remarks>
+        /// This routine internally uses IEEE 754 double precision floating-point arithmetic. Therefore,
+        /// it is not guaranteed that the result is precise, especially for high fractional widths (&gt; 52).
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="value"/> not between -1 and 1, or if
+        /// <paramref name="resultFracBits"/> &lt; 0</exception>
         [MapToScSinCos]
         public static Tuple<SFix, SFix> ScSinCos(SFix value, int resultFracBits)
         {
-            Contract.Requires<ArgumentException>(value.DoubleValue >= -1.0);
-            Contract.Requires<ArgumentException>(value.DoubleValue <= 1.0);
-            Contract.Requires<ArgumentException>(resultFracBits >= 1);
+            Contract.Requires<ArgumentOutOfRangeException>(value.DoubleValue >= -1.0, "value");
+            Contract.Requires<ArgumentOutOfRangeException>(value.DoubleValue <= 1.0, "value");
+            Contract.Requires<ArgumentOutOfRangeException>(resultFracBits >= 0, "resultFracBits");
 
             var result = Tuple.Create(
                 SFix.FromDouble(
@@ -419,18 +530,22 @@ namespace SystemSharp.Common
                     Math.Sin(Math.PI * value.DoubleValue),
                     2,
                     resultFracBits));
+
             return result;
         }
 
+        /// <summary>
+        /// Computes both sine and cosine of <paramref name="value"/>, specified in scaled radians. The conversion to radians
+        /// is done by multiplying <paramref name="value"/> by PI. 
+        /// The first element of the returned tuple is cosine, the second is sine.
+        /// </summary>
         [MapToScSinCos]
         public static Tuple<double, double> ScSinCos(double value)
         {
-            //Contract.Requires<ArgumentException>(value >= -1.0);
-            //Contract.Requires<ArgumentException>(value <= 1.0);
-
             var result = Tuple.Create(
                     Math.Cos(Math.PI * value),
                     Math.Sin(Math.PI * value));
+
             return result;
         }
 
@@ -455,6 +570,11 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Computes the remainder <paramref name="value"/> mod 2^n.
+        /// Result integer width is 2 + <paramref name="n"/>.
+        /// Result fractional width is max(<paramref name="value.Format.FracWidth"/>, -n).
+        /// </summary>
         [MapToRempow2]
         public static SFix Rempow2(SFix value, int n)
         {
@@ -462,6 +582,9 @@ namespace SystemSharp.Common
             return value % rem;
         }
 
+        /// <summary>
+        /// Computes the remainder <paramref name="value"/> mod 2^n.
+        /// </summary>
         [MapToRempow2]
         public static double Rempow2(double value, int n)
         {
@@ -480,6 +603,9 @@ namespace SystemSharp.Common
             }
         }
 
+        /// <summary>
+        /// Returns <paramref name="trueVal"/> if <paramref name="cond"/> is true, otherwise <paramref name="falseVal"/>.
+        /// </summary>
         [MapToConditional]
         public static T Select<T>(bool cond, T trueVal, T falseVal)
         {

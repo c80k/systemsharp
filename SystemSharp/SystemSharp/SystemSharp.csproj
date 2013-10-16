@@ -257,7 +257,6 @@
     <Compile Include="SystemSharp\Common\StringHelpers.cs" />
     <Compile Include="SystemSharp\Common\Subst.cs" />
     <Compile Include="SystemSharp\Common\TypeConversions.cs" />
-    <Compile Include="SystemSharp\Common\ValueProxy.cs" />
     <Compile Include="SystemSharp\Common\Win32File.cs" />
     <Compile Include="SystemSharp\Components\AutoBinding.cs" />
     <Compile Include="SystemSharp\Components\Component.cs" />
@@ -266,7 +265,6 @@
     <Compile Include="SystemSharp\Components\ComponentsCore.cs" />
     <Compile Include="SystemSharp\Components\DesignContext.cs" />
     <Compile Include="SystemSharp\Components\DynamicComponent.cs" />
-    <Compile Include="SystemSharp\Components\FU\CompilerBlocks.cs" />
     <Compile Include="SystemSharp\Components\FU\FunctionalComponents.cs" />
     <Compile Include="SystemSharp\Components\FU\ReservationTable.cs" />
     <Compile Include="SystemSharp\Components\ProcessCore.cs" />

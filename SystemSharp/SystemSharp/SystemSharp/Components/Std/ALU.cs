@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using SystemSharp.Analysis;
 using SystemSharp.Assembler;
@@ -30,39 +31,93 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Provides a synthesizable implementation of an arithmetic-logical unit (ALU). It is intended to be used during high-level synthesis
+    /// for mapping basic arithmetic/logical instructions.
+    /// </summary>
     [DeclareXILMapper(typeof(ALUXILMapper))]
     public class ALU: FunctionalUnit
     {
+        /// <summary>
+        /// Transaction site interface of ALU
+        /// </summary>
         public interface IALUTransactor : ITransactionSite
         {
+            /// <summary>
+            /// Returns a transaction for the preselected binary operation on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> Do(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for a "less than" comparison on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> IsLt(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for a "less than or equal" comparison on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> IsLte(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for an "equality" comparison on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> IsEq(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for an "inequality" comparison on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> IsNEq(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for a "greater than or equal" comparison on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> IsGte(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for a "greater than" comparison on the ALU.
+            /// </summary>
+            /// <param name="a">source of first operand</param>
+            /// <param name="b">source of second operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> IsGt(ISignalSource<StdLogicVector> a,
                 ISignalSource<StdLogicVector> b,
                 ISignalSink<StdLogicVector> r);
 
+            /// <summary>
+            /// Returns a transaction for the preselected unary operation on the ALU.
+            /// </summary>
+            /// <param name="a">source operand</param>
+            /// <param name="r">sink for result</param>
             IEnumerable<TAVerb> Do(ISignalSource<StdLogicVector> a,
                 ISignalSink<StdLogicVector> r);
         }
@@ -223,54 +278,151 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Preselected function
+        /// </summary>
         public enum EFunction
         {
+            /// <summary>
+            /// Addition
+            /// </summary>
             Add,
+
+            /// <summary>
+            /// Subtraction
+            /// </summary>
             Sub,
+
+            /// <summary>
+            /// Multiplication
+            /// </summary>
             Mul,
+
+            /// <summary>
+            /// Negation
+            /// </summary>
             Neg,
+
+            /// <summary>
+            /// Bit complement
+            /// </summary>
             Not,
+
+            /// <summary>
+            /// Bitwise conjunction
+            /// </summary>
             And,
+
+            /// <summary>
+            /// Bitwise disjunction
+            /// </summary>
             Or,
+
+            /// <summary>
+            /// Comparison
+            /// </summary>
             Compare
         }
 
+        /// <summary>
+        /// Signedness of operand
+        /// </summary>
         public enum EArithMode
         {
             Signed,
             Unsigned
         }
 
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         [PortUsage(EPortUsage.Clock)]
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// Input of first (or sole) operand
+        /// </summary>
         public In<StdLogicVector> A { private get; set; }
+
+        /// <summary>
+        /// Input of second operand
+        /// </summary>
         public In<StdLogicVector> B { private get; set; }
+
+        /// <summary>
+        /// Result output
+        /// </summary>
         public Out<StdLogicVector> R { private get; set; }
+
+        /// <summary>
+        /// Comparison outcome - less than (single bit)
+        /// </summary>
         public Out<StdLogicVector> CmpLt { private get; set; }
+
+        /// <summary>
+        /// Comparison outcome - greater than (single bit)
+        /// </summary>
         public Out<StdLogicVector> CmpGt { private get; set; }
+
+        /// <summary>
+        /// Comparison outcome - equal (single bit)
+        /// </summary>
         public Out<StdLogicVector> CmpEq { private get; set; }
+
+        /// <summary>
+        /// Comparison outcome - not equal (single bit)
+        /// </summary>
         public Out<StdLogicVector> CmpNeq { private get; set; }
+
+        /// <summary>
+        /// Comparison outcome - less than or equal (single bit)
+        /// </summary>
         public Out<StdLogicVector> CmpLte { private get; set; }
+
+        /// <summary>
+        /// Comparison outcome - greater than or equal (single bit)
+        /// </summary>
         public Out<StdLogicVector> CmpGte { private get; set; }
 
+        /// <summary>
+        /// Which operation this ALU is supposed to carry out.
+        /// </summary>
         [PerformanceRelevant]
         public readonly EFunction FuncSel;
 
+        /// <summary>
+        /// Signedness of operands/result
+        /// </summary>
         [PerformanceRelevant]
         public readonly EArithMode ArithMode;
 
+        /// <summary>
+        /// Desired latency
+        /// </summary>
         [PerformanceRelevant]
         public readonly int PipelineDepth;
 
+        /// <summary>
+        /// Bit-width of first (or sole) operand
+        /// </summary>
         [PerformanceRelevant]
         public readonly int AWidth;
 
+        /// <summary>
+        /// Bit-width of second operand
+        /// </summary>
         [PerformanceRelevant]
         public readonly int BWidth;
 
+        /// <summary>
+        /// Result width
+        /// </summary>
         [PerformanceRelevant]
         public readonly int RWidth;
 
+        /// <summary>
+        /// Returns true if <paramref name="obj"/> is an ALU with same parameters
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as ALU;
@@ -295,6 +447,9 @@ namespace SystemSharp.Components.Std
         }
 
         private ALUTransactor _transactor;
+        /// <summary>
+        /// The associated transaction site
+        /// </summary>
         public IALUTransactor Transactor
         {
             get { return _transactor; }
@@ -304,9 +459,29 @@ namespace SystemSharp.Components.Std
         private SLVSignal _opResult;
         private SLVSignal _pipeOut;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="funcSel">which operation the ALU is supposed to carry out</param>
+        /// <param name="arithMode">signedness of operands/result</param>
+        /// <param name="pipelineDepth">desired latency</param>
+        /// <param name="awidth">width of first (or sole) operand</param>
+        /// <param name="bwidth">width of second operand</param>
+        /// <param name="rwidth">width of result</param>
+        /// <exception cref="ArgumentOutOfRangeException">if parameter is invalid or inconsistency between parameters was detected</exception>
         public ALU(EFunction funcSel, EArithMode arithMode,
             int pipelineDepth, int awidth, int bwidth, int rwidth)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(pipelineDepth >= 0, "Pipeline depth must be non-negative.");
+            Contract.Requires<ArgumentOutOfRangeException>(awidth >= 1, "Operand width A must be positive.");
+            Contract.Requires<ArgumentOutOfRangeException>(funcSel.IsUnary() || bwidth >= 1, "Operand width B must be positive.");
+            Contract.Requires<ArgumentOutOfRangeException>(funcSel == EFunction.Compare || rwidth >= 1, "Result width must be positive");
+            Contract.Requires<ArgumentOutOfRangeException>(funcSel == EFunction.Add || funcSel == EFunction.Mul || funcSel == EFunction.Neg ||
+                funcSel == EFunction.Sub || awidth == bwidth, "Operand sizes must be equal for this kind of operation.");
+            Contract.Requires<ArgumentOutOfRangeException>(funcSel == EFunction.Add || funcSel == EFunction.Compare ||
+                funcSel == EFunction.Mul || funcSel == EFunction.Neg || funcSel == EFunction.Sub || rwidth == awidth,
+                "Result and operand sizes must be equal for this kind of instruction.");
+
             FuncSel = funcSel;
             ArithMode = arithMode;
             PipelineDepth = pipelineDepth;
@@ -351,28 +526,12 @@ namespace SystemSharp.Components.Std
             _transactor = new ALUTransactor(this);
         }
 
+        /// <summary>
+        /// Returns 2 for binary operations, 1 for unary operations
+        /// </summary>
         public int Arity
         {
-            get
-            {
-                switch (FuncSel)
-                {
-                    case EFunction.Add:
-                    case EFunction.And:
-                    case EFunction.Mul:
-                    case EFunction.Or:
-                    case EFunction.Sub:
-                    case EFunction.Compare:
-                        return 2;
-
-                    case EFunction.Neg:
-                    case EFunction.Not:
-                        return 1;
-
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
+            get { return FuncSel.IsBinary() ? 2 : 1; }
         }
 
         public override string DisplayName
@@ -805,6 +964,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Represents a mapping of a XIL instruction to an ALU
+    /// </summary>
     class ALUXILMapping : IXILMapping
     {
         private ITransactionSite _taSite;
@@ -894,12 +1056,30 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Implements a service for mapping XIL instructions to arithmetic-logical units (i.e. instances of ALU)
+    /// </summary>
     public class ALUXILMapper : IXILMapper
     {
+        /// <summary>
+        /// Computes a somehow optimal pipeline depth from a given parametrization
+        /// </summary>
+        /// <param name="op">preselected operation</param>
+        /// <param name="mode">signedness of operands/result</param>
+        /// <param name="osize0">size of first (or sole) operand</param>
+        /// <param name="osize1">size of second operand (if applicable)</param>
+        /// <param name="rsize">size of result (if applicable)</param>
+        /// <returns>desired pipeline depth (i.e. mapping lateny)</returns>
         public delegate int PipelineDepthCalcFunc(ALU.EFunction op, ALU.EArithMode mode, int osize0, int osize1, int rsize);
 
+        /// <summary>
+        /// Custom pipeline depth calculation function, preinitialized with a simple default implementation.
+        /// </summary>
         public PipelineDepthCalcFunc CalcPipelineDepth { get; set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public ALUXILMapper()
         {
             CalcPipelineDepth = DefaultCalcPipelineDepth;
@@ -928,6 +1108,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Supports add, sub, mul, neg, not, and, or, islt, islte, iseq, isneq, isgte, isgt
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Add();
@@ -998,7 +1181,7 @@ namespace SystemSharp.Components.Std
             return result;
         }
 
-        public IXILMapping TryMapOne(ITransactionSite taSite, XILInstr instr, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes, bool swap)
+        private IXILMapping TryMapOne(ITransactionSite taSite, XILInstr instr, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes, bool swap)
         {
             var fu = taSite.Host;
             ALU alu = fu as ALU;
@@ -1394,6 +1577,41 @@ namespace SystemSharp.Components.Std
             int pdepth = CalcPipelineDepth(op, amode, osize0, osize1, rsize);
             ALU alu = new ALU(op, amode, pdepth, osize0, osize1, rsize);
             return TryMapOne(alu.Transactor, instr, operandTypes, resultTypes, false);
+        }
+    }
+
+    public static class ALUFuncSelExtension
+    {
+        /// <summary>
+        /// Returns true if function is unary (Neg/Not)
+        /// </summary>
+        public static bool IsUnary(this ALU.EFunction func)
+        {
+            return func == ALU.EFunction.Neg || func == ALU.EFunction.Not;
+        }
+
+        /// <summary>
+        /// Returns true if function is binary (Add/Sub/Mul/Compare)
+        /// </summary>
+        public static bool IsBinary(this ALU.EFunction func)
+        {
+            return !IsUnary(func);
+        }
+
+        /// <summary>
+        /// Returns true if function is logical (And/Or/Not)
+        /// </summary>
+        public static bool IsLogical(this ALU.EFunction func)
+        {
+            return func == ALU.EFunction.And || func == ALU.EFunction.Or || func == ALU.EFunction.Not;
+        }
+
+        /// <summary>
+        /// Returns true if function is arithmetical (Add/Sub/Mul/Compare)
+        /// </summary>
+        public static bool IsArithmetical(this ALU.EFunction func)
+        {
+            return !IsLogical(func);
         }
     }
 }

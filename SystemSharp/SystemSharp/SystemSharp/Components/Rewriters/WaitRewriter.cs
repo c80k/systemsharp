@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -33,60 +33,10 @@ using SystemSharp.SysDOM.Eval;
 
 namespace SystemSharp.Components
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    class MapToWaitOn : RewriteCall, IDoNotAnalyze
-    {
-        public override bool Rewrite(CodeDescriptor decompilee, MethodBase callee, StackElement[] args,
-            IDecompiler decomp, IFunctionBuilder builder)
-        {
-            Expression valarr = args[0].Expr;
-            valarr = decomp.ResolveVariableReference(decomp.CurrentILIndex, valarr);
-            FunctionCall newarrCall = valarr as FunctionCall;
-            if (newarrCall != null)
-            {
-                FunctionSpec fspec = newarrCall.Callee as FunctionSpec;
-                IntrinsicFunction ifun = fspec == null ? null : fspec.IntrinsicRep;
-                if (ifun != null && ifun.Action == IntrinsicFunction.EAction.NewArray)
-                {
-                    ArrayParams aparams = (ArrayParams)ifun.Parameter;
-                    if (aparams.IsStatic)
-                    {
-                        newarrCall.IsInlined = true;
-                        foreach (Expression expr in aparams.Elements)
-                            expr.IsInlined = true;
-                        FunctionSpec waitf = new FunctionSpec(typeof(void))
-                        {
-                            CILRep = callee,
-                            IntrinsicRep = IntrinsicFunctions.Wait(WaitParams.EWaitKind.WaitOn)
-                        };
-                        builder.Call(
-                            waitf,
-                            aparams.Elements);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    class MapToWaitFor : RewriteCall, IDoNotAnalyze
-    {
-        public override bool Rewrite(CodeDescriptor decompilee, MethodBase callee, StackElement[] args,
-            IDecompiler decomp, IFunctionBuilder builder)
-        {
-            FunctionSpec fspec = new FunctionSpec(typeof(void))
-            {
-                CILRep = callee,
-                IntrinsicRep = IntrinsicFunctions.Wait(WaitParams.EWaitKind.WaitFor)
-            };
-            builder.Call(fspec,
-                args.Select(arg => arg.Expr).ToArray());
-            return true;
-        }
-    }
-
+    /// <summary>
+    /// Transforms expressions like <c>await n.Ticks()</c> to a SysDOM-compliant representation using "WaitUntil" intrinsic function.
+    /// This rewriter is used in tandem with the <c>MapToWaitNTicksRewriteCall</c> rewriter.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     class MapToWaitNTicksRewriteAwait : RewriteAwait, IDoNotAnalyze
     {
@@ -158,6 +108,10 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Transforms expressions like <c>await n.Ticks()</c> to a SysDOM-compliant representation using "WaitUntil" intrinsic function.
+    /// This rewriter is used in tandem with the <c>MapToWaitNTicksRewriteAwait</c> rewriter.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     class MapToWaitNTicksRewriteCall : RewriteCall, IDoNotAnalyze
     {

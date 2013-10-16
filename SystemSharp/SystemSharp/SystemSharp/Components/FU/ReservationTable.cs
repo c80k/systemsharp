@@ -26,14 +26,37 @@ using SystemSharp.Collections;
 
 namespace SystemSharp.Components.FU
 {
-    public class ReservationTable
-    {        
+    /// <summary>
+    /// A reservation table manages the reservation time intervals of a single functional unit.
+    /// </summary>
+    public class ReservationTable    
+    {
+        /// <summary>
+        /// A single reservation record: start and end time of reservation, associated instruction
+        /// </summary>
         public class Reservation
         {
+            /// <summary>
+            /// Start time of reservation
+            /// </summary>
             public long StartTime { get; private set; }
+
+            /// <summary>
+            /// End time of reservation
+            /// </summary>
             public long EndTime { get; private set; }
+
+            /// <summary>
+            /// Associated instruction
+            /// </summary>
             public XIL3Instr Instr { get; private set; }
 
+            /// <summary>
+            /// Constructs a new instance
+            /// </summary>
+            /// <param name="startTime">start time of reservation</param>
+            /// <param name="endTime">end time of reservation</param>
+            /// <param name="instr">associated instruction</param>
             public Reservation(long startTime, long endTime, XIL3Instr instr)
             {
                 StartTime = startTime;
@@ -50,11 +73,20 @@ namespace SystemSharp.Components.FU
         private List<Reservation> _resList = new List<Reservation>();
         private IntervalSet _rset = new IntervalSet();
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public ReservationTable()
         {
         }
 
-        public bool IsReserved(long startTime, long endTime, XIL3Instr instr)
+        /// <summary>
+        /// Tests whether there is any reservation which overlaps the specified time interval.
+        /// </summary>
+        /// <param name="startTime">start time to test</param>
+        /// <param name="endTime">end time to test</param>
+        /// <returns>true if there is any reservation which overlaps the specified time interval</returns>
+        public bool IsReserved(long startTime, long endTime)
         {
             if (startTime > endTime)
                 return false;
@@ -65,9 +97,17 @@ namespace SystemSharp.Components.FU
             return false;
         }
 
+        /// <summary>
+        /// Tries to add a reservation for the specified time interval. If there is an existing reservation for that interval,
+        /// the state of this object will not be changed.
+        /// </summary>
+        /// <param name="startTime">reservation start time</param>
+        /// <param name="endTime">reservation end time</param>
+        /// <param name="instr">associated instruction</param>
+        /// <returns>true if reservation was successful, i.e. no colliding reservation</returns>
         public bool TryReserve(long startTime, long endTime, XIL3Instr instr)
         {
-            if (IsReserved(startTime, endTime, instr))
+            if (IsReserved(startTime, endTime))
                 return false;
 
             _rset.Add((int)startTime, (int)endTime);
@@ -76,22 +116,29 @@ namespace SystemSharp.Components.FU
             return true;
         }
 
+        /// <summary>
+        /// Returns the list of reservation records (not sorted)
+        /// </summary>
         public IList<Reservation> Reservations
         {
             get { return _resList; }
         }
-    }
 
-    public static class ReservationTableStatistics
-    {
-        public static long GetOccupation(this ReservationTable rtbl)
+        /// <summary>
+        /// Occupation is defined as the amount of c-steps where this table is reserved.
+        /// </summary>
+        public long GetOccupation()
         {
-            return rtbl.Reservations.Sum(res => res.EndTime - res.StartTime + 1);
+            return Reservations.Sum(res => res.EndTime - res.StartTime + 1);
         }
 
-        public static double GetUtilization(this ReservationTable rtbl, long ncsteps)
+        /// <summary>
+        /// Utilization is defined as the ratio occupation and total schedule length.
+        /// </summary>
+        /// <param name="ncsteps">total schedule length</param>
+        public double GetUtilization(long ncsteps)
         {
-            return (double)GetOccupation(rtbl) / ncsteps;
+            return (double)GetOccupation() / ncsteps;
         }
     }
 }

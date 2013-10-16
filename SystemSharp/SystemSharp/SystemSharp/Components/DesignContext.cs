@@ -865,22 +865,6 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Suspends the current process for a specified amount of time.
-        /// </summary>
-        /// <param name="delta">The amount of time for which the current process should be suspended</param>
-        [MapToWaitFor]
-        [Obsolete("Use instead: await delta;", true)]
-        public static void Wait(Time delta)
-        {
-            ///uncommented due to [Obsolete]
-
-            //if (Instance.State == ESimState.DesignAnalysis)
-            //    return;
-
-            //Instance.CurrentProcess.Wait(delta);
-        }
-        
-        /// <summary>
         /// Suspends the current process until one of the specified events is signaled.
         /// </summary>
         /// <param name="events">The list of events to wait for</param>
@@ -895,22 +879,6 @@ namespace SystemSharp.Components
             //    return;
 
             //Instance.CurrentProcess.Wait(events);
-        }
-
-        /// <summary>
-        /// Suspends the current process until one of the specified signals changes its value.
-        /// </summary>
-        /// <param name="signals">The list of signals to wait for</param>
-        [MapToWaitOn]
-        [Obsolete("Use instead: await signal; or await Any(signals); or await Any(signal1, signal2, ...);", true)]
-        public static void Wait(params IInPort[] signals)
-        {
-            ///uncommented due to [Obsolete]
-
-            //if (Instance.State == ESimState.DesignAnalysis)
-            //    return;
-
-            //Instance.CurrentProcess.Wait(MakeEventList(signals));
         }
 
         /// <summary>
