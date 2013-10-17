@@ -32,6 +32,12 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A service for mapping the "concat" (bit-vector concatenation) XIL instruction to hardware.
+    /// The service does not instantiate any extra component. Instead, the necessary code is directly
+    /// inserted into the hosting component. It is supported to concatenate arbitrarily many signals
+    /// with different bit-widths.
+    /// </summary>
     public class InlineConcatMapper: IXILMapper
     {
         private class InlineConcatMapperTransactionSite : DefaultTransactionSite
@@ -165,10 +171,16 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public InlineConcatMapper()
         {
         }
 
+        /// <summary>
+        /// Returns concat
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Concat();

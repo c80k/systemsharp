@@ -642,7 +642,7 @@ namespace SystemSharp.Analysis.M2M
             plan.AddXILMapper(typeof(NopMapper));
             plan.AddXILMapper(typeof(MUX2));
             plan.AddXILMapper(typeof(Slicer));
-            plan.AddXILMapper(typeof(FixPMod2));
+            plan.AddXILMapper(typeof(FixPMod1));
             plan.AddXILMapper(typeof(Shifter));
             //plan.AddXILMapper(typeof(ConcatenizerXILMapper));
             plan.AddXILMapper(typeof(InlineConcatMapper));

@@ -28,15 +28,28 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A standard clock driver implementation which supports simulation and generation of simulative HDL
+    /// for testbench-based verification. It attaches a <c>ClockSpecAttribute</c> to identify the driven signal
+    /// as clock signal. This is espcially useful for creating Xilinx user constraints files (UCF) from the design.
+    /// </summary>
     [ComponentPurpose(EComponentPurpose.SimulationOnly)]
     public class Clock : Component
     {
+        /// <summary>
+        /// Signal to drive as clock signal
+        /// </summary>
         public Out<StdLogic> Clk { private get; set; }
 
         private Time _hiPeriod;
         private Time _loPeriod;
         private ClockSpecAttribute _clockSpec;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="period">desired clock period</param>
+        /// <param name="duty">desired duty cycle ('1'-time)</param>
         public Clock(Time period, double duty = 0.5)
         {
             _hiPeriod = duty * period;

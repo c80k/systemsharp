@@ -32,6 +32,11 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A service for mapping XIL instructions which perform read/write accesses on fields to hardware.
+    /// It does not instantiate any separate component instance. Instead, the control logic is directly
+    /// inserted into the hosting component.
+    /// </summary>
     public class InlineFieldMapper: IXILMapper
     {
         private class InlineFieldMapperTransactionSite : DefaultTransactionSite
@@ -339,10 +344,16 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public InlineFieldMapper()
         {
         }
 
+        /// <summary>
+        /// Returns ldv and stv.
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.LoadVar(null);
@@ -401,9 +412,10 @@ namespace SystemSharp.Components.Std
     }
 
     /// <summary>
-    /// An instance of this class attached to a FieldDescriptor (as an attribute, using AddAttribute) indicates its
-    /// actual type which may be different from its formal field type, e.g. if the field is represented as a
-    /// StdLogicVector. In that case, the actual type gives a hint to the correct interpretation of the
+    /// An instance of this class attached to a FieldDescriptor (as an attribute, using <c>AddAttribute</c>) indicates its
+    /// actual type is different from its formal type: Let's assume the field is represented as an
+    /// <c>StdLogicVector</c>, but it is interpreted as a fixed-point number. In that case, the actual type 
+    /// would be <c>SFix</c>, helping with the interpretation of the
     /// raw binary data, e.g. for meaningful diagnostic outputs.
     /// </summary>
     public class ActualTypeAttribute : Attribute

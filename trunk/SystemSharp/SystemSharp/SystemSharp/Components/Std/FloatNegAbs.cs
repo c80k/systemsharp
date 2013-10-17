@@ -30,13 +30,31 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface for <c>FloatNegAbs</c> which computes absolute value and negation of floating-point operands.
+    /// </summary>
     public interface IFloatNegAbsTransactionSite: 
         ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction for negating a floating-point number.
+        /// </summary>
+        /// <param name="operand">operand source</param>
+        /// <param name="result">result (i.e. negation) sink</param>
         IEnumerable<TAVerb> Neg(ISignalSource<StdLogicVector> operand, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Returns a transaction for computing the absolute value of a floating-point number.
+        /// </summary>
+        /// <param name="operand">operand source</param>
+        /// <param name="result">result (i.e. absolute value) sink</param>
         IEnumerable<TAVerb> Abs(ISignalSource<StdLogicVector> operand, ISignalSink<StdLogicVector> result);
     }
 
+    /// <summary>
+    /// Provides a synthesizable implementation of negation and absolute value function for floating-point arithmetic. 
+    /// The component is intended to be used during high-level synthesis for mapping basic arithmetic/logical instructions.
+    /// </summary>
     [DeclareXILMapper(typeof(FloatNegAbsXILMapper))]
     public class FloatNegAbs: Component
     {
@@ -112,25 +130,59 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// The operation which this component is supposed to carry out.
+        /// </summary>
         public enum EOperation
         {
+            /// <summary>
+            /// Negation
+            /// </summary>
             Neg,
+
+            /// <summary>
+            /// Absolute value
+            /// </summary>
             Abs
         }
 
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// Operand input
+        /// </summary>
         public In<StdLogicVector> DIn { private get; set; }
+
+        /// <summary>
+        /// Operand output
+        /// </summary>
         public Out<StdLogicVector> DOut { private get; set; }
 
+        /// <summary>
+        /// Bit-width of operand
+        /// </summary>
         [PerformanceRelevant]
         public int TotalWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Selected operation (negation or absolute value)
+        /// </summary>
         [PerformanceRelevant]
         public EOperation Operation { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Pipeline depth, i.e. computation latency
+        /// </summary>
         [PerformanceRelevant]
         public int PipelineDepth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="obj"/> is a <c>FloatNegAbs</c> instance
+        /// with same parametrization
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as FloatNegAbs;
@@ -148,12 +200,21 @@ namespace SystemSharp.Components.Std
                 PipelineDepth;
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IFloatNegAbsTransactionSite TASite { get; private set; }
 
         private SLVSignal _pipeIn;
         private SLVSignal _pipeOut;
         private RegPipe _rpipe;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="totalWidth">bit-width of operand</param>
+        /// <param name="operation">selected operation</param>
+        /// <param name="pipelineDepth">desired pipeline depth (i.e. computation latency)</param>
         public FloatNegAbs(int totalWidth, EOperation operation, int pipelineDepth)
         {
             TotalWidth = totalWidth;
@@ -226,6 +287,10 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "abs" (absolute value) and "neg" (negation) XIL instructions 
+    /// with floating-point arithmetic to hardware.
+    /// </summary>
     public class FloatNegAbsXILMapper : IXILMapper
     {
         private class Mapping : IXILMapping
@@ -290,6 +355,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns abs and neg
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Abs();

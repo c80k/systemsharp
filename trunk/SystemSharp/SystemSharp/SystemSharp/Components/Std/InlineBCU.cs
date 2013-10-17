@@ -33,6 +33,11 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A service for mapping XIL branching instructions (goto, brtrue, brfalse) to an inline branch control unit (BCU).
+    /// An inline BCU does not require a separate component instance. Instead, the necessary control logic is directly
+    /// inserted into the hosting component.
+    /// </summary>
     public class InlineBCUMapper: IXILMapper
     {
         private class InlineBCUTransactionSite : DefaultTransactionSite
@@ -278,12 +283,18 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public InlineBCUMapper()
         {
         }
 
         #region IXILMapper Member
 
+        /// <summary>
+        /// Returns goto, brtrue, brfalse
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Goto(null);

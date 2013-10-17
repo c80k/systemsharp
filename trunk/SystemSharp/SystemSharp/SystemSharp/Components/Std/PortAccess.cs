@@ -32,6 +32,9 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site for implementing port-read accesses.
+    /// </summary>
     class DirectPortReadTransactionSite : ITransactionSite
     {
         private class ConvProcessBuilder : AlgorithmTemplate
@@ -74,6 +77,11 @@ namespace SystemSharp.Components.Std
         private SignalDescriptor _slvSignal;
         private bool _established;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">hosting component</param>
+        /// <param name="port">port descriptor</param>
         public DirectPortReadTransactionSite(Component host, ISignalOrPortDescriptor port)
         {
             _host = host;
@@ -84,6 +92,9 @@ namespace SystemSharp.Components.Std
                 _portSignal = (SignalDescriptor)((IPortDescriptor)port).BoundSignal;            
         }
 
+        /// <summary>
+        /// Hosting component
+        /// </summary>
         public Component Host
         {
             get { return _host; }
@@ -99,11 +110,17 @@ namespace SystemSharp.Components.Std
             yield return new TAVerb(this, ETVMode.Locked, () => { });
         }
 
+        /// <summary>
+        /// Port descriptor
+        /// </summary>
         public ISignalOrPortDescriptor Port
         {
             get { return _port; }
         }
 
+        /// <summary>
+        /// Signal which is bind to the port
+        /// </summary>
         public SLVSignal SLVSignal
         {
             get { return (SLVSignal)_slvSignal.Instance; }
@@ -132,32 +149,52 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A mapping of the "rdport" XIL instruction to a <c>DirectPortReadTransactionSite</c>
+    /// </summary>
     class DirectPortReadXILMapping : IXILMapping
     {
         private Component _host;
         private DirectPortReadTransactionSite _taSite;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">hosting component</param>
+        /// <param name="taSite">implementing transaction site</param>
         public DirectPortReadXILMapping(Component host, DirectPortReadTransactionSite taSite)
         {
             _host = host;
             _taSite = taSite;
         }
 
+        /// <summary>
+        /// Returns <c>EMappingKind.ExclusiveResource</c>, since a port is a unique resource.
+        /// </summary>
         public EMappingKind ResourceKind
         {
             get { return EMappingKind.ExclusiveResource; }
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public ITransactionSite TASite
         {
             get { return _taSite; }
         }
 
+        /// <summary>
+        /// Always 0
+        /// </summary>
         public int InitiationInterval
         {
             get { return 0; }
         }
 
+        /// <summary>
+        /// Always 0
+        /// </summary>
         public int Latency
         {
             get { return 0; }
@@ -176,12 +213,21 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "rdport" XIL instruction to hardware.
+    /// </summary>
     public class PortReaderXILMapper: IXILMapper
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public PortReaderXILMapper()
         {
         }
 
+        /// <summary>
+        /// Returns rdport
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.ReadPort(null);
@@ -220,45 +266,113 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Transaction site interface for mapping port write accesses
+    /// </summary>
     public interface IPortWriterSite : ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction which performs a write access on the port this instance was created for.
+        /// </summary>
+        /// <param name="data">source of data to write</param>
         IEnumerable<TAVerb> Write(ISignalSource<StdLogicVector> data);
     }
 
+    /// <summary>
+    /// Interface definition for a component which writes to a port
+    /// </summary>
     interface IPortWriter
     {
+        /// <summary>
+        /// Bit-width of port
+        /// </summary>
         int DataWidth { get; }
+
+        /// <summary>
+        /// The port being written
+        /// </summary>
         ISignalOrPortDescriptor Port { get; }
+
+        /// <summary>
+        /// Descriptor of signal to which the port is bound
+        /// </summary>
         ISignalOrPortDescriptor SignalDesc { get; }
+
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         IPortWriterSite TASite { get; }
+
+        /// <summary>
+        /// Associates the component with the necessary control signals.
+        /// </summary>
+        /// <param name="clk">clock signal</param>
+        /// <param name="enIn">write enable signal</param>
+        /// <param name="din">data input signal</param>
+        /// <param name="dout">data read-back signal</param>
         void Bind(SignalBase clk, SignalBase enIn, SignalBase din, SignalBase dout);
     }
 
+    /// <summary>
+    /// Abstract base implementation of a component which writes to a port.
+    /// </summary>
+    /// <typeparam name="T">type of data being communicated by the port</typeparam>
     public abstract class PortWriter<T> : 
         FunctionalUnit,
         IPortWriter
     {
+        /// <summary>
+        /// Clock input signal
+        /// </summary>
         public In<StdLogic> Clk { get; set; }
+
+        /// <summary>
+        /// Write enable signal
+        /// </summary>
         public In<StdLogic> EnIn { get; set; }
+
+        /// <summary>
+        /// Data input signal
+        /// </summary>
         public In<StdLogicVector> DIn { get; set; }
+
+        /// <summary>
+        /// Data read-back signal
+        /// </summary>
         public Out<T> DOut { get; set; }
 
+        /// <summary>
+        /// Bit-width of data
+        /// </summary>
         [PerformanceRelevant]
         public int DataWidth { get; private set; }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         private PortWriterSite<T> _TASite;
         public IPortWriterSite TASite
         {
             get { return _TASite; }
         }
 
+        /// <summary>
+        /// Port being written
+        /// </summary>
         public ISignalOrPortDescriptor Port { get; internal set; }
 
+        /// <summary>
+        /// Descriptor of signal which is bound to the port.
+        /// </summary>
         public ISignalOrPortDescriptor SignalDesc
         {
             get { return (ISignalOrPortDescriptor)((IDescriptive)DOut).Descriptor; }
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="dataWidth">bit-width of data communicated by the port</param>
         public PortWriter(int dataWidth)
         {
             DataWidth = dataWidth;
@@ -281,9 +395,15 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A port writer implemented for <c>int</c>-typed ports.
+    /// </summary>
     public class IntPortWriter :
         PortWriter<int>
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public IntPortWriter() :
             base(32)
         {
@@ -298,9 +418,15 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A port writer implementation for <c>float</c>-typed ports.
+    /// </summary>
     public class FloatPortWriter :
         PortWriter<float>
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public FloatPortWriter() :
             base(32)
         {
@@ -315,9 +441,15 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A port writer implementation for <c>double</c>-typed ports.
+    /// </summary>
     public class DoublePortWriter :
         PortWriter<double>
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public DoublePortWriter() :
             base(64)
         {
@@ -332,9 +464,16 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A port writer implementation for <c>StdLogicVector</c>-typed ports.
+    /// </summary>
     public class SLVPortWriter :
         PortWriter<StdLogicVector>
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="dataWidth">bit-width of data</param>
         public SLVPortWriter(int dataWidth) :
             base(dataWidth)
         {
@@ -349,9 +488,15 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A port writer implementation for <c>StdLogic</c>-typed ports.
+    /// </summary>
     public class SLPortWriter :
         PortWriter<StdLogic>
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public SLPortWriter() :
             base(1)
         {
@@ -366,6 +511,10 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Transaction site implementation for write accesses to ports.
+    /// </summary>
+    /// <typeparam name="T">type of data communicated by port</typeparam>
     class PortWriterSite<T> : 
         DefaultTransactionSite, 
         IPortWriterSite
@@ -373,6 +522,10 @@ namespace SystemSharp.Components.Std
         private PortWriter<T> _host;
         private bool _established;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">implementing port writer instance</param>
         public PortWriterSite(PortWriter<T> host) :
             base(host)
         {
@@ -417,11 +570,18 @@ namespace SystemSharp.Components.Std
         #endregion
     }
 
+    /// <summary>
+    /// Describes a mapping of the "wrport" XIL instruction to a port writer component.
+    /// </summary>
     class PortWriterXILMapping : DefaultXILMapping
     {
         private IPortWriterSite _site;
         private int _dataWidth;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="site">transaction site</param>
         public PortWriterXILMapping(IPortWriterSite site):
             base(site, EMappingKind.ExclusiveResource)
         {
@@ -439,6 +599,9 @@ namespace SystemSharp.Components.Std
             return _site.Write(SignalSource.Create(StdLogicVector._0s(_dataWidth)));
         }
 
+        /// <summary>
+        /// Always 0
+        /// </summary>
         public override int Latency
         {
             get { return 0; }
@@ -454,6 +617,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "wrport" XIL instruction to an inline hardware implementation.
+    /// </summary>
     class InlinePortWriteSite :
         DefaultTransactionSite,
         IPortWriterSite
@@ -511,6 +677,11 @@ namespace SystemSharp.Components.Std
 
         private int _dataWidth;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">hosting component</param>
+        /// <param name="port">port being accessed</param>
         public InlinePortWriteSite(Component host, ISignalOrPortDescriptor port):
             base(host)
         {
@@ -519,6 +690,9 @@ namespace SystemSharp.Components.Std
             _dataWidth = Marshal.SerializeForHW(port.InitialValue).Size;
         }
 
+        /// <summary>
+        /// Associated port
+        /// </summary>
         public ISignalOrPortDescriptor TargetPort
         {
             get { return _port; }
@@ -556,10 +730,17 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Describes a mapping of the "wrport" XIL instruction to an inline hardware implementation.
+    /// </summary>
     class InlinePortWriterXILMapping : IXILMapping
     {
         private InlinePortWriteSite _taSite;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="taSite">implementing transaction site</param>
         public InlinePortWriterXILMapping(InlinePortWriteSite taSite)
         {
             _taSite = taSite;
@@ -570,16 +751,25 @@ namespace SystemSharp.Components.Std
             get { return _taSite; }
         }
 
+        /// <summary>
+        /// Returns <c>EMappingKind.ExclusiveResource</c>, since a port is a unique resource.
+        /// </summary>
         public EMappingKind ResourceKind
         {
             get { return EMappingKind.ExclusiveResource; }
         }
 
+        /// <summary>
+        /// Always 1
+        /// </summary>
         public int InitiationInterval
         {
             get { return 1; }
         }
 
+        /// <summary>
+        /// Always 1
+        /// </summary>
         public int Latency
         {
             get { return 1; }
@@ -596,14 +786,23 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "wrport" XIL instruction to hardware.
+    /// </summary>
     public class PortWriterXILMapper : IXILMapper
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public PortWriterXILMapper()
         {
         }
 
         #region IXILMapper Member
 
+        /// <summary>
+        /// Returns wrport
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.WritePort(null);

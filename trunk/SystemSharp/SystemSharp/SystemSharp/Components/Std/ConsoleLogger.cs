@@ -20,8 +20,15 @@
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A simple diagnostic component which writes dumps its input signal value to the console upon each value change.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class ConsoleLogger<T> : Component
     {
+        /// <summary>
+        /// Input signal to monitor
+        /// </summary>
         public In<T> DataIn { private get; set; }
 
         private void Process()

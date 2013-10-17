@@ -32,12 +32,28 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface for <c>FixedAbs</c> which implements the absolute value function for fixed-point numbers.
+    /// </summary>
     public interface IFixedAbsTransactionSite : ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction for computing the absolute value function.
+        /// </summary>
+        /// <param name="operand">operand source</param>
+        /// <param name="result">result sink</param>
         IEnumerable<TAVerb> Abs(ISignalSource<StdLogicVector> operand, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// The hosting <c>FixedAbs</c> component
+        /// </summary>
         new FixedAbs Host { get; }
     }
 
+    /// <summary>
+    /// Implements a synthesizable absolute value function for fixed-point arithmetic. The component is 
+    /// intended to be used during high-level synthesis for mapping basic arithmetic/logical instructions.
+    /// </summary>
     [DeclareXILMapper(typeof(FixedAbsXILMapper))]
     public class FixedAbs: Component
     {
@@ -97,16 +113,45 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IFixedAbsTransactionSite TASite { get; private set; }
+
+        /// <summary>
+        /// Latency of computation
+        /// </summary>
         public int Latency { get; private set; }
 
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// Operand input
+        /// </summary>
         public In<StdLogicVector> Operand { private get; set; }
+
+        /// <summary>
+        /// Result (absolute value) output
+        /// </summary>
         public Out<StdLogicVector> Result { private get; set; }
 
+        /// <summary>
+        /// Bit-width of operand
+        /// </summary>
         public int InputWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Bit-width of result
+        /// </summary>
         public int OutputWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="obj"/> is a <c>FixedAbs</c> instance with
+        /// same parametrization.
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as FixedAbs;
@@ -125,6 +170,12 @@ namespace SystemSharp.Components.Std
         private SLVSignal _pipeOut;
         private RegPipe _rpipe;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="inWidth">bit-width of operand</param>
+        /// <param name="outWidth">bit-width of result</param>
+        /// <param name="latency">desired latency</param>
         public FixedAbs(int inWidth, int outWidth, int latency)
         {
             InputWidth = inWidth;
@@ -188,6 +239,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "abs" (absolute value) XIL instruction with fixed-point arithmetic to hardware.
+    /// </summary>
     public class FixedAbsXILMapper : IXILMapper
     {
         private class AbsMapping : IXILMapping
@@ -230,13 +284,24 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public FixedAbsXILMapper()
         {
             ComputeLatency = (x, y) => 1;
         }
 
+        /// <summary>
+        /// Gets or sets a user-defined function for determining the optimal computation latency, based on
+        /// operand and result bit-widths. First argument is operand bit-width, second argument is result bit-width.
+        /// Result is desired latency. The property is pre-initialized with a default function which always returns 1.
+        /// </summary>
         public Func<int, int, int> ComputeLatency { get; set; }
 
+        /// <summary>
+        /// Returns abs
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Abs();

@@ -30,12 +30,30 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface of <c>Concatenizer</c>
+    /// </summary>
     public interface IConcatTransactor:
         ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction for bit-vector concatenation.
+        /// </summary>
+        /// <param name="ops">Signal sources providing vectors to concat.
+        /// Concatenation is done in "downto" sense, i.e. first element constitutes the highest portion.</param>
+        /// <param name="r">signal sink receiving concatenated signal</param>
         IEnumerable<TAVerb> Concat(ISignalSource<StdLogicVector>[] ops, ISignalSink<StdLogicVector> r);
     }
 
+    /// <summary>
+    /// A synthesizable implementation of a bit-vector concatenating unit. It is intended to be used during high-level synthesis
+    /// for mapping concat instructions.
+    /// </summary>
+    /// <remarks>
+    /// Seen from hardware perspective, bit-vector concatenation is nothing more than joining multiple wires to the same hardware.
+    /// Indeed, the concatenizer does not perform any "real" work and therefore does not require any logic. It just performs a formal
+    /// reorganization of its input signals.
+    /// </remarks>
     [DeclareXILMapper(typeof(ConcatenizerXILMapper))]
     public class Concatenizer: Component
     {
@@ -83,22 +101,47 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Input signals to be concatenated. Sense is "downto", i.e. first signal constitutes the highest portion.
+        /// A current restriction is that all signals must be of same width.
+        /// </summary>
         public XIn<StdLogicVector[], InOut<StdLogicVector>> Ops { private get; set; }
+
+        /// <summary>
+        /// Concatenated output signal
+        /// </summary>
         public Out<StdLogicVector> R { private get; set; }
 
+        /// <summary>
+        /// Number of input signals
+        /// </summary>
         [PerformanceRelevant]
         public int NumWords { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Width per input signal
+        /// </summary>
         [PerformanceRelevant]
         public int WordWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Width of concatenated output signal
+        /// </summary>
         public int OutputWidth
         {
             [StaticEvaluation] get { return NumWords * WordWidth; }
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IConcatTransactor TASite { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="numWords">number of input signals</param>
+        /// <param name="wordWidth">width per input signal</param>
         public Concatenizer(int numWords, int wordWidth)
         {
             NumWords = numWords;
@@ -120,6 +163,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Implements a service for mapping concatenation-kind XIL instructions to the <c>Concatenizer</c>.
+    /// </summary>
     class ConcatenizerXILMapper : IXILMapper
     {
         private class ConcatXILMapping : DefaultXILMapping
@@ -151,6 +197,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns concat
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Concat();
@@ -203,6 +252,9 @@ namespace SystemSharp.Components.Std
         {
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public ConcatenizerXILMapper()
         {
         }

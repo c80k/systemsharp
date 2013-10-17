@@ -33,6 +33,11 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A service for mapping XIL instructions which perform array accesses to hardware. The arrays are mapped to
+    /// memory models. However, the service does not create any separate component instance. Instead, it inserts the 
+    /// memory models and the necessary control logic directly into the hosting component.
+    /// </summary>
     public class InlineMemoryMapper: IXILMapper
     {
         private class MemoryMapperTransactionSite: DefaultTransactionSite
@@ -365,10 +370,16 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public InlineMemoryMapper()
         {
         }
 
+        /// <summary>
+        /// Returns ldelemfixa, ldelemfixafixi, stelemfixa, stelemfixafixi
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.LdelemFixA(null);
