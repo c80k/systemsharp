@@ -30,12 +30,26 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface for multiplexing two operands based on a select sgnal.
+    /// </summary>
     public interface IMUX2TransactionSite: ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction which realizes a multiplexer between two operands.
+        /// </summary>
+        /// <param name="a">source of selected operand if <paramref name="sel"/> is 0</param>
+        /// <param name="b">source of selected operand if <paramref name="sel"/> is 1</param>
+        /// <param name="sel">source select signal</param>
+        /// <param name="r">sink for multiplexed signal</param>
         IEnumerable<TAVerb> Select(ISignalSource<StdLogicVector> a, ISignalSource<StdLogicVector> b,
             ISignalSource<StdLogicVector> sel, ISignalSink<StdLogicVector> r);
     }
 
+    /// <summary>
+    /// Implements a multiplexer with two inputs.
+    /// The component is intended to be used by high-level synthesis for mapping "select" instructions to hardware.
+    /// </summary>
     [DeclareXILMapper(typeof(MUX2Mapper))]
     public class MUX2: FunctionalUnit
     {
@@ -79,14 +93,35 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Operand to be selected of <c>Sel</c> is 0
+        /// </summary>
         public In<StdLogicVector> A { private get; set; }
+
+        /// <summary>
+        /// Operand to be selected of <c>Sel</c> is 1
+        /// </summary>
         public In<StdLogicVector> B { private get; set; }
+
+        /// <summary>
+        /// Select signal
+        /// </summary>
         public In<StdLogicVector> Sel { private get; set; }
+
+        /// <summary>
+        /// Multiplexed output signal
+        /// </summary>
         public Out<StdLogicVector> R { private get; set; }
 
+        /// <summary>
+        /// Bit-width of <c>A</c>, <c>B</c> and <c>Sel</c>
+        /// </summary>
         [PerformanceRelevant]
         public int Width { get; private set; }
 
+        /// <summary>
+        /// Returns true if <paramref name="obj"/> as a <c>MUX2</c> instance with same parametrization.
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as MUX2;
@@ -100,8 +135,15 @@ namespace SystemSharp.Components.Std
             return Width;
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IMUX2TransactionSite TASite { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="width">bit-width, which must be the same for each operand and the result port</param>
         public MUX2(int width)
         {
             Width = width;
@@ -122,6 +164,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "select" XIL instruction to hardware.
+    /// </summary>
     public class MUX2Mapper : IXILMapper
     {
         private class MUX2XILMapping : IXILMapping
@@ -168,6 +213,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns select
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Select();

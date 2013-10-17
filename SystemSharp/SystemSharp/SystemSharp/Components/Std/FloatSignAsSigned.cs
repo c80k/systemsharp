@@ -30,12 +30,26 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface for <c>FloatSignAsSigned</c>, a component for computing the sign of
+    /// floating-point operands.
+    /// </summary>
     public interface IFloatSignAsSignedTransactionSite :
         ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction which computes the sign of the operand.
+        /// </summary>
+        /// <param name="operand">operand source</param>
+        /// <param name="result">result (i.e. sign) sink</param>
         IEnumerable<TAVerb> Sign(ISignalSource<StdLogicVector> operand, ISignalSink<StdLogicVector> result);
     }
 
+    /// <summary>
+    /// Provides a synthesizable implementation of the signum function for floating-point arithmetic. 
+    /// The result is returned as a signed fixed-point number (-1, 0 or 1) with configurable bit-width.
+    /// The component is intended to be used during high-level synthesis for mapping basic arithmetic/logical instructions.
+    /// </summary>
     [DeclareXILMapper(typeof(FloatSignAsSignedXILMapper))]
     public class FloatSignAsSigned: Component
     {
@@ -77,14 +91,31 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Operand input
+        /// </summary>
         public In<StdLogicVector> DIn { private get; set; }
+
+        /// <summary>
+        /// Result (i.e. sign) output
+        /// </summary>
         public Out<StdLogicVector> DOut { private get; set; }
 
+        /// <summary>
+        /// Bit-width of operand
+        /// </summary>
         [PerformanceRelevant]
         public int FloatWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Fixed-point format of result
+        /// </summary>
         public FixFormat OutFormat { get; private set; }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="obj"/> is a <c>FloatSignAsSigned</c> instance
+        /// with same parametrization.
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as FloatSignAsSigned;
@@ -100,6 +131,9 @@ namespace SystemSharp.Components.Std
                 OutFormat.GetHashCode();
         }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IFloatSignAsSignedTransactionSite TASite { get; private set; }
 
         private StdLogicVector _outM1;
@@ -107,6 +141,12 @@ namespace SystemSharp.Components.Std
         private StdLogicVector _out1;
         private StdLogicVector _zeros;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="floatWidth">total bit-width of input floating-point number
+        /// (actual partitioning between exponent and mantissa bits does not matter)</param>
+        /// <param name="outFormat">desired fixed-point output format</param>
         public FloatSignAsSigned(int floatWidth, FixFormat outFormat)
         {
             FloatWidth = floatWidth;
@@ -145,6 +185,10 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "sign" (signum) XIL instruction 
+    /// with floating-point arithmetic to hardware.
+    /// </summary>
     public class FloatSignAsSignedXILMapper : IXILMapper
     {
         private class Mapping : IXILMapping
@@ -187,6 +231,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns sign
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Sign();

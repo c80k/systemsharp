@@ -30,12 +30,21 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site of <c>ConstLoader</c>
+    /// </summary>
     class ConstLoadingTransactionSite : DefaultTransactionSite
     {
         private StdLogicVector _constValue;
         private bool _createSignal;
         private SLVSignal _constSignal;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="host">hosting component</param>
+        /// <param name="constValue">constant value to load</param>
+        /// <param name="createSignal">true if a separate constant-valued signal should be created to provide the constant</param>
         public ConstLoadingTransactionSite(Component host, StdLogicVector constValue, bool createSignal) :
             base(host)
         {
@@ -67,6 +76,10 @@ namespace SystemSharp.Components.Std
             yield return Verb(ETVMode.Locked);
         }
 
+        /// <summary>
+        /// Returns a transaction which loads a constant to the specified signal sink.
+        /// </summary>
+        /// <param name="target">signal sink to receive constant</param>
         public IEnumerable<TAVerb> LoadConstant(ISignalSink<StdLogicVector> target)
         {
             if (_constSignal != null)
@@ -75,17 +88,27 @@ namespace SystemSharp.Components.Std
                 yield return Verb(ETVMode.Shared, target.Comb.Connect(SignalSource.Create(_constValue)));
         }
 
+        /// <summary>
+        /// The constant value
+        /// </summary>
         public StdLogicVector ConstValue
         {
             get { return _constValue; }
         }
     }
 
+    /// <summary>
+    /// Describes a mapping for constant-loading operations
+    /// </summary>
     class ConstLoadingXILMapping :
         IXILMapping
     {
         private ConstLoadingTransactionSite _site;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="site">transaction site</param>
         public ConstLoadingXILMapping(ConstLoadingTransactionSite site)
         {
             _site = site;
@@ -101,16 +124,26 @@ namespace SystemSharp.Components.Std
             get { return _site; }
         }
 
+        /// <summary>
+        /// Returns <c>EMappingKind.ExclusiveResource</c>, since loading a constant is a trivial operation which does not
+        /// consume any logic.
+        /// </summary>
         public EMappingKind ResourceKind
         {
             get { return EMappingKind.ExclusiveResource; }
         }
 
+        /// <summary>
+        /// Always 0
+        /// </summary>
         public int InitiationInterval
         {
             get { return 0; }
         }
 
+        /// <summary>
+        /// Always 0
+        /// </summary>
         public int Latency
         {
             get { return 0; }
@@ -122,12 +155,23 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping constant-loading XIL instructions to hardware.
+    /// </summary>
     public class ConstLoadingXILMapper : IXILMapper
     {
+        /// <summary>
+        /// Chooses from one of two semantically identical implementation variants.
+        /// True, if the constant value should provided by an individual constant-valued signal.
+        /// False, if the constant value should be hard-coded in the transaction.
+        /// </summary>
         public bool CreateSignalsForConstants { get; set; }
 
         #region IXILMapper Member
 
+        /// <summary>
+        /// Returns ldconst, ld0
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.LdConst(null);
@@ -186,6 +230,10 @@ namespace SystemSharp.Components.Std
         #endregion
     }
 
+    /// <summary>
+    /// A service for mapping constant-loading XIL instructions to hardware.
+    /// As opposed to <c>ConstLoadingXILMapper</c>, this <c>CreateSignalsForConstants</c> property is initialized to <c>true</c> by default.
+    /// </summary>
     public class SignalConstLoadingXILMapper : ConstLoadingXILMapper
     {
         public SignalConstLoadingXILMapper() :

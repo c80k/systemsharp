@@ -34,32 +34,88 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A unit for 1D linear interpolation over equidistant data points. 
+    /// A register transfer level interface to communicates with a separate memory block
+    /// storing the data table is provided. Computation assumes fixed-point data.
+    /// </summary>
     class LERPUnit: Component
     {
+        /// <summary>
+        /// Clock input signal
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// x-value input
+        /// </summary>
         public In<UFix> X { private get; set; }
+
+        /// <summary>
+        /// Interpolated y-value output
+        /// </summary>
         public Out<SFix> Y { private get; set; }
+
+        /// <summary>
+        /// Address output to data table
+        /// </summary>
         public Out<Unsigned> Addr { private get; set; }
+
+        /// <summary>
+        /// Input from data table
+        /// </summary>
         public In<SFix> Data { private get; set; }
 
+        /// <summary>
+        /// Integer bits of operand
+        /// </summary>
         public int XIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional bits of operand
+        /// </summary>
         public int XFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Integer bits of result
+        /// </summary>
         public int YIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional bits of result
+        /// </summary>
         public int YFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Address width of data table
+        /// </summary>
         public int AddrWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Computation-only latency. Total latency is <c>PipeStages + 2</c>, since 2 additional
+        /// clocks are required for data table lookup.
+        /// </summary>
         public int PipeStages { [StaticEvaluation] get; private set; }
 
         private SLVSignal _yIn;
         private SLVSignal _yOut;
         private RegPipe _yPipe;
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="xIntWidth">integer width of operand</param>
+        /// <param name="xFracWidth">fractional width of operand</param>
+        /// <param name="yIntWidth">integer width of result</param>
+        /// <param name="yFracWidth">fractional width of result</param>
+        /// <param name="pipeStages">desired computation-only latency</param>
         public LERPUnit(int xIntWidth, int xFracWidth, int yIntWidth, int yFracWidth, int pipeStages)
         {
-            Contract.Requires(xIntWidth > 0);
-            Contract.Requires(xFracWidth >= 0);
-            Contract.Requires(yIntWidth + yFracWidth > 0);
-            Contract.Requires(pipeStages >= 0);
-            Contract.Requires(xFracWidth > 0 || pipeStages == 0, "xFracWidth is degenerate case (lookup-only). No additional pipeline stages allowed.");
+            Contract.Requires<ArgumentOutOfRangeException>(xIntWidth > 0, "xIntWidth must be positive.");
+            Contract.Requires<ArgumentOutOfRangeException>(xFracWidth >= 0, "xFracWidth must be non-negative.");
+            Contract.Requires<ArgumentOutOfRangeException>(yIntWidth + yFracWidth > 0, "total bit-width of result must be positive");
+            Contract.Requires<ArgumentOutOfRangeException>(pipeStages >= 0, "pipeStages must be non-negative.");
+            Contract.Requires<ArgumentOutOfRangeException>(xFracWidth > 0 || pipeStages == 0, "xFracWidth == 0 is a degenerate case (lookup-only). No additional pipeline stages allowed.");
 
             PipeStages = pipeStages;
             XIntWidth = xIntWidth;
@@ -121,16 +177,52 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A unit for 1D linear interpolation over equidistant data points.
+    /// A pre-initialized data table is stored internally. However, a register transfer level
+    /// interface to internal memory is provided which allows to modify the data table during runtime.
+    /// Computation assumes fixed-point data.
+    /// </summary>
     public class LERP11Core: Component
     {
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// x-value input
+        /// </summary>
         public In<StdLogicVector> X { private get; set; }
+
+        /// <summary>
+        /// interpolated y-value output
+        /// </summary>
         public Out<StdLogicVector> Y { private get; set; }
 
+        /// <summary>
+        /// Read enable to internal data table
+        /// </summary>
         public In<StdLogic> MemRdEn { private get; set; }
+
+        /// <summary>
+        /// Write enable to internal data table
+        /// </summary>
         public In<StdLogic> MemWrEn { private get; set; }
+
+        /// <summary>
+        /// Address to internal data table
+        /// </summary>
         public In<Unsigned> MemAddr { private get; set; }
+
+        /// <summary>
+        /// Data to write into internal data table
+        /// </summary>
         public In<StdLogicVector> MemDataIn { private get; set; }
+
+        /// <summary>
+        /// Data read from internal data table
+        /// </summary>
         public Out<StdLogicVector> MemDataOut { private get; set; }
 
         private Signal<UFix> _x;
@@ -141,18 +233,66 @@ namespace SystemSharp.Components.Std
 
         private LERPUnit _lerpUnit;
 
+        /// <summary>
+        /// Integer width of operand
+        /// </summary>
         public int XIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width of operand
+        /// </summary>
         public int XFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Integer width of result
+        /// </summary>
         public int YIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width of result
+        /// </summary>
         public int YFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Integer width of data table word
+        /// </summary>
         public int DIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width of data table word
+        /// </summary>
         public int DFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Address width of internal data table
+        /// </summary>
         public int AddrWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Computation-only latency. Total latency is <c>PipeStages + 2</c>, since 2 additional clocks
+        /// are required for data table lookup.
+        /// </summary>
         public int PipeStages { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="xIntWidth">integer bits of operand</param>
+        /// <param name="xFracWidth">fractional bits of operand</param>
+        /// <param name="yIntWidth">integer bits of result</param>
+        /// <param name="yFracWidth">fractional bits of result</param>
+        /// <param name="pipeStages">desired computation-only latency</param>
+        /// <param name="data">data table</param>
         public LERP11Core(int xIntWidth, int xFracWidth, int yIntWidth, int yFracWidth, int pipeStages,
             SFix[] data)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(xIntWidth > 0, "xIntWidth must be positive.");
+            Contract.Requires<ArgumentOutOfRangeException>(xFracWidth >= 0, "xFracWidth must be non-negative.");
+            Contract.Requires<ArgumentOutOfRangeException>(yIntWidth + yFracWidth > 0, "total bit-width of result must be positive");
+            Contract.Requires<ArgumentOutOfRangeException>(pipeStages >= 0, "pipeStages must be non-negative.");
+            Contract.Requires<ArgumentOutOfRangeException>(xFracWidth > 0 || pipeStages == 0, "xFracWidth == 0 is a degenerate case (lookup-only). No additional pipeline stages allowed.");
+            Contract.Requires<ArgumentNullException>(data != null, "data");
+
             PipeStages = pipeStages;
             XIntWidth = xIntWidth;
             XFracWidth = xFracWidth;
@@ -208,14 +348,41 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Transaction site interface for sine, cosine and parallel sine/cosine functions
+    /// </summary>
     public interface ISinCosTransactionSite :
         ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction which computes the sine function
+        /// </summary>
+        /// <param name="x">operand source</param>
+        /// <param name="y">result sink</param>
         IEnumerable<TAVerb> Sin(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> y);
+
+        /// <summary>
+        /// Returns a transaction which computes the cosine function
+        /// </summary>
+        /// <param name="x">operand source</param>
+        /// <param name="y">result sink</param>
         IEnumerable<TAVerb> Cos(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> y);
+
+        /// <summary>
+        /// Returns a transaction which computes the parallel sine/cosine function
+        /// </summary>
+        /// <param name="x">operand source</param>
+        /// <param name="sin">result sink for sine</param>
+        /// <param name="cos">result sink for cosine</param>
         IEnumerable<TAVerb> SinCos(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> sin, ISignalSink<StdLogicVector> cos);
     }
 
+    /// <summary>
+    /// Provides a synthesizable implementation of sine and cosine functions, using linear interpolation in fixed-point
+    /// arithmetic. Operand is specified in scaled radians and must be in range between -1 and 1 (with -1 corresponding to -PI,
+    /// 1 corresponding to PI).
+    /// The component is intended to be used by high-level synthesis to map trigonometric functions.
+    /// </summary>
     [DeclareXILMapper(typeof(SinCosXILMapper))]
     public class SinCosLUTCore : Component
     {
@@ -328,18 +495,42 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// Operand input
+        /// </summary>
         public In<StdLogicVector> X { private get; set; }
+
+        /// <summary>
+        /// Sine output
+        /// </summary>
         public Out<StdLogicVector> Sin { private get; set; }
+
+        /// <summary>
+        /// Cosine output
+        /// </summary>
         public Out<StdLogicVector> Cos { private get; set; }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public ISinCosTransactionSite TASite { get; private set; }
 
+        /// <summary>
+        /// Initiation interval of computation is 2 if interpolation is performed, 1 for pure table lookup.
+        /// </summary>
         public int InitiationInterval
         {
             get { return XFracWidth - LUTWidth == 1 ? 1 : 2; }
         }
 
+        /// <summary>
+        /// Total computation latency
+        /// </summary>
         public int Latency
         {
             get { return InitiationInterval + 1 + PipeStages; }
@@ -372,16 +563,63 @@ namespace SystemSharp.Components.Std
         private RegPipe _sinFlipSignPipe;
         private RegPipe _cosFlipSignPipe;
 
+        /// <summary>
+        /// Integer width of operand
+        /// </summary>
         public int XIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width of operand
+        /// </summary>
         public int XFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Integer width of result
+        /// </summary>
         public int YIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width of result
+        /// </summary>
         public int YFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Integer width of data table entry
+        /// </summary>
         public int DIntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width of data table entry
+        /// </summary>
         public int DFracWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Resolution of data table (see remarks)
+        /// </summary>
+        /// <remarks>
+        /// This property determines the quantization precision. The core exploits symmetry and quantizes only the
+        /// [0..PI/2] section of the sine wave. And it will use 2^<c>LUTWidth</c> + 2 data points for that.
+        /// </remarks>
         public int LUTWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Address width of data table
+        /// </summary>
         public int AddrWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Additional pipeline stages for interpolation computation. For total latency it is better to query
+        /// the <c>Latency</c> property.
+        /// </summary>
         public int PipeStages { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance
+        /// </summary>
+        /// <param name="lutWidth">resolution of data table</param>
+        /// <param name="xFracWidth">fractional width of operand</param>
+        /// <param name="yFracWidth">fractional width of result</param>
+        /// <param name="pipeStages">additional pipeline stages for interpolation computation</param>
         public SinCosLUTCore(int lutWidth, int xFracWidth, int yFracWidth, int pipeStages)
         {
             PipeStages = pipeStages;
@@ -583,6 +821,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the scsincos (parallel sine/cosine over scaled radians) XIL instruction to hardware.
+    /// </summary>
     public class SinCosXILMapper : IXILMapper
     {
         private class Mapping : IXILMapping
@@ -632,6 +873,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns scsincos
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.ScSinCos();

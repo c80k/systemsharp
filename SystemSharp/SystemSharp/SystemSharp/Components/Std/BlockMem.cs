@@ -75,50 +75,31 @@ namespace SystemSharp.Components.Std
     {
         public In<StdLogic> Clk
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public In<StdLogicVector> Addr
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                Contract.Requires<ArgumentNullException>(value != null);
+            get { throw new NotImplementedException(); }
+            set {
+                Contract.Requires<ArgumentNullException>(value != null, "Addr");
                 throw new NotImplementedException();
             }
         }
 
         public In<StdLogic> RdEn
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public Out<StdLogicVector> DataOut
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.Requires<ArgumentNullException>(value != null, "DataOut");
                 throw new NotImplementedException();
             }
         }
@@ -135,15 +116,25 @@ namespace SystemSharp.Components.Std
 
         public void PreWrite(StdLogicVector addr, StdLogicVector data)
         {
-            Contract.Requires<ArgumentException>(addr.ULongValue < Depth);
-            Contract.Requires<ArgumentException>(data.Size == Width);
+            Contract.Requires<ArgumentOutOfRangeException>(addr.ULongValue < Depth, "addr beyond ROM capacity");
+            Contract.Requires<ArgumentException>(data.Size == Width, "wrong data word size");
         }
     }
 
+    /// <summary>
+    /// Generic register transfer level interface for random access memory
+    /// </summary>
     [ContractClass(typeof(RAMContractClass))]
     public interface IRAM: IROM
     {
+        /// <summary>
+        /// Write enable
+        /// </summary>
         In<StdLogicVector> WrEn { get; set;  }
+
+        /// <summary>
+        /// Data input
+        /// </summary>
         In<StdLogicVector> DataIn { get; set;  }
     }
 
@@ -152,76 +143,46 @@ namespace SystemSharp.Components.Std
     {
         public In<StdLogicVector> WrEn
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.Requires<ArgumentNullException>(value != null, "WrEn");
                 throw new NotImplementedException();
             }
         }
 
         public In<StdLogicVector> DataIn
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                Contract.Requires<ArgumentNullException>(value != null, "DataIn");
                 throw new NotImplementedException();
             }
         }
 
         public In<StdLogic> Clk
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public In<StdLogicVector> Addr
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public In<StdLogic> RdEn
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public Out<StdLogicVector> DataOut
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
         }
 
         public uint Depth
@@ -240,13 +201,39 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// Factory pattern for creating implementations of ROM/RAM components
+    /// </summary>
     public interface IBlockMemFactory
     {
+        /// <summary>
+        /// Creates a ROM component
+        /// </summary>
+        /// <param name="addrWidth">desired address width</param>
+        /// <param name="dataWidth">desired data width</param>
+        /// <param name="capacity">desired ROM capacity (number of words)</param>
+        /// <param name="readLatency">desired read latency</param>
+        /// <param name="part">receives created component</param>
+        /// <param name="rom">receives ROM interface</param>
         void CreateROM(int addrWidth, int dataWidth, int capacity, int readLatency, out Component part, out IROM rom);
+
+        /// <summary>
+        /// Creates a RAM component
+        /// </summary>
+        /// <param name="addrWidth">desired address width</param>
+        /// <param name="dataWidth">desired data width</param>
+        /// <param name="capacity">desired RAM capacity (number of words)</param>
+        /// <param name="readLatency">desired read latency</param>
+        /// <param name="writeLatency">desired write latency</param>
+        /// <param name="part">receives created component</param>
+        /// <param name="ram">receives RAM interface</param>
         void CreateRAM(int addrWidth, int dataWidth, int capacity, int readLatency, int writeLatency,
             out Component part, out IRAM ram);
     }
 
+    /// <summary>
+    /// A simple ROM implementation which supports simulation and synthesizable HDL generation.
+    /// </summary>
     public class ROM: Component, IROM
     {
         private class FactoryImpl : IBlockMemFactory
@@ -267,6 +254,10 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Factory for creating instances of this component, only ROM supported.
+        /// Further restriction: Read latency must be 1.
+        /// </summary>
         public static readonly IBlockMemFactory Factory = new FactoryImpl();
 
         public In<StdLogic> Clk { get; set; }
@@ -278,6 +269,11 @@ namespace SystemSharp.Components.Std
         private uint _width;
         private StdLogicVector[] _content;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="depth">desired ROM capacity (number of data words)</param>
+        /// <param name="width">desired data word width</param>
         public ROM(uint depth, uint width)
         {
             _depth = depth;
@@ -307,19 +303,51 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A simple dual-ported RAM implementation which supports simulation and synthesizable HDL generation.
+    /// It provides separate read and write ports, but does not support conccurent reads or concurrent writes.
+    /// </summary>
     public class SimpleDPRAM: Component
     {
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         public In<StdLogic> Clk { get; set; }
-        public In<StdLogicVector> Addr1 { get; set; }
-        public In<StdLogicVector> Addr2 { get; set; }
+
+        /// <summary>
+        /// Address for reading
+        /// </summary>
+        public In<StdLogicVector> RdAddr { get; set; }
+
+        /// <summary>
+        /// Address for writing
+        /// </summary>
+        public In<StdLogicVector> WrAddr { get; set; }
+
+        /// <summary>
+        /// Write enable
+        /// </summary>
         public In<StdLogic> WrEn { get; set; }
+
+        /// <summary>
+        /// Data to write
+        /// </summary>
         public In<StdLogicVector> DataIn { get; set; }
+
+        /// <summary>
+        /// Read data
+        /// </summary>
         public Out<StdLogicVector> DataOut { get; set; }
 
         private uint _depth;
         private uint _width;
         private StdLogicVector[] _content;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="depth">desired capacity (number of data words)</param>
+        /// <param name="width">desired data word width</param>
         public SimpleDPRAM(uint depth, uint width)
         {
             _depth = MathExt.CeilPow2(depth);
@@ -327,8 +355,19 @@ namespace SystemSharp.Components.Std
             _content = Enumerable.Repeat(StdLogicVector.Us(width), (int)_depth).ToArray();
         }
 
+        /// <summary>
+        /// Capacity (number of data words)
+        /// </summary>
         public uint Depth { get { return _depth; } }
+
+        /// <summary>
+        /// Data word width
+        /// </summary>
         public uint Width { get { return _width; } }
+
+        /// <summary>
+        /// Address width (automatically computed from capacity)
+        /// </summary>
         public int AddrWidth { get { return MathExt.CeilLog2(_depth); } }
 
         private void Process()
@@ -337,9 +376,9 @@ namespace SystemSharp.Components.Std
             {
                 if (WrEn.Cur == '1')
                 {
-                    _content[Addr2.Cur.UnsignedValue.IntValue] = DataIn.Cur;
+                    _content[WrAddr.Cur.UnsignedValue.IntValue] = DataIn.Cur;
                 }
-                DataOut.Next = _content[Addr1.Cur.UnsignedValue.IntValue];
+                DataOut.Next = _content[RdAddr.Cur.UnsignedValue.IntValue];
             }
         }
 
@@ -348,8 +387,16 @@ namespace SystemSharp.Components.Std
             AddProcess(Process, Clk);
         }
 
+        /// <summary>
+        /// Pre-initializes the RAM with word <paramref name="data"/> at address <paramref name="addr"/>.
+        /// Called during elaboration, never at model runtime.
+        /// </summary>
         public void PreWrite(StdLogicVector addr, StdLogicVector data)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(addr.Size == AddrWidth, "invalid address width");
+            Contract.Requires<ArgumentOutOfRangeException>(addr.ULongValue < Depth, "address beyond RAM capacity");
+            Contract.Requires<ArgumentOutOfRangeException>(data.Size == Width, "invalid data width");
+
             _content[addr.ULongValue] = data;
         }
     }

@@ -41,18 +41,19 @@ namespace SystemSharp.Components.Std
     /// Given a fixed-point number x, this component computes the fixed-point modulus of x and 1.0: r = mod(x, 1.0)
     /// The modulus operation is generalized to fixed-point numbers in the following manner: r is a number such that
     /// r &gt;= -1 and r &lt;= 1 and x = k + r with k being an integer.
+    /// The component is intended to be used during high-level synthesis for mapping basic arithmetic/logical instructions.
     /// </summary>
     [DeclareXILMapper(typeof(FPMod1XILMapper))]
-    public class FixPMod2 : Component
+    public class FixPMod1 : Component
     {
         private class FPMod1TransactionSite :
             DefaultTransactionSite,
             IFPMod1TransactionSite
         {
-            private FixPMod2 _host;
+            private FixPMod1 _host;
             private bool _established;
 
-            public FPMod1TransactionSite(FixPMod2 host) :
+            public FPMod1TransactionSite(FixPMod1 host) :
                 base(host)
             {
                 _host = host;
@@ -82,25 +83,51 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Operand input
+        /// </summary>
         public In<StdLogicVector> X { private get; set; }
+
+        /// <summary>
+        /// Result output
+        /// </summary>
         public Out<StdLogicVector> R { private get; set; }
 
+        /// <summary>
+        /// Number of operand integer bits
+        /// </summary>
         [PerformanceRelevant]
         public int InIntWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Number of output integer bits
+        /// </summary>
         [PerformanceRelevant]
         public int OutIntWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Number of operand and result fractional bits
+        /// </summary>
         [PerformanceRelevant]
         public int FracWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IFPMod1TransactionSite TASite { get; private set; }
 
         private StdLogicVector _zeroes;
         private StdLogicVector _padZeroes;
         private StdLogicVector _padOnes;
 
-        public FixPMod2(int inIntWidth, int fracWidth, int outIntWidth)
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="inIntWidth">operand integer bits</param>
+        /// <param name="fracWidth">operand and result fractional bits
+        /// (operand and result automatically have same number of fractional bits)</param>
+        /// <param name="outIntWidth">result integer bits</param>
+        public FixPMod1(int inIntWidth, int fracWidth, int outIntWidth)
         {
             Contract.Requires(inIntWidth >= 2 && outIntWidth >= 2);
 
@@ -139,13 +166,18 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping the "mod2" and "rempow2" (remainder function for constant divisors which are a power of 2) 
+    /// XIL instructions with fixed-point arithmetic to hardware. "rempow2" is not yet fully supported: the restriction is that
+    /// the static operand must be 0, implying a divisor of 2^0 = 1.
+    /// </summary>
     public class FPMod1XILMapper : IXILMapper
     {
         private class FPMod1XILMapping : IXILMapping
         {
-            private FixPMod2 _host;
+            private FixPMod1 _host;
 
-            public FPMod1XILMapping(FixPMod2 host)
+            public FPMod1XILMapping(FixPMod1 host)
             {
                 _host = host;
             }
@@ -185,6 +217,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns mod2 and rempow2
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Mod2();
@@ -220,7 +255,7 @@ namespace SystemSharp.Components.Std
         public IEnumerable<IXILMapping> TryMap(ITransactionSite taSite, XILInstr instr, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes)
         {
             var fu = taSite.Host;
-            FixPMod2 fpmod1 = fu as FixPMod2;
+            FixPMod1 fpmod1 = fu as FixPMod1;
             if (fpmod1 == null)
                 yield break;
             if (instr.Name != InstructionCodes.Mod2 &&
@@ -277,7 +312,7 @@ namespace SystemSharp.Components.Std
             if (infmt.FracWidth != outfmt.FracWidth)
                 return null;
 
-            FixPMod2 slicer = new FixPMod2(infmt.IntWidth, infmt.FracWidth, outfmt.IntWidth);
+            FixPMod1 slicer = new FixPMod1(infmt.IntWidth, infmt.FracWidth, outfmt.IntWidth);
 
             return new FPMod1XILMapping(slicer);
         }

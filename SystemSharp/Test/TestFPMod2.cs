@@ -18,7 +18,7 @@ namespace Test
         private SLVSignal _x, _r;
 
         private Clock _clkGen;
-        private FixPMod2 _mod2;
+        private FixPMod1 _mod2;
 
         public Mod2TestDesign(int inIntWidth, int fracWidth, int outIntWidth)
         {
@@ -29,7 +29,7 @@ namespace Test
             _clkGen = new Clock(new Time(10.0, ETimeUnit.ns));
             Bind(() => _clkGen.Clk = _clk);
 
-            _mod2 = new FixPMod2(inIntWidth, fracWidth, outIntWidth)
+            _mod2 = new FixPMod1(inIntWidth, fracWidth, outIntWidth)
             {
                 X = _x,
                 R = _r

@@ -30,6 +30,9 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// A service for mapping the "nop" XIL instruction to hardware.
+    /// </summary>
     public class NopMapper: IXILMapper
     {
         private class NopTASite : DefaultTransactionSite
@@ -132,6 +135,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns nop, barrier, convert
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Nop();
@@ -139,6 +145,9 @@ namespace SystemSharp.Components.Std
             yield return DefaultInstructionSet.Instance.Convert();
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public NopMapper()
         {
         }

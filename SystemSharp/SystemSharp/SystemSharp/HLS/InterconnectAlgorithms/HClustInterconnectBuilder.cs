@@ -530,8 +530,8 @@ namespace SystemSharp.Assembler.DesignGen
                         (uint)TypeLowering.Instance.GetWireWidth(regType))
                     {
                         Clk = _binder.GetSignal<StdLogic>(EPortUsage.Clock, null, null, StdLogic._0),
-                        Addr1 = sigAddrR,
-                        Addr2 = sigAddrW,
+                        RdAddr = sigAddrR,
+                        WrAddr = sigAddrW,
                         DataIn = sigDIn,
                         DataOut = sigDOut,
                         WrEn = sigWrEn
