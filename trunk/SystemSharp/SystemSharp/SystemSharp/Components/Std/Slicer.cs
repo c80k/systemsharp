@@ -33,11 +33,25 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface for slicing operations (i.e. cutting out sub-vectors from a bit-vectors)
+    /// </summary>
     public interface ISlicerTransactionSite : ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction for performing a slice operation
+        /// </summary>
+        /// <param name="data">source of data to be sliced</param>
+        /// <param name="result">sink for receiving the slice</param>
         IEnumerable<TAVerb> Slice(ISignalSource<StdLogicVector> data, ISignalSink<StdLogicVector> result);
     }
 
+    /// <summary>
+    /// A functional unit for performing slice operations on bit-vectors. The slice semantics are generalized in that
+    /// it is possible to specify slice ranges which exceed the original operand bit-width. This way, the unit can
+    /// be used for sign extension.
+    /// This component is intended to be used during high-level synthesis for mapping basic arithmetic/logical instructions.
+    /// </summary>
     [DeclareXILMapper(typeof(SlicerXILMapper))]
     public class Slicer: Component
     {
@@ -80,21 +94,43 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Input bit-vector
+        /// </summary>
         public In<StdLogicVector> DIn { private get; set; }
+
+        /// <summary>
+        /// Output slice
+        /// </summary>
         public Out<StdLogicVector> DOut { private get; set; }
 
+        /// <summary>
+        /// Bit-width of input vector
+        /// </summary>
         [PerformanceRelevant]
         public int InputWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// High slice offset
+        /// </summary>
         [PerformanceRelevant]
         public int HiOffset { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Low slice offset
+        /// </summary>
         [PerformanceRelevant]
         public int LoOffset { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Whether operand is signed
+        /// </summary>
         [PerformanceRelevant]
         public bool IsSigned { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public ISlicerTransactionSite TASite { get; private set; }
 
         private StdLogicVector _hiPad0;
@@ -103,9 +139,16 @@ namespace SystemSharp.Components.Std
         private int _hiSlice;
         private int _loSlice;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="inputWidth">bit-width of operand</param>
+        /// <param name="hiOffset">high slice offset</param>
+        /// <param name="loOffset">low slice offset</param>
+        /// <param name="signed">whether operand is signed</param>
         public Slicer(int inputWidth, int hiOffset, int loOffset, bool signed)
         {
-            Contract.Requires<ArgumentException>(hiOffset - loOffset >= -1);
+            Contract.Requires<ArgumentOutOfRangeException>(hiOffset - loOffset >= -1);
 
             InputWidth = inputWidth;
             HiOffset = hiOffset;
@@ -133,6 +176,9 @@ namespace SystemSharp.Components.Std
             Debug.Assert(hiPadWidth + loPadWidth + _hiSlice - _loSlice == hiOffset - loOffset);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="obj"/> is a <c>Slicer</c> with same parametrization.
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as Slicer;
@@ -193,6 +239,9 @@ namespace SystemSharp.Components.Std
         }
     }
 
+    /// <summary>
+    /// A service for mapping bit-slice XIL instructions to hardware.
+    /// </summary>
     public class SlicerXILMapper : IXILMapper
     {
         private class SlicerXILMapping : IXILMapping
@@ -235,6 +284,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns convert, slicefixi, rempow2
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.Convert();

@@ -33,23 +33,46 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// If this attribute is attached to an interface, struct or class, it instructs the model analysis to treat any field, property or
+    /// local variable of that particular type in a special way when found inside a component.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public abstract class RewriteDeclaration : Attribute
     {
+        /// <summary>
+        /// Implements the special treatment of a particular field or property.
+        /// </summary>
+        /// <param name="container">descriptor of containing component</param>
+        /// <param name="declSite">found field or property</param>
         public virtual void ImplementDeclaration(DescriptorBase container, MemberInfo declSite)
         {
             throw new NotSupportedException("Declaration as member is not allowed");
         }
 
+        /// <summary>
+        /// Implements the special treatment of a particular local variable.
+        /// </summary>
+        /// <param name="lvi">information on local variable</param>
+        /// <param name="decomp">decompiler instance</param>
         public virtual void ImplementDeclaration(LocalVariableInfo lvi, IDecompiler decomp)
         {
             throw new NotSupportedException("Declaration as local variable is not allowed");
         }
     }
 
+    /// <summary>
+    /// If this attribute is attached to an interface, struct or class, it instructs the model analysis to treat any property
+    /// of that particular type in a special way when found inside a component.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public abstract class RewritePropertyDeclaration : RewriteDeclaration
     {
+        /// <summary>
+        /// Implements the special treatment of a particular field or property.
+        /// </summary>
+        /// <param name="container">descriptor of containing component</param>
+        /// <param name="declSite">found property</param>
         public abstract void ImplementDeclaration(DescriptorBase container, PropertyInfo declSite);
 
         public sealed override void ImplementDeclaration(DescriptorBase container, MemberInfo declSite)
@@ -58,16 +81,35 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// If this attribute is attached to any interface, struct or class, it instructs the model analysis to treat any property of
+    /// that particular type as a port declaration when found inside a component.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class MapToPort : RewritePropertyDeclaration
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="direction">data direction</param>
         public MapToPort(EPortDirection direction)
         {
             Direction = direction;
         }
 
+        /// <summary>
+        /// Data direction
+        /// </summary>
         public EPortDirection Direction { get; private set; }
+
+        /// <summary>
+        /// Port descriptor
+        /// </summary>
         public PortDescriptor Descriptor { get; private set; }
+
+        /// <summary>
+        /// Reference to bound signal
+        /// </summary>
         public SignalRef SignalReference { get; private set; }
 
         private void CreateChildPDs(PortDescriptor pd, SignalDescriptor sd)
@@ -131,9 +173,22 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// If this attribute is attached to any method or constructor, it instructs the decompiler to treat any call to that
+    /// method or constructor in a special way.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = true)]
     public abstract class RewriteCall : Attribute
     {
+        /// <summary>
+        /// Implements the special treatment of a method call.
+        /// </summary>
+        /// <param name="decompilee">descriptor of code being decompiled</param>
+        /// <param name="callee">called method or constructor</param>
+        /// <param name="args">arguments</param>
+        /// <param name="stack">decompiler context</param>
+        /// <param name="builder">algorithm builder</param>
+        /// <returns></returns>
         public abstract bool Rewrite(
             CodeDescriptor decompilee,
             MethodBase callee,
@@ -142,11 +197,18 @@ namespace SystemSharp.Components
             IFunctionBuilder builder);
     }
 
+    /// <summary>
+    /// If this attribute is attached to a method, it indicates that the method represents a special signal property.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SignalProperty : RewriteCall, IDoNotAnalyze
     {
         public SignalRef.EReferencedProperty Prop { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="prop">kind of property being represented</param>
         public SignalProperty(SignalRef.EReferencedProperty prop)
         {
             Prop = prop;
@@ -246,6 +308,10 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// If this attribute is attached to an interface or class, it indicates that a field of that particular type represents a signal
+    /// instance.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
     public class SignalField : RewriteFieldAccess
     {
@@ -262,9 +328,17 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This attribute is attached to getter methods of indexer properties of array-typed signals.
+    /// It takes care for the decompilation of such method calls, such that they get properly represented
+    /// inside the SysDOM representation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class SignalIndexer : RewriteCall
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public SignalIndexer()
         {
         }

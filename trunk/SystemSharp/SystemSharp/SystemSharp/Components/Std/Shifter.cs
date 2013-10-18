@@ -31,15 +31,34 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Transaction site interface for logical shift operations. Arithmetic shift is currently not supported.
+    /// </summary>
     public interface IShifterTransactor : 
         ITransactionSite
     {
+        /// <summary>
+        /// Returns a transaction for shifting left.
+        /// </summary>
+        /// <param name="x">source of operand to shift</param>
+        /// <param name="s">source of bit-count to shift</param>
+        /// <param name="y">sink for shifted result</param>
         IEnumerable<TAVerb> LShift(ISignalSource<StdLogicVector> x, ISignalSource<StdLogicVector> s,
             ISignalSink<StdLogicVector> y);
+
+        /// <summary>
+        /// Returns a transaction for shifting right.
+        /// </summary>
+        /// <param name="x">source of operand to shift</param>
+        /// <param name="s"></param>
+        /// <param name="y">sink for shifted result</param>
         IEnumerable<TAVerb> RShift(ISignalSource<StdLogicVector> x, ISignalSource<StdLogicVector> s,
             ISignalSink<StdLogicVector> y);
     }
 
+    /// <summary>
+    /// A logical shift unit (arithmetic shifts not currently not supported).
+    /// </summary>
     [DeclareXILMapper(typeof(ShifterXILMapper))]
     public class Shifter: Component
     {
@@ -125,24 +144,60 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Clock signal input
+        /// </summary>
         [PortUsage(EPortUsage.Clock)]
         public In<StdLogic> Clk { private get; set; }
+
+        /// <summary>
+        /// Operand input
+        /// </summary>
         public In<StdLogicVector> X { private get; set; }
+
+        /// <summary>
+        /// Number of bits to shift
+        /// </summary>
         public In<StdLogicVector> Shift { private get; set; }
+
+        /// <summary>
+        /// Shift direction: '0' is left, '1' is right
+        /// </summary>
         public In<StdLogicVector> Dir { private get; set; }
+
+        /// <summary>
+        /// Shifted result
+        /// </summary>
         public Out<StdLogicVector> Y { private get; set; }
 
+        /// <summary>
+        /// Operand and result bit-width
+        /// </summary>
         [PerformanceRelevant]
         public int DataWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Bit-width of shift signal, i.e. maximum shift is (2^<c>ShiftWidth</c>-1) to left or right
+        /// </summary>
         [PerformanceRelevant]
         public int ShiftWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Number of pipeline stages, i.e. computation latency
+        /// </summary>
         [PerformanceRelevant]
         public int PipelineDepth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Associated transaction site
+        /// </summary>
         public IShifterTransactor TASite { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="dataWidth">bit-width of operand</param>
+        /// <param name="pipelineDepth">number of pipeline stages, i.e. computation latency</param>
         public Shifter(int dataWidth, int pipelineDepth)
         {
             DataWidth = dataWidth;
@@ -182,12 +237,19 @@ namespace SystemSharp.Components.Std
         }
     }
 
-    class ShifterXILMapper : IXILMapper
+    /// <summary>
+    /// A service for mapping XIL instructions performing logical shifts to hardware. Arithmetic shifts are currently not supported.
+    /// </summary>
+    public class ShifterXILMapper : IXILMapper
     {
         private class LShiftXILMapping : DefaultXILMapping
         {
             private Shifter _host;
 
+            /// <summary>
+            /// Constructs a new instance.
+            /// </summary>
+            /// <param name="host">shifter unit</param>
             public LShiftXILMapping(Shifter host) :
                 base(host.TASite, EMappingKind.ReplicatableResource)
             {
@@ -242,6 +304,9 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Returns lshift, rshift
+        /// </summary>
         public IEnumerable<XILInstr> GetSupportedInstructions()
         {
             yield return DefaultInstructionSet.Instance.LShift();

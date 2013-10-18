@@ -44,16 +44,16 @@ namespace SystemSharp.Components.Std
     /// The component is intended to be used during high-level synthesis for mapping basic arithmetic/logical instructions.
     /// </summary>
     [DeclareXILMapper(typeof(FPMod1XILMapper))]
-    public class FixPMod1 : Component
+    public class FixFPMod1 : Component
     {
         private class FPMod1TransactionSite :
             DefaultTransactionSite,
             IFPMod1TransactionSite
         {
-            private FixPMod1 _host;
+            private FixFPMod1 _host;
             private bool _established;
 
-            public FPMod1TransactionSite(FixPMod1 host) :
+            public FPMod1TransactionSite(FixFPMod1 host) :
                 base(host)
             {
                 _host = host;
@@ -127,7 +127,7 @@ namespace SystemSharp.Components.Std
         /// <param name="fracWidth">operand and result fractional bits
         /// (operand and result automatically have same number of fractional bits)</param>
         /// <param name="outIntWidth">result integer bits</param>
-        public FixPMod1(int inIntWidth, int fracWidth, int outIntWidth)
+        public FixFPMod1(int inIntWidth, int fracWidth, int outIntWidth)
         {
             Contract.Requires(inIntWidth >= 2 && outIntWidth >= 2);
 
@@ -175,9 +175,9 @@ namespace SystemSharp.Components.Std
     {
         private class FPMod1XILMapping : IXILMapping
         {
-            private FixPMod1 _host;
+            private FixFPMod1 _host;
 
-            public FPMod1XILMapping(FixPMod1 host)
+            public FPMod1XILMapping(FixFPMod1 host)
             {
                 _host = host;
             }
@@ -255,7 +255,7 @@ namespace SystemSharp.Components.Std
         public IEnumerable<IXILMapping> TryMap(ITransactionSite taSite, XILInstr instr, TypeDescriptor[] operandTypes, TypeDescriptor[] resultTypes)
         {
             var fu = taSite.Host;
-            FixPMod1 fpmod1 = fu as FixPMod1;
+            FixFPMod1 fpmod1 = fu as FixFPMod1;
             if (fpmod1 == null)
                 yield break;
             if (instr.Name != InstructionCodes.Mod2 &&
@@ -312,7 +312,7 @@ namespace SystemSharp.Components.Std
             if (infmt.FracWidth != outfmt.FracWidth)
                 return null;
 
-            FixPMod1 slicer = new FixPMod1(infmt.IntWidth, infmt.FracWidth, outfmt.IntWidth);
+            FixFPMod1 slicer = new FixFPMod1(infmt.IntWidth, infmt.FracWidth, outfmt.IntWidth);
 
             return new FPMod1XILMapping(slicer);
         }
