@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -30,30 +30,53 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components.Std
 {
+    /// <summary>
+    /// Shift register implementation
+    /// </summary>
     public class RegPipe : Component
     {
+        /// <summary>
+        /// Input clock signal
+        /// </summary>
         public In<StdLogic> Clk { private get; set; }
+        
+        /// <summary>
+        /// Optional shift enable input
+        /// </summary>
         public In<StdLogic> En { private get; set; }
+
+        /// <summary>
+        /// Data in
+        /// </summary>
         public In<StdLogicVector> Din { private get; set; }
+
+        /// <summary>
+        /// Data out
+        /// </summary>
         public Out<StdLogicVector> Dout { private get; set; }
 
         private int _width;
         private int _depth;
         private int _belowbit;
-        //private Signal1D<StdLogicVector> _stages;
         private SLVSignal _stages;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="depth">depth of shift register (i.e. number of stages)</param>
+        /// <param name="width">bit-width of shift register</param>
+        /// <param name="useEn">whether to use shift enable input</param>
         public RegPipe(int depth, int width, bool useEn = false)
         {
-            Contract.Requires(depth > 0 || !useEn);
+            Contract.Requires<ArgumentOutOfRangeException>(depth >= 0, "depth must be non-negative");
+            Contract.Requires<ArgumentOutOfRangeException>(width > 0, "width must be positive");
+            Contract.Requires<ArgumentOutOfRangeException>(depth > 0 || !useEn, "need at least 1 stage if using enable input.");
 
             _width = width;
             _depth = depth;
             UseEn = useEn;
             if (depth > 1)
             {
-                //_stages = new Signal1D<StdLogicVector>(depth - 1, 
-                //    i => new SLVSignal(width) { InitialValue = StdLogicVector._0s(width) });
                 int bits = width * depth;
                 _belowbit = bits - width - 1;
                 _stages = new SLVSignal(bits)
@@ -67,21 +90,33 @@ namespace SystemSharp.Components.Std
             }
         }
 
+        /// <summary>
+        /// Whether enable input is used
+        /// </summary>
         [PerformanceRelevant]
         public bool UseEn { get; private set; }
 
+        /// <summary>
+        /// Bit-width of shift register
+        /// </summary>
         [PerformanceRelevant]
         public int Width
         {
             get { return _width; }
         }
 
+        /// <summary>
+        /// Number of stages
+        /// </summary>
         [PerformanceRelevant]
         public int Depth
         {
             get { return _depth; }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> of <paramref name="obj"/> is a <c>RegPipe</c> with same parametrization.
+        /// </summary>
         public override bool IsEquivalent(Component obj)
         {
             var other = obj as RegPipe;
@@ -127,10 +162,6 @@ namespace SystemSharp.Components.Std
             if (Clk.RisingEdge())
             {
                 _stages.Next = _stages.Cur[_belowbit, 0].Concat(Din.Cur);
-                /*_stages[0].Next = Din.Cur;
-                for (int i = 1; i < _depth - 1; i++)
-                    _stages[i].Next = _stages[i - 1].Cur;
-                Dout.Next = _stages[_depth - 2].Cur;*/
             }
         }
 
@@ -139,10 +170,6 @@ namespace SystemSharp.Components.Std
             if (Clk.RisingEdge() && En.Cur == '1')
             {
                 _stages.Next = _stages.Cur[_belowbit, 0].Concat(Din.Cur);
-                /*_stages[0].Next = Din.Cur;
-                for (int i = 1; i < _depth - 1; i++)
-                    _stages[i].Next = _stages[i - 1].Cur;
-                Dout.Next = _stages[_depth - 2].Cur;*/
             }
         }
 

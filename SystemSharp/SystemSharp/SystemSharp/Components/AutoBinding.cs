@@ -29,49 +29,149 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// Mode flags for signal creation/retrieval by binder service
+    /// </summary>
     [Flags]
     public enum EBinderFlags
     {
+        /// <summary>
+        /// An existing signal must be used.
+        /// </summary>
         ExistingSignal = 1,
+
+        /// <summary>
+        /// A new signal must be created.
+        /// </summary>
         CreateNewSignal = 2,
+
+        /// <summary>
+        /// If already created, use existing signal, otherwise create new signal.
+        /// </summary>
         UseExistingOrCreateSignal = 3,
+
+        /// <summary>
+        /// Create a new port for request.
+        /// </summary>
         CreateNewPort = 4,
+
+        /// <summary>
+        /// Input direction
+        /// </summary>
         In = 8,
+
+        /// <summary>
+        /// Output direction
+        /// </summary>
         Out = 16,
+
+        /// <summary>
+        /// Mixed input and output
+        /// </summary>
         InOut = 24
     }
 
+    /// <summary>
+    /// Binder service interface
+    /// </summary>
+    /// <remarks>
+    /// The purpose of a binder service is to create new or retrieve existing signals, ports, processes or types within a specific context
+    /// of a hosting component.
+    /// </remarks>
     public interface IAutoBinder
     {
+        /// <summary>
+        /// Retrieves an existing or creates a new signal/port, depending on specified flags.
+        /// </summary>
+        /// <param name="flags">creation flags</param>
+        /// <param name="portUsage">intended usage of model element</param>
+        /// <param name="name">name of created model element</param>
+        /// <param name="domainID">reserved for future extensions</param>
+        /// <param name="initialValue">initial data value</param>
         ISignalOrPortDescriptor GetSignal(EBinderFlags flags, EPortUsage portUsage, string name, string domainID, object initialValue);
+
+        /// <summary>
+        /// Creates a new signal.
+        /// </summary>
+        /// <param name="portUsage">intended usage of model element</param>
+        /// <param name="portName">desired name</param>
+        /// <param name="domainID">reserved for future extensions</param>
+        /// <param name="initialValue">initial data value</param>
         SignalBase GetSignal(EPortUsage portUsage, string portName, string domainID, object initialValue);
+
+        /// <summary>
+        /// Creates a new process.
+        /// </summary>
+        /// <param name="kind">kind of process</param>
+        /// <param name="func">behavior of process</param>
+        /// <param name="sensitivity">sensitivity list of process</param>
         ProcessDescriptor CreateProcess(Process.EProcessKind kind, Function func, params ISignalOrPortDescriptor[] sensitivity);
+
+        /// <summary>
+        /// Creates a new enumeration type.
+        /// </summary>
+        /// <param name="name">desired name</param>
+        /// <param name="literals">desired literals</param>
         TypeDescriptor CreateEnumType(string name, IEnumerable<string> literals);
     }
 
     public static class AutoBinderExtensions
     {
+        /// <summary>
+        /// Creates a typed signal.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
+        /// <param name="binder">binder service</param>
+        /// <param name="portUsage">intended usage</param>
+        /// <param name="portName">desired name</param>
+        /// <param name="domainID">reserved for future extensions</param>
+        /// <param name="initialValue">initial data value</param>
         public static Signal<T> GetSignal<T>(this IAutoBinder binder, EPortUsage portUsage, string portName, string domainID, T initialValue)
         {
             return (Signal<T>)binder.GetSignal(portUsage, portName, domainID, initialValue);
         }
 
+        /// <summary>
+        /// Retrieves an existing or creates a new typed signal/port, depending on specified flags.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
+        /// <param name="binder">binder service</param>
+        /// <param name="flags">creation flags</param>
+        /// <param name="portUsage">intended usage</param>
+        /// <param name="portName">desired name</param>
+        /// <param name="domainID">reserved for future extensions</param>
+        /// <param name="initialValue">initial data value</param>
         public static Signal<T> GetSignal<T>(this IAutoBinder binder, EBinderFlags flags, EPortUsage portUsage, string portName, string domainID, T initialValue)
         {
             return (Signal<T>)binder.GetSignal(flags, portUsage, portName, domainID, initialValue);
         }
     }
 
+    /// <summary>
+    /// A default implementation of the binder service
+    /// </summary>
     public class DefaultAutoBinder : IAutoBinder
     {
         private Component _host;
         private int _id;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">hosting component</param>
         public DefaultAutoBinder(Component host)
         {
             _host = host;
         }
 
+        /// <summary>
+        /// The default clock signal
+        /// </summary>
+        /// <remarks>
+        /// You can define a particular clock signal by assigning the property. If you don't assign this property,
+        /// you will leave it up to the default implementation to determine the clock signal. It will search all ports of the
+        /// component and select the first one whose <c>Usage</c> property is set to <c>EPortUsage.Clock</c>.
+        /// </remarks>
         private In<StdLogic> _defaultClock;
         public In<StdLogic> DefaultClock 
         {

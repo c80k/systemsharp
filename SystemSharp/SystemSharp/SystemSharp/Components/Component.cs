@@ -53,6 +53,9 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// An equality comparer which defines equality by the <c>IsEquivalent(...)</c>/<c>GetBehaviorHashCode()</c> methods.
+        /// </summary>
         public static readonly IEqualityComparer<Component> BehaviorComparer = new ComponentBehaviorComparer();
         private static readonly Event[] emptyEvents = new Event[0];
 
@@ -98,9 +101,8 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Represents a number of ticks
+        /// Represents <paramref name="numTicks"/> ticks
         /// </summary>
-        /// <returns></returns>
         [MapToWaitNTicksRewriteAwait]
         [MapToWaitNTicksRewriteCall]
         public static async Task NTicks(int numTicks) 
@@ -109,7 +111,7 @@ namespace SystemSharp.Components
         }
         
         /// <summary>
-        /// Represents one rising edges.
+        /// Represents one rising edge.
         /// </summary>
         /// <param name="clk">The clock signal</param>
         [StaticEvaluationDoNotAnalyze]
@@ -119,7 +121,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Represents a number of rising edges.
+        /// Represents <paramref name="numTicks"/> rising edges.
         /// </summary>
         /// <param name="clk">The clock signal</param>
         [StaticEvaluationDoNotAnalyze]
@@ -132,7 +134,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Represents one falling edges.
+        /// Represents one falling edge.
         /// </summary>
         /// <param name="clk">The clock signal</param>
         [StaticEvaluationDoNotAnalyze]
@@ -142,7 +144,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Represents a number of falling edges.
+        /// Represents <paramref name="numTicks"/> falling edges.
         /// </summary>
         /// <param name="clk">The clock signal</param>
         [StaticEvaluationDoNotAnalyze]
@@ -155,7 +157,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// A combinatory method for signals.
+        /// Combines the changed events of multiple signals to a single event which is triggered whenever any of the involved signals changed its value.
         /// </summary>
         [StaticEvaluationDoNotAnalyze]
         public static MultiEvent Any(params IInPort[] signals)
@@ -164,7 +166,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// A combinatory method for events.
+        /// Combines multiple events to a single event which is triggered whenever any event is triggered.
         /// </summary>
         [StaticEvaluationDoNotAnalyze]
         public static MultiEvent Any(params AbstractEvent[] events)
@@ -181,14 +183,14 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// This method gets called prior to Initialize().
+        /// This method gets called prior to <c>Initialize()</c>.
         /// </summary>
         virtual protected void PreInitialize()
         {
         }
 
         /// <summary>
-        /// This method gets called after Initialize().
+        /// This method gets called after <c>Initialize()</c>.
         /// </summary>
         virtual protected void PostInitialize()
         {
@@ -201,6 +203,11 @@ namespace SystemSharp.Components
         {
         }
 
+        /// <summary>
+        /// Registers an action to be performed before model elaboration.
+        /// This is especially useful for performing port binding tasks.
+        /// </summary>
+        /// <param name="bindAction">action to register</param>
         protected void Bind(Action bindAction)
         {
             Context.OnEndOfConstruction += bindAction;
@@ -262,7 +269,7 @@ namespace SystemSharp.Components
             process.Schedule(0);
         }
 
-        protected Process AddClockedThreadInternal(Action func, Func<bool> predicate, params IInPort[] sensitive)
+        private Process AddClockedThreadInternal(Action func, Func<bool> predicate, params IInPort[] sensitive)
         {
             Process process = new Process(
                 this,
@@ -277,6 +284,12 @@ namespace SystemSharp.Components
             return process;
         }
 
+        /// <summary>
+        /// Registers a threaded process whereby the <c>Tick</c> event is triggered whenever the specified predicate evaluates to <c>true</c>.
+        /// </summary>
+        /// <param name="func">The process body</param>
+        /// <param name="predicate">Predicate to evaluate, e.g.<c>clk.RisingEdge</c></param>
+        /// <param name="sensitive">Sensitivity determining the points in time when to evaluate</param>
         protected void AddClockedThread(Action func, Func<bool> predicate, params IInPort[] sensitive)
         {
             AddClockedThreadInternal(func, predicate, sensitive);
@@ -405,15 +418,24 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// The associated descriptor object.
+        /// The associated component descriptor
         /// </summary>
         public ComponentDescriptor Descriptor { get; internal set; }
 
+        /// <summary>
+        /// The associated component descriptor
+        /// </summary>
         DescriptorBase IDescriptive.Descriptor
         {
             get { return Descriptor; }
         }
 
+        /// <summary>
+        /// Sets the owning descriptor of this component.
+        /// </summary>
+        /// <param name="owner">owning descriptor</param>
+        /// <param name="declSite">declaration site of this component</param>
+        /// <param name="indexSpec">index within declaration site</param>
         public virtual void SetOwner(DescriptorBase owner, MemberInfo declSite, IndexSpec indexSpec)
         {
             IComponentDescriptor cowner = (IComponentDescriptor)owner;
@@ -430,6 +452,9 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Gets or sets a binder service for this component.
+        /// </summary>
         public IAutoBinder AutoBinder { get; set; }
 
         /// <summary>
@@ -439,8 +464,8 @@ namespace SystemSharp.Components
         /// This check cannot be done in general (refer to the halting problem). Instead, it is up
         /// to the designer to implement specialized checks for derived components. The base
         /// implementation returns true only if it is compared to itself. IsEquivalent must use
-        /// conservative assumptions. I.e. it may return "false" if in doubt, but must never return
-        /// "true" if it cannot gurantee that the other component behaves identically.
+        /// conservative assumptions. I.e. it may return <c>false</c> if in doubt, but must never return
+        /// <c>true</c> if it cannot gurantee that the other component behaves identically.
         /// </summary>
         /// <param name="other">The component to compoare</param>
         /// <returns>true, if this component is equivalent to the other one, false if not (or if in doubt)</returns>
@@ -451,7 +476,7 @@ namespace SystemSharp.Components
 
         /// <summary>
         /// returns a hash code such that for any two components c1 and c2 the following condition holds:
-        /// c1.GetBehaviorHashCode() != c2.GetBehaviorHashCode() implies !c1.IsEquivalent(c2)
+        /// <c>c1.GetBehaviorHashCode() != c2.GetBehaviorHashCode()</c> implies <c>!c1.IsEquivalent(c2)</c>
         /// </summary>
         /// <returns>the hash code</returns>
         public virtual int GetBehaviorHashCode()
@@ -460,7 +485,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// A representative component such that IsEquivalent(Representant) is fulfilled.
+        /// A representative component such that <c>IsEquivalent(Representant)</c> is fulfilled.
         /// </summary>
         public Component Representant { get; internal set; }
     }

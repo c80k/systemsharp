@@ -288,7 +288,6 @@
     <Compile Include="SystemSharp\Components\Std\Slicer.cs" />
     <Compile Include="SystemSharp\Components\Transactions\FlowSpec.cs" />
     <Compile Include="SystemSharp\Components\Transactions\Transactions.cs" />
-    <Compile Include="SystemSharp\Components\Transactions\TransactionSpec.cs" />
     <Compile Include="SystemSharp\DataTypes\Common.cs" />
     <Compile Include="SystemSharp\DataTypes\FixPointMath.cs" />
     <Compile Include="SystemSharp\DataTypes\StdLogicLib.cs" />

@@ -25,19 +25,32 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// A component which is an aggregate of multiple child components
+    /// </summary>
     public class ComponentCollection: Component
     {
         private List<Component> _components;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="components">child components</param>
         public ComponentCollection(IEnumerable<Component> components)
         {
             _components = components.ToList();
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public ComponentCollection()
         {
         }
 
+        /// <summary>
+        /// Adds <paramref name="component"/> to this aggregate component.
+        /// </summary>
         public void AddComponent(Component component)
         {
             _components.Add(component);

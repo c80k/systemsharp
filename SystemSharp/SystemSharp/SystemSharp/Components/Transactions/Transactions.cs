@@ -27,19 +27,56 @@ using SystemSharp.DataTypes;
 
 namespace SystemSharp.Components.Transactions
 {
+    /// <summary>
+    /// The mode of a transaction verb
+    /// </summary>
     public enum ETVMode
     {
+        /// <summary>
+        /// Verb belongs to initiation interval and therefore must not be combined with any other verb in locked mode.
+        /// </summary>
         Locked,
+
+        /// <summary>
+        /// Verb can be combined with any other verb.
+        /// </summary>
         Shared
     }
 
+    /// <summary>
+    /// A transaction verb is the base element of a clocked transaction. It describes the register
+    /// transfers which are active during a single clock period.
+    /// </summary>
     public class TAVerb
     {
+        /// <summary>
+        /// Transaction site on which the verb operates
+        /// </summary>
         public ITransactionSite Target { get; private set; }
+
+        /// <summary>
+        /// Obsolete, will be removed
+        /// </summary>
+        [Obsolete("part of an out-dated concept, planned for removal")]
         public Action Op { get; private set; }
+
+        /// <summary>
+        /// Process which describes the active register transfers within the scope of this verb
+        /// </summary>
         public IProcess During { get; private set; }
+
+        /// <summary>
+        /// Mode of this verb
+        /// </summary>
         public ETVMode TMode { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="target">transaction site on which verb is operated</param>
+        /// <param name="tmode">mode of verb</param>
+        /// <param name="op">relict of an out-dated concept, please specify () => { }</param>
+        [Obsolete("Please use other constructor")]
         public TAVerb(ITransactionSite target, ETVMode tmode, Action op)
         {
             Contract.Requires(target != null);
@@ -50,10 +87,17 @@ namespace SystemSharp.Components.Transactions
             Op = op;
         }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="target">transaction site on which verb is operated</param>
+        /// <param name="tmode">mode of verb</param>
+        /// <param name="op">relict of an out-dated concept, please specify () => { }</param>
+        /// <param name="during">process which describes the active register transfers within the scope of the created verb</param>
         public TAVerb(ITransactionSite target, ETVMode tmode, Action op, IProcess during)
         {
-            Contract.Requires(target != null);
-            Contract.Requires(op != null);
+            Contract.Requires<ArgumentNullException>(target != null, "target");
+            Contract.Requires<ArgumentNullException>(op != null, "op");
 
             Target = target;
             TMode = tmode;
@@ -75,6 +119,9 @@ namespace SystemSharp.Components.Transactions
             return RuntimeHelpers.GetHashCode(Target) ^ Op.GetHashCode();
         }
 
+        /// <summary>
+        /// Converts this verb to an aggregate flow representation
+        /// </summary>
         public ParFlow ToCombFlow()
         {
             if (During == null)
@@ -84,6 +131,7 @@ namespace SystemSharp.Components.Transactions
         }
     }
 
+    [Obsolete("relict of a never-realized concept, planned for removal")]
     public enum ETARole
     {
         Clock,
@@ -91,6 +139,7 @@ namespace SystemSharp.Components.Transactions
         Parameter
     }
 
+    [Obsolete("relict of a never-realized concept, planned for removal")]
     [AttributeUsage(AttributeTargets.Property, Inherited=true, AllowMultiple=false)]
     public class TAPort : Attribute
     {
@@ -106,6 +155,7 @@ namespace SystemSharp.Components.Transactions
         }
     }
 
+    [Obsolete("relict of a never-realized concept, planned for removal")]
     [AttributeUsage(AttributeTargets.Parameter, Inherited = true, AllowMultiple = false)]
     public class TAArg : Attribute
     {
@@ -117,6 +167,7 @@ namespace SystemSharp.Components.Transactions
         }
     }
 
+    [Obsolete("relict of a never-realized concept, planned for removal")]
     [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class Transaction : StaticEvaluation
     {
@@ -130,21 +181,54 @@ namespace SystemSharp.Components.Transactions
         }
     }
 
+    /// <summary>
+    /// General transaction site interface
+    /// </summary>
+    /// <remarks>
+    /// A transaction site is a fundamental abstraction used during System# high-level synthesis.
+    /// It embodies a conceptual hardware site which can perform one or more specific operations. 
+    /// Clocked transactions (i.e. a sequences of transaction verbs) describe how to operate the hardware in order
+    /// to achieve the desired behavior. Each possible operation is embodied by a specific method of the
+    /// specialized transaction site. A common transaction of all transaction sites is the neutral transaction which is
+    /// executed whenever there is actually nothing to do.
+    /// </remarks>
     public interface ITransactionSite
     {
+        /// <summary>
+        /// Hardware unit hosting the transaction site
+        /// </summary>
         Component Host { [StaticEvaluation] get; }
+
+        /// <summary>
+        /// Name of transaction site
+        /// </summary>
         string Name { get; }
 
+        /// <summary>
+        /// Returns the neutral transaction which is executed whenever there is nothing to do.
+        /// </summary>
         [StaticEvaluation]
         IEnumerable<TAVerb> DoNothing();
 
+        /// <summary>
+        /// Connects the underlying hardware to its environment by binding its ports to signals
+        /// created by a binder service.
+        /// </summary>
+        /// <param name="binder">binder service</param>
         void Establish(IAutoBinder binder);
     }
 
+    /// <summary>
+    /// An abstract base implementation of transaction site interface
+    /// </summary>
     public abstract class DefaultTransactionSite: ITransactionSite
     {
         public Component Host { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">hosting component</param>
         public DefaultTransactionSite(Component host)
         {
             Host = host;
@@ -155,9 +239,18 @@ namespace SystemSharp.Components.Transactions
             get { return "$" + RuntimeHelpers.GetHashCode(this).ToString(); }
         }
 
+        /// <summary>
+        /// Returns the neutral transaction which is executed whenever there is nothing to do.
+        /// You must override this method in your specialization.
+        /// </summary>
         [StaticEvaluation]
         public abstract IEnumerable<TAVerb> DoNothing();
 
+        /// <summary>
+        /// Connects the underlying hardware to its environment by binding its ports to signals
+        /// created by a binder service. The default implementation does nothing.
+        /// </summary>
+        /// <param name="binder">binder service</param>
         public virtual void Establish(IAutoBinder binder)
         {
         }
@@ -180,7 +273,12 @@ namespace SystemSharp.Components.Transactions
             }
         }
 
-        public TAVerb Verb(ETVMode tmode, params IProcess[] during)
+        /// <summary>
+        /// Creates a transaction verb.
+        /// </summary>
+        /// <param name="tmode">mode</param>
+        /// <param name="during">one or multiple processes describing the active register transfers of the created verb</param>
+        protected TAVerb Verb(ETVMode tmode, params IProcess[] during)
         {
             return Verb(tmode, () => { }, during);
         }
