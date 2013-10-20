@@ -102,6 +102,9 @@ namespace SystemSharp.Components
         public string OriginInfo { get; private set; }
     }
 
+    /// <summary>
+    /// An explicit interface for types implementing the await pattern.
+    /// </summary>
     [MapToIntrinsicType(EIntrinsicTypes.IllegalRuntimeType)]
     public interface IAwaitable : INotifyCompletion
     {
@@ -268,7 +271,7 @@ namespace SystemSharp.Components
         private Awaiter _awaiter;
 
         /// <summary>
-        /// Infinitely in the future
+        /// Depicts an infinite time span or a point in which is time infinitely in the future.
         /// Added by Mário Ferreira
         /// </summary>
         public static readonly Time Infinite = new Time(double.PositiveInfinity, ETimeUnit.sec);
@@ -299,6 +302,9 @@ namespace SystemSharp.Components
             _awaiter = new Awaiter(this);
         }
 
+        /// <summary>
+        /// Part of await pattern implementation.
+        /// </summary>
         public IAwaitable GetAwaiter()
         {
             return _awaiter;
@@ -374,8 +380,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Returns if time lies infinitely in the future
-        /// Added by Mário Ferreira
+        /// Returns <c>true </c>if time lies infinitely in the future
         /// </summary>
         public bool IsInfinite
         {
@@ -473,6 +478,9 @@ namespace SystemSharp.Components
             return Math.Abs(a.Value - b.ScaleTo(a.Unit)) >= (1e1 * double.Epsilon);
         }
 
+        /// <summary>
+        /// Creates a time instance.
+        /// </summary>
         public static Time Create(double value, ETimeUnit unit)
         {
             return new Time(value, unit);

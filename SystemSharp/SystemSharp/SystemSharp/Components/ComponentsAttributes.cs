@@ -444,13 +444,35 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This attribute indicates that the tagged method performs a type conversion. Calls to the tagges method will be translated
+    /// to the SysDOM-intrinsic conversion function during decompilation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class TypeConversion : RewriteCall, IDoNotAnalyze, ISideEffectFree
     {
+        /// <summary>
+        /// Source type of conversion
+        /// </summary>
         public Type SourceType { get; private set; }
+
+        /// <summary>
+        /// Target type of conversion
+        /// </summary>
         public Type DestType { get; private set; }
+
+        /// <summary>
+        /// Whether conversion has reinterpretation semantics. See documentation of XIL instruction <c>convert</c>
+        /// for further explanation.
+        /// </summary>
         public bool Reinterpret { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="sourceType">source type of conversion</param>
+        /// <param name="destType">target type of conversion</param>
+        /// <param name="reinterpret">whether conversion is reinterpretation</param>
         public TypeConversion(Type sourceType, Type destType, bool reinterpret = false)
         {
             SourceType = sourceType;
@@ -483,13 +505,31 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Any call to the tagged method will be translated to a SysDOM-intrinsic function call during decompilation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class MapToIntrinsicFunction : RewriteCall, IDoNotAnalyze
     {
+        /// <summary>
+        /// SysDOM-intrinsic function code
+        /// </summary>
         public IntrinsicFunction.EAction Kind { get; private set; }
+
+        /// <summary>
+        /// Optional static parameter
+        /// </summary>
         public object Parameter { get; private set; }
+
+        /// <summary>
+        /// Whether to drop the first argument (i.e. the "this" instance for non-static methods)
+        /// </summary>
         public bool SkipFirstArg { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="kind">SysDOM-intrinsic function code</param>
         public MapToIntrinsicFunction(IntrinsicFunction.EAction kind)
         {
             Kind = kind;
@@ -497,6 +537,11 @@ namespace SystemSharp.Components
                 throw new ArgumentException("Use MapToSlice instead");
         }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="kind">SysDOM-intrinsic function code</param>
+        /// <param name="param">optional function parameter</param>
         public MapToIntrinsicFunction(IntrinsicFunction.EAction kind, object param)
         {
             Kind = kind;
@@ -505,6 +550,11 @@ namespace SystemSharp.Components
                 throw new ArgumentException("Use MapToSlice instead");
         }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="kind">SysDOM-intrinsic function code</param>
+        /// <param name="skipFirstArg">whether to drop first argument (i.e. "this" instance for non-static methods)</param>
         public MapToIntrinsicFunction(IntrinsicFunction.EAction kind, bool skipFirstArg)
         {
             Kind = kind;
@@ -562,9 +612,15 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Calls to the tagged method will be translated to the SysDOM-intrinsic "slice" function during decompilation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class MapToSlice : RewriteCall, IDoNotAnalyze
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public MapToSlice()
         {
         }
@@ -637,7 +693,7 @@ namespace SystemSharp.Components
     }
 
     /// <summary>
-    /// This attribute declares a method to be suitable for static evaluation.
+    /// This attribute declares a method to be suitable for static evaluation. Non-void methods only.
     /// </summary>
     /// <remarks>
     /// Static evaluation means that the method is called by the System# framework during model analysis and that the return value is used directly instead
@@ -646,23 +702,33 @@ namespace SystemSharp.Components
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = true)]
     public class StaticEvaluation : RewriteCall, ISideEffectFree
     {
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
         public StaticEvaluation()
         {
             ResultGen = x => LiteralReference.CreateConstant(x);
         }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="resultGen">functor which translates the static object to an expression</param>
         public StaticEvaluation(Func<object, Expression> resultGen)
         {
             ResultGen = resultGen;
         }
 
+        /// <summary>
+        /// Functor which translates the static object to an expression. Default behavior is creation of a constant literal.
+        /// </summary>
         public Func<object, Expression> ResultGen { get; private set; }
 
         public override bool Rewrite(CodeDescriptor decompilee, MethodBase callee, StackElement[] args, IDecompiler stack, IFunctionBuilder builder)
         {
             Type returnType;
             if (!callee.ReturnsSomething(out returnType))
-                throw new InvalidOperationException("The StaticEvaluation attribute may only be applied to methods returning some result. Use IgnoreOnDecompilation instead.");
+                throw new ArgumentException("The StaticEvaluation attribute may only be applied to methods returning some result. Use IgnoreOnDecompilation instead.");
 
             object result = null;
             try
@@ -691,16 +757,25 @@ namespace SystemSharp.Components
 
         public override bool Rewrite(CodeDescriptor decompilee, MethodBase callee, StackElement[] args, IDecompiler stack, IFunctionBuilder builder)
         {
-            throw new InvalidOperationException("Method " + callee.ToString() + " was assumed not to be called at runtime. " +
+            throw new ArgumentException("Method " + callee.ToString() + " was assumed not to be called at runtime. " +
                 "However, a call to this method was found in " + decompilee.Method.ToString());
         }
     }
 
+    /// <summary>
+    /// Calls to the tagged method will be ignored during decompilation and therefore do not to any SysDOM statement being created.
+    /// void-typed methods only.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class IgnoreOnDecompilation : RewriteCall, IDoNotCallOnDecompilation
     {
         private bool _call;
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="invokeOnDecompilation">Whether tagged method should be invoked during decompilation. Specify <c>true</c>
+        /// if calling the method has some necessary side effects.</param>
         public IgnoreOnDecompilation(bool invokeOnDecompilation = false)
         {
             _call = invokeOnDecompilation;
@@ -710,7 +785,7 @@ namespace SystemSharp.Components
         {
             Type returnType;
             if (callee.ReturnsSomething(out returnType))
-                throw new InvalidOperationException("The IgnoreOnDecompilation attribute may only be applied to methods returning a void result. Use StaticEvaluation instead.");
+                throw new ArgumentException("The IgnoreOnDecompilation attribute may only be applied to methods returning a void result. Use StaticEvaluation instead.");
 
             if (_call)
             {
@@ -721,16 +796,35 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Indicates that the tagged method should not be analyzed for side effects and moreover be statically evaluated.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class StaticEvaluationDoNotAnalyze : StaticEvaluation, IDoNotAnalyze
     {
     }
 
+    /// <summary>
+    /// This attribute is attached to types (class or interface) and indicates that whenever the tagged type appears as
+    /// a method argument, that argument must be redeclared using a special argument descriptor inside the containing method.
+    /// This is an abstract class, you have to provide an implementation of <c>ImplementDeclaration</c> inside the derived class.
+    /// </summary>
     public abstract class RewriteArgumentDeclaration : Attribute
     {
+        /// <summary>
+        /// Constructs a literal from a given <c>ParameterInfo</c>.
+        /// </summary>
+        /// <param name="container">constructor or method to which the argument belongs</param>
+        /// <param name="sample">sample value for argument</param>
+        /// <param name="pi">CLI parameter information</param>
+        /// <returns>a SysDOM literal to use for that argument</returns>
         public abstract IStorableLiteral ImplementDeclaration(CodeDescriptor container, object sample, ParameterInfo pi);
     }
 
+    /// <summary>
+    /// This attributes is attached to interface or class declarations and indicates that everytime the type appears as
+    /// a constructor/method argument, that argument should be declared as a SysDOM <c>SignalArgumentDescriptor</c>.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false, Inherited = true)]
     public class SignalArgument : RewriteArgumentDeclaration
     {
@@ -765,17 +859,41 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This attribute is attached to method definitions and indicates that the method body is subject to some non-standard
+    /// decompilation procedure. This is an abstract class. You have to provide an implementation of the <c>Rewrite</c> method
+    /// inside the derived class.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public abstract class RewriteMethodDefinition : Attribute
     {
+        /// <summary>
+        /// Constructs a SysDOM method body for the given code descriptor.
+        /// </summary>
+        /// <param name="ctx">design context</param>
+        /// <param name="code">code descriptor of tagged method</param>
+        /// <param name="instance">instance on which method is called (null for static methods)</param>
+        /// <param name="arguments">method argument samples</param>
+        /// <returns>custom decompilation result</returns>
         public abstract IDecompilationResult Rewrite(DesignContext ctx, CodeDescriptor code, object instance, object[] arguments);
     }
 
+    /// <summary>
+    /// This attributes is attached to methods and indicates that calls to the tagged method should be mapped to an intrinsic
+    /// unary operation expression during decompilation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class MapToUnOp : RewriteCall
     {
+        /// <summary>
+        /// Kind of unary operation
+        /// </summary>
         public UnOp.Kind Kind { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="kind">kind of unary operation</param>
         public MapToUnOp(UnOp.Kind kind)
         {
             Kind = kind;
@@ -811,11 +929,22 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This attribute is attached to methods and indicates that calls to the tagged method should be mapped to an intrinsic binary operation
+    /// expression during decompilation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class MapToBinOp : RewriteCall
     {
+        /// <summary>
+        /// Kind of binary operation
+        /// </summary>
         public BinOp.Kind Kind { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="kind">kind of binary operation</param>
         public MapToBinOp(BinOp.Kind kind)
         {
             Kind = kind;
@@ -851,75 +980,127 @@ namespace SystemSharp.Components
         }
     }
 
-    [AttributeUsage(AttributeTargets.Method)]
-    public class MapToTernOp : Attribute
-    {
-        public TernOp.Kind Kind { get; private set; }
-        public int[] ArgPattern { get; private set; }
-
-        public MapToTernOp(TernOp.Kind kind, int[] argPattern)
-        {
-            Kind = kind;
-            ArgPattern = argPattern;
-        }
-    }
-
+    /// <summary>
+    /// Indicates that the tagged class or interface is considered to be System#-intrinsic type.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Struct, Inherited = true)]
     public class MapToIntrinsicType : Attribute
     {
+        /// <summary>
+        /// Kind of intrinsic type
+        /// </summary>
         public EIntrinsicTypes IntrinsicType { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="type">kind of intrinsic type</param>
         public MapToIntrinsicType(EIntrinsicTypes type)
         {
             IntrinsicType = type;
         }
     }
 
+    /// <summary>
+    /// This attribute is attached to implicit and explicit operators only. It indicates that the tagged operator
+    /// performs a type conversion.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class AutoConversion : Attribute
     {
+        /// <summary>
+        /// Whether the conversion should be included explicitly into the SysDOM decompilation.
+        /// </summary>
         public enum EAction
         {
+            /// <summary>
+            /// Yes, it should be included into the decompiled SysDOM expression.
+            /// </summary>
             Include,
+
+            /// <summary>
+            /// No, the conversion should not appear inside the SysDOM expression.
+            /// </summary>
             Exclude
         }
 
+        /// <summary>
+        /// Whether the conversion should be included explicitly into the SysDOM decompilation.
+        /// </summary>
         public EAction Action { get; private set; }
-        public string TargetLanguage { get; private set; }
 
         public AutoConversion(EAction action)
         {
             Action = action;
         }
-
-        public AutoConversion(EAction action, string targetLanguage)
-        {
-            Action = action;
-            TargetLanguage = targetLanguage;
-        }
     }
 
+    /// <summary>
+    /// Usage class of a port
+    /// </summary>
     public enum EPortUsage
     {
+        /// <summary>
+        /// No special usage
+        /// </summary>
         Default,
+
+        /// <summary>
+        /// Marks a clock signal input port.
+        /// </summary>
         Clock,
+
+        /// <summary>
+        /// Marks a reset signal input port.
+        /// </summary>
         Reset,
+
+        /// <summary>
+        /// Marks an operand input port.
+        /// </summary>
         Operand,
+
+        /// <summary>
+        /// Marks a result output port.
+        /// </summary>
         Result,
+
+        /// <summary>
+        /// Marks a state signal port.
+        /// </summary>
         State
     }
 
+    /// <summary>
+    /// This attribute is attached to port properties and gives a hint on how the tagged port is used.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class PortUsage : Attribute
     {
+        /// <summary>
+        /// Usage class
+        /// </summary>
         public EPortUsage Usage { get; private set; }
+
+        /// <summary>
+        /// Reserved for future extensions.
+        /// </summary>
         public string Domain { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="usage">usage class</param>
         public PortUsage(EPortUsage usage)
         {
             Usage = usage;
         }
 
+        /// <summary>
+        /// Creates the attribute
+        /// </summary>
+        /// <param name="usage">usage class</param>
+        /// <param name="domain">reserved for future extensions</param>
         public PortUsage(EPortUsage usage, string domain)
         {
             Usage = usage;
@@ -927,9 +1108,22 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This attribute is attached to either fields or classes. It indicates that a read/write access to the field or 
+    /// tp each field of the tagged type must be rewritten in some user-defined manner during decompilation. This is an abstract class.
+    /// You must provide an implementation of <c>RewriteRead</c> and <c>RewriteWrite</c> inside the derived class.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Field, AllowMultiple=false, Inherited=true)]
     public abstract class RewriteFieldAccess : Attribute
     {
+        /// <summary>
+        /// Rewrites a read access to a concerned field.
+        /// </summary>
+        /// <param name="decompilee">code descriptor</param>
+        /// <param name="field">CLI information on field</param>
+        /// <param name="instance">sample instance on which decompiled method is executed</param>
+        /// <param name="stack">decompiler context</param>
+        /// <param name="builder">algorithm builder</param>
         public abstract void RewriteRead(
             CodeDescriptor decompilee,
             FieldInfo field,
@@ -937,6 +1131,15 @@ namespace SystemSharp.Components
             IDecompiler stack,
             IFunctionBuilder builder);
 
+        /// <summary>
+        /// Rewrites a write access to a concerned field.
+        /// </summary>
+        /// <param name="decompilee">code descriptor</param>
+        /// <param name="field">CLI information on field</param>
+        /// <param name="instance">sample instance on which decompiled method is executed</param>
+        /// <param name="value">symbolic value to be assigned to the field</param>
+        /// <param name="stack">decompiler context</param>
+        /// <param name="builder">algorithm builder</param>
         public abstract void RewriteWrite(
             CodeDescriptor decompilee,
             FieldInfo field,
@@ -946,6 +1149,10 @@ namespace SystemSharp.Components
             IFunctionBuilder builder);
     }
 
+    /// <summary>
+    /// Declares a type (class or interface) or field as model element. Any read access to a model element is transformed to a
+    /// constant literal. Write accesses to model elements are not allowed.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public class ModelElement : RewriteFieldAccess
     {
@@ -962,51 +1169,99 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Hint on component usage
+    /// </summary>
     public enum EComponentPurpose
     {
+        /// <summary>
+        /// The component is used for both simulation and synthesis.
+        /// </summary>
         SimulationAndSynthesis,
+
+        /// <summary>
+        /// The component is used for simulation only (e.g. testbench).
+        /// </summary>
         SimulationOnly,
+
+        /// <summary>
+        /// The component is used for synthesis only.
+        /// </summary>
         SynthesisOnly
     }
 
+    /// <summary>
+    /// Declares the purpose of the tagged component.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class ComponentPurpose : Attribute
     {
+        /// <summary>
+        /// The purpose
+        /// </summary>
         public EComponentPurpose Purpose { get; private set; }
 
+        /// <summary>
+        /// Creates the attribute.
+        /// </summary>
+        /// <param name="purpose">purpose of component</param>
         public ComponentPurpose(EComponentPurpose purpose)
         {
             Purpose = purpose;
         }
     }
 
+    /// <summary>
+    /// Marker interface to tag methods which are free from side effects.
+    /// </summary>
     public interface ISideEffectFree
     {
     }
 
+    /// <summary>
+    /// Indicates that the tagged method is free from side effects, i.e. it may be called during analysis and
+    /// and decompilation without having any unexpected impact on either the system model (i.g. modifying it in some
+    /// semantics-changing manner) or the platform (i.g. erasing the hard disk).
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class SideEffectFree : Attribute, ISideEffectFree
     {
     }
 
+    /// <summary>
+    /// Marker interface for methods which must not be included into system analysis.
+    /// </summary>
     public interface IDoNotAnalyze
     {
     }
 
+    /// <summary>
+    /// Indicates that the tagged method must not be included into system analysis.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class DoNotAnalyze : Attribute, IDoNotAnalyze
     {
     }
 
+    /// <summary>
+    /// Marker interface for methods which must not be called during decompilation.
+    /// </summary>
     public interface IDoNotCallOnDecompilation
     {
     }
 
+    /// <summary>
+    /// Indicates that the tagged method or constructor must not be called during decompilation.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false, Inherited = false)]
     public class DoNotCallOnDecompilation : Attribute, IDoNotCallOnDecompilation
     {
     }
 
+    /// <summary>
+    /// Indicates that calls to the tagged abstract or virtual method should be rewritten during decompilation, whereby the
+    /// actual rewrite action is provided by the <c>RewriteCall</c> attribute of the overwriting method.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class RedirectRewriteCall : RewriteCall
     {
@@ -1022,6 +1277,12 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Indicates that the tagged method is only meaningful for system simulation (e.g. text output). Its interpretation depends on
+    /// the target code generator. For example, it causes the built-in VHDL generator to surround calls to a tagged method with
+    /// "--synthesis translate_off" / "--synthesis translate_on" comments which are recognized by most hardware synthesis tools.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class SimulationOnly : Attribute, IOnDecompilation
     {
         public void OnDecompilation(MSILDecompilerTemplate decomp)
@@ -1030,9 +1291,23 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This attribute is attached to classes and structs. It indicates that the await pattern for await operation on the tagged
+    /// type must be implemented in some special way. This is an abstract class. You must provide an implementation of <c>Rewrite</c>
+    /// inside the derived class.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false, Inherited = true)]
     public abstract class RewriteAwait : Attribute
     {
+        /// <summary>
+        /// Implements the await pattern for a given expression.
+        /// </summary>
+        /// <param name="decompilee">descriptor of decompiled code</param>
+        /// <param name="waitObject">"awaited" expression</param>
+        /// <param name="stack">decompiler context</param>
+        /// <param name="builder">algorithm búilder</param>
+        /// <returns><c>true</c> if await pattern could be implemented,
+        /// <c>false</c> if implementation should be handed over to standard handling.</returns>
         public abstract bool Rewrite(
             CodeDescriptor decompilee,
             Expression waitObject,
@@ -1040,6 +1315,9 @@ namespace SystemSharp.Components
             IFunctionBuilder builder);
     }
 
+    /// <summary>
+    /// Indicates that the type of the tagged field or property is relevant to determine the System# type of its declaring type.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field|AttributeTargets.Property, Inherited=true)]
     public class DependentType : Attribute
     {
