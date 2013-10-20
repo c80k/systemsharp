@@ -144,6 +144,9 @@ namespace SystemSharp.Components
             Instance = new DesignContext();
         }
 
+        /// <summary>
+        /// Clears all state information of current design context, as if program execution would freshly start.
+        /// </summary>
         [DoNotAnalyze]
         public static void Reset()
         {
