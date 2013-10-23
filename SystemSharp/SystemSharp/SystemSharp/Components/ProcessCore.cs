@@ -34,38 +34,85 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// Interface for anything which has a sensitivity list
+    /// </summary>
     public interface ISensitive
     {
+        /// <summary>
+        /// The sensitivity list
+        /// </summary>
         IEnumerable<AbstractEvent> Sensitivity { get; }
     }
 
+    /// <summary>
+    /// Interface for anything which supports implementation on an algorithm builder
+    /// </summary>
     public interface IImplementable
     {
+        /// <summary>
+        /// Implements the behavior of this object on an algorithm builder.
+        /// </summary>
         void Implement(IAlgorithmBuilder builder);
     }
 
+    /// <summary>
+    /// Interface for anything whose behavior can be represented by an expression.
+    /// </summary>
     public interface IImplementableByExpr
     {
+        /// <summary>
+        /// Returns the implementation expression.
+        /// </summary>
         Expression GetExpression();
+
+        /// <summary>
+        /// Returns a sample value of the evaluated expression.
+        /// </summary>
         object GetSample();
     }
 
+    /// <summary>
+    /// Interface model of a process
+    /// </summary>
     public interface IProcess: 
         ISensitive, IImplementable
     {
+        /// <summary>
+        /// Action which is executed by process
+        /// </summary>
         Action Operation { get; }
+
+        /// <summary>
+        /// Signals driven by process
+        /// </summary>
         IEnumerable<ISignal> DrivenSignals { get; }
     }
 
+    /// <summary>
+    /// A signal source is a "more flexible" signal. It has a sensitivity, a function which provides the current value,
+    /// and it can be symbolically represented by an expression.
+    /// </summary>
     public interface ISignalSource :
         ISensitive, IImplementableByExpr
     {
+        /// <summary>
+        /// Function providing current value
+        /// </summary>
         Func<object> Operation { get; }
     }
 
+    /// <summary>
+    /// A typed signal source is a "more flexible" signal. It has a sensitivity, a function which provides the current value,
+    /// and it can be symbolically represented by an expression.
+    /// </summary>
+    /// <typeparam name="T">type of signal value</typeparam>
     public interface ISignalSource<T> : 
         ISignalSource
     {
+        /// <summary>
+        /// Function providing current value
+        /// </summary>
         new Func<T> Operation { get; }
     }
 

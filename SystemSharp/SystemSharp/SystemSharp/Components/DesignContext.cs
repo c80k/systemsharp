@@ -107,9 +107,19 @@ namespace SystemSharp.Components
             RefinementsCompleted
         }
 
+        /// <summary>
+        /// Design context properties which are mapped to SysDOM-intrinsic functions
+        /// </summary>
         public enum EProperties
         {
+            /// <summary>
+            /// Current state of simulation
+            /// </summary>
             State,
+
+            /// <summary>
+            /// Current time
+            /// </summary>
             CurTime
         }
 
@@ -212,6 +222,9 @@ namespace SystemSharp.Components
         /// </summary>
         public long Ticks { get; private set; }
 
+        /// <summary>
+        /// Simulation time when current <c>Simulate(...)</c> call will return, in raw tick units.
+        /// </summary>
         public long StopTicks { get; private set; }
 
         /// <summary>
@@ -227,6 +240,10 @@ namespace SystemSharp.Components
         }
 
         private FactUniverse _universe;
+
+        /// <summary>
+        /// The fact universe of this context
+        /// </summary>
         public FactUniverse Universe
         {
             get
@@ -567,72 +584,6 @@ namespace SystemSharp.Components
         /// Executes the simulation for a specified amount of ticks.
         /// </summary>
         /// <param name="delta">The amount of raw ticks for which the simulation should be executed</param>
-        //[DoNotAnalyze]
-        //public void Simulate(long delta)
-        //{
-        //    if (State == ESimState.SimulationReady)
-        //    {
-        //        State = ESimState.Simulation;
-        //        if (_startOfSimulationHandlers != null)
-        //            _startOfSimulationHandlers();
-        //    }
-        //    else if (State != ESimState.SimulationPaused &&
-        //        State != ESimState.StopRequested)
-        //        throw new InvalidOperationException("Simulation not ready and not paused");
-
-        //    _simRunningEvent.Set();
-        //    long stopTime = Ticks + delta;
-        //    StopTicks = stopTime;
-
-        //    try
-        //    {
-        //        while (Ticks < stopTime &&
-        //            State != ESimState.StopRequested &&
-        //            State != ESimState.Failed &&
-        //            !_q.IsEmpty)
-        //        {
-        //            var kvp = _q.Dequeue();
-
-        //            // Time advance
-        //            Ticks = kvp.Key;
-
-        //            // Evaluate phase
-        //            kvp.Value();
-
-        //            // Update phase
-        //            if (_nextDeltaCycleHandlers != null)
-        //                _nextDeltaCycleHandlers();
-        //        }
-        //    }
-        //    catch (Exception)
-        //    {
-        //    }
-
-        //    if (State == ESimState.Failed ||
-        //        State == ESimState.StopRequested)
-        //    {
-        //        CallSimulationStoppingHandlers();
-        //        if (State == ESimState.Failed)
-        //        {
-        //            throw FailReason;
-        //        }
-        //        else // (State == ESimState.StopRequested)
-        //        {
-        //            CallSimulationStoppedHandlers();
-        //            State = ESimState.Stopped;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        State = ESimState.SimulationPaused;
-        //    }
-        //}
-
-        /// <summary>
-        /// Executes the simulation for a specified amount of ticks.
-        /// Version of Mário Ferreira (Single Step Simulation)
-        /// </summary>
-        /// <param name="delta">The amount of raw ticks for which the simulation should be executed</param>
         [DoNotAnalyze]
         public void Simulate(long delta)
         {
@@ -765,7 +716,9 @@ namespace SystemSharp.Components
             }
         }
 
-
+        /// <summary>
+        /// Terminates the current simulation.
+        /// </summary>
         [DoNotAnalyze]
         public void EndSimulation()
         {
@@ -775,7 +728,6 @@ namespace SystemSharp.Components
 
         /// <summary>
         /// Executes the simulation for a specified amount of time.
-        /// Changed by Mário Ferreira
         /// </summary>
         /// <param name="delta">the amount of time the simulation should be executed</param>
         [DoNotAnalyze]
@@ -788,8 +740,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Returns true if the next activity will occur at current simulation time.
-        /// Added by Mário Ferreira
+        /// Returns <c>true</c> iff the next activity will occur at current simulation time.
         /// </summary>
         public bool IsPendingActivityAtCurrentTime
         {
@@ -798,8 +749,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Returns true iff the next activity will occur at future simulation time.
-        /// Added by Mário Ferreira
+        /// Returns <c>true</c> iff the next activity will occur at future simulation time.
         /// </summary>
         public bool IsPendingActivityAtFutureTime
         {
@@ -808,8 +758,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Returns true iff the next activity will occur at current or future simulation time.
-        /// Added by Mário Ferreira
+        /// Returns <c>true</c> iff the next activity will occur at current or future simulation time.
         /// </summary>
         public bool IsPendingActivity
         {
@@ -818,8 +767,7 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Returns time to the earliest pending activity. If there is no activity, returns Time.Infinite
-        /// Added by Mário Ferreira
+        /// Returns time to the earliest pending activity. If there is no activity, returns <c>Time.Infinite</c>
         /// </summary>
         public Time TimeToPendingActivity
         {
@@ -829,7 +777,6 @@ namespace SystemSharp.Components
 
         /// <summary>
         /// Returns the number of executed delta cycles
-        /// Added by Mário Ferreira
         /// </summary>
         public int DeltaCycleCount
         {
@@ -846,6 +793,11 @@ namespace SystemSharp.Components
             return new PLSSlot(this, slot);
         }
 
+        /// <summary>
+        /// Reports a message.
+        /// </summary>
+        /// <param name="level">classification of message</param>
+        /// <param name="message">message to report</param>
         public void Report(EIssueClass level, string message)
         {
             if (Instance.State == ESimState.DesignAnalysis)
@@ -1009,6 +961,9 @@ namespace SystemSharp.Components
             Instance.StopInternal();
         }
 
+        /// <summary>
+        /// The type library of this context
+        /// </summary>
         public TypeLibrary TypeLib
         {
             [StaticEvaluation]
@@ -1044,8 +999,14 @@ namespace SystemSharp.Components
             State = ESimState.RefinementsCompleted;
         }
 
+        /// <summary>
+        /// The descriptor of this design
+        /// </summary>
         public DesignDescriptor Descriptor { get; private set; }
 
+        /// <summary>
+        /// The descriptor of this design
+        /// </summary>
         DescriptorBase IDescriptive.Descriptor
         {
             get { return Descriptor; }
@@ -1063,11 +1024,18 @@ namespace SystemSharp.Components
         }
 
         private int _currentRefinementCycle;
+        
+        /// <summary>
+        /// Refinement cycle counter
+        /// </summary>
         public int CurrentRefinementCycle
         {
             get { return _currentRefinementCycle; }
         }
 
+        /// <summary>
+        /// Begins a refinement cycle, i.e. a design modification after analysis.
+        /// </summary>
         public void BeginRefinement()
         {
             State = ESimState.Construction;
@@ -1080,35 +1048,57 @@ namespace SystemSharp.Components
             ++_currentRefinementCycle;
         }
 
+        /// <summary>
+        /// Pushes the current design context onto a global stack and makes a clone of that context the current context.
+        /// </summary>
         public static void Push()
         {
             _ctxStack.Push(Instance);
             Instance = new DesignContext();
         }
 
+        /// <summary>
+        /// Discards the current design context and restores the top element from the global design context stack as current design context.
+        /// </summary>
         public static void Pop()
         {
             Instance = _ctxStack.Pop();
         }
 
+        /// <summary>
+        /// Enqueues a design refinement.
+        /// </summary>
+        /// <param name="refinement">refinement implementation</param>
         public void QueueRefinement(IRefinementCycle refinement)
         {
             _refinementQ.Enqueue(refinement);
         }
 
         private FixedPointSettings _fixPointSettings;
+
+        /// <summary>
+        /// Configuration parameters for fixed point arithmetic
+        /// </summary>
         public FixedPointSettings FixPoint
         {
             get { return _fixPointSettings; }
         }
 
         private bool _suppressConsoleOutput;
+
+        /// <summary>
+        /// Whether to suppress <c>WriteLine(...)</c> messages.
+        /// </summary>
         public static bool SuppressConsoleOutput
         {
             get { return Instance._suppressConsoleOutput; }
             set { Instance._suppressConsoleOutput = value; }
         }
 
+        /// <summary>
+        /// Writes text to the standard output, if <c>SuppressConsoleOutput</c> is <c>false</c>.
+        /// </summary>
+        /// <param name="line">text to write</param>
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.ReportLine)]
         public static void WriteLine(string line)
         {
@@ -1116,11 +1106,22 @@ namespace SystemSharp.Components
                 Console.WriteLine(line);
         }
 
+        /// <summary>
+        /// Whether to capture additional (memory-intensive) tracing information on the creation of design objects.
+        /// </summary>
         public bool CaptureDesignObjectOrigins { get; set; }
     }
 
+    /// <summary>
+    /// Interface for a design refinement
+    /// </summary>
     public interface IRefinementCycle
     {
+        /// <summary>
+        /// Executes the desired refinement.
+        /// </summary>
+        /// <param name="context">design context being subject to refinement</param>
+        /// <param name="targetProject">code generation target project</param>
         void Refine(DesignContext context, IProject targetProject);
     }
 }
