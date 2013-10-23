@@ -29,9 +29,15 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// Abstract base class for events
+    /// </summary>
     public abstract class AbstractEvent : DesignObject
     {
-
+        /// <summary>
+        /// Constructs an instance
+        /// </summary>
+        /// <param name="owner">owning design object</param>
         public AbstractEvent(DesignObject owner)
         {
             Owner = owner;
@@ -39,13 +45,21 @@ namespace SystemSharp.Components
 
 
         /// <summary>
-        /// The owner of this object.
+        /// The owner of this event.
         /// </summary>
         public DesignObject Owner { get; protected set; }
 
+        /// <summary>
+        /// Abstract implementation of async/await pattern
+        /// </summary>
         public abstract IAwaitable GetAwaiter();
 
-
+        /// <summary>
+        /// Combines two events to a single event which is triggered whenever one of the original events is triggered.
+        /// </summary>
+        /// <param name="e1">an event</param>
+        /// <param name="e2">another event</param>
+        /// <returns>combined event</returns>
         public static MultiEvent operator | (AbstractEvent e1, AbstractEvent e2)
         {
             List<AbstractEvent> all = new List<AbstractEvent>();
@@ -60,14 +74,11 @@ namespace SystemSharp.Components
             else { all.Add(e2); }
 
             return new MultiEvent(null, all);
-
-            //vorher:
-            //return new MultiEvent(null, new List<AbstractEvent>() { e1, e2 });
         }
     }
 
     /// <summary>
-    /// This class implements an event which is basically an object which can take one of two states: set and unset.
+    /// Event implementation
     /// </summary>
     /// <remarks>
     /// The state of an event remains consistent throughout a delta cycle. If an event state is set in the current
@@ -115,6 +126,10 @@ namespace SystemSharp.Components
         private Action _fireList;
         private Awaiter _awaiter;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="owner">owning design object</param>
         public Event(DesignObject owner) :
             base(owner)
         {
@@ -126,6 +141,9 @@ namespace SystemSharp.Components
             return _awaiter;
         }
 
+        /// <summary>
+        /// Triggers the event.
+        /// </summary>
         public void Fire()
         {
             if (_fireList != null)
@@ -176,6 +194,9 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Represents a combined event which is triggered whenever one of multiple events is triggered.
+    /// </summary>
     public class MultiEvent : AbstractEvent
     {
         private class OneTimeInvoker
@@ -236,6 +257,11 @@ namespace SystemSharp.Components
         private Awaiter _awaiter;
         public IEnumerable<AbstractEvent> _events { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="owner">owning design object</param>
+        /// <param name="events">events to combine</param>
         public MultiEvent(DesignObject owner, IEnumerable<AbstractEvent> events) :
             base(owner)
         {
@@ -273,6 +299,10 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Represents a predicated event which is triggered whenever some associated event is triggered AND a predicate
+    /// function evaluates to <c>true</c>.
+    /// </summary>
     public class PredicatedEvent : AbstractEvent
     {
         private class PredicatedInvoker
@@ -365,11 +395,17 @@ namespace SystemSharp.Components
         private AbstractEvent _baseEvent;
         private Func<bool> _pred;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="owner">owning design object</param>
+        /// <param name="evt">associated base event</param>
+        /// <param name="pred">predicate function</param>
         public PredicatedEvent(DesignObject owner, AbstractEvent evt, Func<bool> pred) :
             base(owner)
         {
-            Contract.Requires<ArgumentNullException>(evt != null);
-            Contract.Requires<ArgumentNullException>(pred != null);
+            Contract.Requires<ArgumentNullException>(evt != null, "evt");
+            Contract.Requires<ArgumentNullException>(pred != null, "pred");
 
             Owner = owner;
             _baseEvent = evt;

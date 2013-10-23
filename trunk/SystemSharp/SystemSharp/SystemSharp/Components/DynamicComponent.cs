@@ -25,6 +25,9 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// Experimental class for components supporting dynamic creation of ports and signals. Not really mature.
+    /// </summary>
     public class DynamicComponent: Component
     {
         public PortBuilder CreatePort(EPortDirection dir, string name, object initialValue)

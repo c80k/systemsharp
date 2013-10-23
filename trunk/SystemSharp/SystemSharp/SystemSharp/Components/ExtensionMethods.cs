@@ -23,18 +23,34 @@ using System.Linq;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// This static class provides some extension methods which enable the await pattern on miscallaneous objects.
+    /// </summary>
     public static class AwaitableExtensionMethods
     {
+        /// <summary>
+        /// <c>await signal</c> pauses until specified signal changes its value.
+        /// </summary>
         public static IAwaitable GetAwaiter(this IInPort signal)
         {
             return signal.ChangedEvent.GetAwaiter();
         }
 
+        /// <summary>
+        /// <c>await events</c> pauses until one of the specified events is triggered.
+        /// </summary>
         public static IAwaitable GetAwaiter(this IEnumerable<AbstractEvent> events)
         {
             return new MultiEvent(null, events).GetAwaiter();
         }
 
+        /// <summary>
+        /// Currently out of order, see remarks.
+        /// </summary>
+        /// <remarks>
+        /// Because of a compiler bug (see http://stackoverflow.com/questions/14198019/await-array-by-implementing-extension-method-for-array)
+        /// await events[] cannot be compiled.
+        /// </remarks>
         public static IAwaitable GetAwaiter(this AbstractEvent[] events)
         {
             //because of a compiler bug (see http://stackoverflow.com/questions/14198019/await-array-by-implementing-extension-method-for-array)
@@ -43,11 +59,21 @@ namespace SystemSharp.Components
             return new MultiEvent(null, events).GetAwaiter();
         }
 
+        /// <summary>
+        /// <c>await signals</c> pauses until one of the specified signals changes its values.
+        /// </summary>
         public static IAwaitable GetAwaiter(this IEnumerable<IInPort> signals)
         {
             return new MultiEvent(null, DesignContext.MakeEventList(signals)).GetAwaiter();
         }
-        
+
+        /// <summary>
+        /// Currently out of order, see remarks.
+        /// </summary>
+        /// <remarks>
+        /// Because of a compiler bug (see http://stackoverflow.com/questions/14198019/await-array-by-implementing-extension-method-for-array)
+        /// await signals[] cannot be compiled.
+        /// </remarks>
         public static IAwaitable GetAwaiter(this IInPort[] signals)
         {
             //because of a compiler bug (see http://stackoverflow.com/questions/14198019/await-array-by-implementing-extension-method-for-array)
@@ -56,6 +82,9 @@ namespace SystemSharp.Components
             return new MultiEvent(null, DesignContext.MakeEventList(signals)).GetAwaiter();
         }
 
+        /// <summary>
+        /// Pauses for current clocked thread for <paramref name="n"/> ticks.
+        /// </summary>
         [MapToWaitNTicksRewriteAwait]
         [MapToWaitNTicksRewriteCall]
         public static async Task Ticks(this int n)
