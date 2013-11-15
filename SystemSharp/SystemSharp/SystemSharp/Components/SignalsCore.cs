@@ -110,14 +110,26 @@ namespace SystemSharp.Components
     {
     }
 
+    /// <summary>
+    /// Models objects which implement one-dimensional indexer properties, giving access a single elements or
+    /// a sub-range of elements ("slicing").
+    /// </summary>
+    /// <typeparam name="T0">type of a single element</typeparam>
+    /// <typeparam name="TA">type of a sub-range of elements</typeparam>
     public interface IIndexed<T0, TA>
-    {        
+    {   
+        /// <summary>
+        /// Returns the element at position <paramref name="index"/>.
+        /// </summary>
         T0 this[int index] 
         {
             [MapToIntrinsicFunction(SysDOM.IntrinsicFunction.EAction.Index)]
             get; 
         }
-        
+
+        /// <summary>
+        /// Returns a sub-range of elements, specified by <paramref name="index"/>.
+        /// </summary>
         TA this[Range index] 
         {
             [MapToSlice]
@@ -125,6 +137,11 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Models a vector-valued (i.e. one-dimensional) input port.
+    /// </summary>
+    /// <typeparam name="TE">type of single data element</typeparam>
+    /// <typeparam name="TI">type of sub-range of data elements</typeparam>
     [MapToPort(EPortDirection.In)]
     [SignalArgument]
     [SignalField]
@@ -134,6 +151,11 @@ namespace SystemSharp.Components
     {
     }
 
+    /// <summary>
+    /// Models a vector-valued (i.e. one-dimensional) output port.
+    /// </summary>
+    /// <typeparam name="TE">type of single data element</typeparam>
+    /// <typeparam name="TI">type of sub-range of data elements</typeparam>
     [MapToPort(EPortDirection.Out)]
     [SignalArgument]
     [SignalField]
@@ -143,6 +165,11 @@ namespace SystemSharp.Components
     { 
     }
 
+    /// <summary>
+    /// Models a vector-valued (i.e. one-dimensional) input/output port.
+    /// </summary>
+    /// <typeparam name="TE">type of single data element</typeparam>
+    /// <typeparam name="TI">type of sub-range of data elements</typeparam>
     [MapToPort(EPortDirection.InOut)]
     [SignalArgument]
     [SignalField]
@@ -180,10 +207,16 @@ namespace SystemSharp.Components
         IDescriptive<ChannelDescriptor>,
         IContainmentImplementor
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public Channel()
         {
         }
 
+        /// <summary>
+        /// Creates a SysDOM descriptor for this kind of channel. You must implement this method in you concrete channel class.
+        /// </summary>
         protected abstract ChannelDescriptor CreateDescriptor();
 
         public virtual void SetOwner(DescriptorBase owner, System.Reflection.MemberInfo declSite, IndexSpec indexSpec)
@@ -191,6 +224,9 @@ namespace SystemSharp.Components
             owner.AddChild(Descriptor, (System.Reflection.FieldInfo)declSite, indexSpec);
         }
 
+        /// <summary>
+        /// Returns the SysDOM descriptor describing this channel instance.
+        /// </summary>
         private ChannelDescriptor _descriptor;
         public ChannelDescriptor Descriptor 
         {
@@ -202,16 +238,30 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Returns the SysDOM descriptor describing this channel instance.
+        /// </summary>
         DescriptorBase IDescriptive.Descriptor
         {
             get { return Descriptor; }
         }
     }
 
+    /// <summary>
+    /// A complex channel is (similiar to SystemC) a channel which contains a component. The latter models
+    /// some behavior which is implemented by this channel.
+    /// </summary>
     public abstract class ComplexChannel : Channel
     {
+        /// <summary>
+        /// Creates the component which represents the channel's internal behavior.
+        /// You must override this method in your concrete complex channel implementation class.
+        /// </summary>
         protected abstract Component CreateInternalBehavior();
 
+        /// <summary>
+        /// Returns the component which represents the internal behavior of this channel.
+        /// </summary>
         private Component _internalBehavior;
         public Component InternalBehavior
         {
@@ -223,6 +273,9 @@ namespace SystemSharp.Components
             _internalBehavior = CreateInternalBehavior();
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public ComplexChannel()
         {
             Context.OnEndOfConstruction += SetupInternalBehavior;
