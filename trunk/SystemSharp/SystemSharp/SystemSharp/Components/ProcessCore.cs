@@ -116,39 +116,71 @@ namespace SystemSharp.Components
         new Func<T> Operation { get; }
     }
 
+    /// <summary>
+    /// A signal sink is a possible destination of a signal. Connecting it to a signal source results in a process
+    /// which models the signal-value transfer.
+    /// </summary>
+    /// <typeparam name="T">type of signal data</typeparam>
     public interface ICombSignalSink<T>
     {
+        /// <summary>
+        /// Constructs a process which models the signal-value transfer from <paramref name="source"/> to this signal sink.
+        /// </summary>
         IProcess Connect(ISignalSource<T> source);
     }
 
+    [Obsolete("Part of an out-dated concept, do not use.")]
     public interface ISyncSignalSink<T>
     {
         [RedirectRewriteCall]
         void Write(T value);
     }
 
+    /// <summary>
+    /// Models a signal sink (<seealso cref="ICombSignalSink<T>"/>). The existense of the two interfaces 
+    /// <c>ICombSignalSink&lt;T&gt;</c> is due to historic reasons.
+    /// </summary>
+    /// <typeparam name="T">type of signal data</typeparam>
     public interface ISignalSink<T>
     {
+        /// <summary>
+        /// The actual signal sink
+        /// </summary>
         ICombSignalSink<T> Comb { [StaticEvaluationDoNotAnalyze] get; }
+
+        [Obsolete("Part of an out-dated concept, do not use.")]
         ISyncSignalSink<T> Sync { [StaticEvaluationDoNotAnalyze] get; }
     }
 
+    /// <summary>
+    /// Default implementation of <c>ISignalSink&lt;T&gt;</c>
+    /// </summary>
+    /// <typeparam name="T">type of signal data</typeparam>
     public class DefaultSignalSink<T> : ISignalSink<T>
     {
         public ICombSignalSink<T> Comb { [StaticEvaluationDoNotAnalyze] get; private set; }
         public ISyncSignalSink<T> Sync { [StaticEvaluationDoNotAnalyze] get; private set; }
 
+        /// <summary>
+        /// Creates a new instance based on a signal sink.
+        /// </summary>
+        /// <param name="comb">the signal sink</param>
         public DefaultSignalSink(ICombSignalSink<T> comb)
         {
             Comb = comb;
         }
 
+        [Obsolete("Part of an out-dated concept, do not use.")]
         public DefaultSignalSink(ISyncSignalSink<T> sync)
         {
             Sync = sync;
         }
     }
 
+    /// <summary>
+    /// If this attribute is associated with a class or type declaration, any instance of the tagged type
+    /// will be kept out of CIL decompilation results.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     class HideDeclaration : RewriteDeclaration, IDoNotAnalyze
     {
@@ -162,6 +194,9 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods to work with signal sinks.
+    /// </summary>
     public static class SignalSink
     {
         private class ToCombSink<T> : ICombSignalSink<T>
@@ -249,6 +284,10 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Represents <paramref name="signal"/> as signal sink.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
         [StaticEvaluationDoNotAnalyze]
         public static ISignalSink<T> AsCombSink<T>(this Out<T> signal)
         {
@@ -256,18 +295,27 @@ namespace SystemSharp.Components
         }
 
         [StaticEvaluationDoNotAnalyze]
-        [Obsolete("Synchronous sinks will be removed in next release")]
+        [Obsolete("Part of an out-dated concept, do not use.")]
         public static ISignalSink<T> AsSyncSink<T>(this Out<T> signal)
         {
             return new DefaultSignalSink<T>(new ToSyncSink<T>(signal));
         }
 
+        /// <summary>
+        /// Returns an open signal sink, i.e. a virtual trash container.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
         [StaticEvaluationDoNotAnalyze]
         public static ISignalSink<T> Nil<T>()
         {
             return new DefaultSignalSink<T>(new NilSink<T>());
         }
 
+        /// <summary>
+        /// Represents multiple signal sinks as a single instance.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
+        /// <param name="sinks">sinks to combine</param>
         [StaticEvaluationDoNotAnalyze]
         public static ISignalSink<T> Combine<T>(params ISignalSink<T>[] sinks)
         {
@@ -275,6 +323,9 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods to work with signal sources.
+    /// </summary>
     public static class SignalSource
     {
         private class FromSignalSource : ISignalSource
@@ -430,24 +481,40 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Represents <paramref name="signal"/> as signal source.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
         [StaticEvaluation]
         public static ISignalSource<T> AsSignalSource<T>(this In<T> signal)
         {
             return new FromSignalSource<T>(signal);
         }
 
+        /// <summary>
+        /// Represents <paramref name="signal"/> as signal source.
+        /// </summary>
         [StaticEvaluation]
         public static ISignalSource AsSignalSource(this ISignal signal)
         {
             return new FromSignalSource(signal);
         }
 
+        /// <summary>
+        /// Creates a constant-valued signal source.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
+        /// <param name="value">value to be represented by the signal source</param>
         [RewriteCreateConstSignalSource]
         public static ISignalSource<T> Create<T>(T value)
         {
             return new ConstSignalSource<T>(value);
         }
 
+        /// <summary>
+        /// Creates a constant-valued signal source.
+        /// </summary>
+        /// <param name="value">value to be represented by the signal source</param>
         [RewriteCreateConstSignalSource]
         public static ISignalSource CreateUT(object value)
         {
@@ -455,6 +522,9 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods to work with process models.
+    /// </summary>
     public static class Processes
     {
         private class DrivingProcess : IProcess
@@ -582,6 +652,10 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Creates a process which represents transferring the data of <paramref name="source"/> to <paramref name="signal"/>.
+        /// </summary>
+        /// <typeparam name="T">type of signal data</typeparam>
         [StaticEvaluation]
         public static IProcess Drive<T>(this Out<T> signal, ISignalSource<T> source)
         {
@@ -590,6 +664,9 @@ namespace SystemSharp.Components
             return new DrivingProcess<T>(signal, source);
         }
 
+        /// <summary>
+        /// Creates a process which represents transferring the data of <paramref name="source"/> to <paramref name="signal"/>.
+        /// </summary>
         [StaticEvaluation]
         public static IProcess DriveUT(this ISignal signal, ISignalSource source)
         {
@@ -598,6 +675,11 @@ namespace SystemSharp.Components
             return new DrivingProcess(signal, source);
         }
 
+        /// <summary>
+        /// Creates a process which represents transferring a constant value to <paramref name="signal"/>.
+        /// </summary>
+        /// <typeparam name="T">type of data to transfer</typeparam>
+        /// <param name="value">value to transfer</param>
         [StaticEvaluation]
         public static IProcess Stick<T>(this Out<T> signal, T value)
         {
@@ -605,6 +687,9 @@ namespace SystemSharp.Components
             return Drive(signal, SignalSource.Create(value));
         }
 
+        /// <summary>
+        /// Represents the two individual processes <paramref name="first"/> and <paramref name="second"/> as a single entity.
+        /// </summary>
         [StaticEvaluation]
         public static IProcess Par(this IProcess first, IProcess second)
         {
@@ -613,6 +698,10 @@ namespace SystemSharp.Components
             return new ParProcess(first, second);
         }
 
+        /// <summary>
+        /// Represents multiple processes as a single entity.
+        /// </summary>
+        /// <param name="ps">processes to combine</param>
         [StaticEvaluation]
         public static IProcess Fork(params IProcess[] ps)
         {
@@ -621,6 +710,9 @@ namespace SystemSharp.Components
             return new ParProcess(ps);
         }
 
+        /// <summary>
+        /// Creates an empty process.
+        /// </summary>
         [StaticEvaluation]
         public static IProcess Nil()
         {
@@ -628,8 +720,14 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// A placeholder for a process which is created at some later stage.
+    /// </summary>
     public class LazyProcess : IProcess
     {
+        /// <summary>
+        /// Gets or sets (lately) the process. Must be set prior to calling any other method of this class.
+        /// </summary>
         public IProcess ProcessDef { get; set; }
 
         #region IProcess Member
@@ -1062,6 +1160,9 @@ namespace SystemSharp.Components
         }
 #endif
 
+        /// <summary>
+        /// Returns <c>true</c> iff this process is tagged with an attribute implementing <c>IDoNotAnalyze</c>.
+        /// </summary>
         public bool IsDoNotAnalyze
         {
             get { return InitialAction.Method.HasCustomOrInjectedAttribute<IDoNotAnalyze>(); }
