@@ -288,14 +288,45 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Interface definition for signals
+    /// </summary>
     public interface ISignal
     {
+        /// <summary>
+        /// The changed event is triggered whenever the signal changes its value.
+        /// </summary>
         AbstractEvent ChangedEvent { get; }
+
+        /// <summary>
+        /// Initial signal value, i.e. before the first write operation occurs.
+        /// </summary>
         object InitialValueObject { [StaticEvaluation] get; }
+
+        /// <summary>
+        /// Signal value of previous delta cycle
+        /// </summary>
         object PreObject { [SignalProperty(SignalRef.EReferencedProperty.Pre)] get; }
+
+        /// <summary>
+        /// Current signal value
+        /// </summary>
         object CurObject { [SignalProperty(SignalRef.EReferencedProperty.Cur)] get; }
+
+        /// <summary>
+        /// Sets the signal value for next delta cycle
+        /// </summary>
         object NextObject { [SignalProperty(SignalRef.EReferencedProperty.Next)] set; }
+
+        /// <summary>
+        /// Type of signal data
+        /// </summary>
         TypeDescriptor ElementType { get; }
+
+        /// <summary>
+        /// Represents this signal as a SysDOM signal reference.
+        /// </summary>
+        /// <param name="prop">signal property to reference</param>
         SignalRef ToSignalRef(SignalRef.EReferencedProperty prop);
     }
 
