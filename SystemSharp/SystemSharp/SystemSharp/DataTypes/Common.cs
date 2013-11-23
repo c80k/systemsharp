@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -42,7 +42,7 @@ namespace SystemSharp.DataTypes
     }
 
     /// <summary>
-    /// This struct represents a range.
+    /// A discrete range.
     /// </summary>
     public struct Range //: IEnumerable<int>
     {
@@ -58,10 +58,27 @@ namespace SystemSharp.DataTypes
             Right
         }
 
+        /// <summary>
+        /// Direction of range (concept borrowed from VHDL)
+        /// </summary>
         public EDimDirection Direction { get; private set; }
+
+        /// <summary>
+        /// First index of range (including)
+        /// </summary>
         public int FirstBound { get; private set; }
+
+        /// <summary>
+        /// Last index of range (including)
+        /// </summary>
         public int SecondBound { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="firstIndex">first range index (including)</param>
+        /// <param name="secondIndex">last range index (including)</param>
+        /// <param name="direction">direction of range</param>
         public Range(int firstIndex, int secondIndex, EDimDirection direction) :
             this()
         {
@@ -70,6 +87,9 @@ namespace SystemSharp.DataTypes
             SecondBound = secondIndex;
         }
 
+        /// <summary>
+        /// Number of discrete indices which fall into this range.
+        /// </summary>
         public long Size
         {
             get
@@ -83,6 +103,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Returns the index of the original element if we apply this range as a projection and take element <paramref name="offset"/>
+        /// from the projection result.
+        /// </summary>
         public int Unproject(int offset)
         {
             if (offset < 0 || offset >= Size)
@@ -96,6 +120,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Returns the index of the resulting element if we apply this range as a projection to original element <paramref name="offset"/>.
+        /// </summary>
         public long Project(int offset)
         {
             switch (Direction)
@@ -114,6 +141,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Returns the original element range if we apply this range as a projection and take <paramref name="range"/>
+        /// from the projection result.
+        /// </summary>
         public Range Unproject(Range range)
         {
             return new Range(
@@ -122,6 +153,9 @@ namespace SystemSharp.DataTypes
                 range.Direction);
         }
 
+        /// <summary>
+        /// Returns the resulting range if we apply this range as a projection to original <paramref name="range"/>.
+        /// </summary>
         public Range Project(Range range)
         {
             return new Range(
@@ -130,6 +164,9 @@ namespace SystemSharp.DataTypes
                 Direction);
         }
 
+        /// <summary>
+        /// To ranges are defined to be equal iff they have the same direction and extactly the same first/last indices.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is Range)
@@ -164,16 +201,31 @@ namespace SystemSharp.DataTypes
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Constructs a descending range.
+        /// </summary>
+        /// <param name="hi">upper index</param>
+        /// <param name="lo">lower index</param>
         public static Range Downto(int hi, int lo)
         {
             return new Range(hi, lo, EDimDirection.Downto);
         }
 
+        /// <summary>
+        /// Constructs an ascending range.
+        /// </summary>
+        /// <param name="lo">lower index</param>
+        /// <param name="hi">upper index</param>
         public static Range Upto(int lo, int hi)
         {
             return new Range(lo, hi, EDimDirection.To);
         }
 
+        /// <summary>
+        /// Compares to ranges with respect to all possible overlap cases.
+        /// </summary>
+        /// <param name="ra">first range</param>
+        /// <param name="rb">second range</param>
         public static EComparisonResult Compare(Range ra, Range rb)
         {
             if (ra.Direction != rb.Direction)
@@ -200,6 +252,10 @@ namespace SystemSharp.DataTypes
             return EComparisonResult.Equality;
         }
 
+        /// <summary>
+        /// Returns the narrower of two ranges. One of the ranges must completely include the other one,
+        /// otherwise this will result in an <c>ArgumentException</c>.
+        /// </summary>
         public static Range Min(Range ra, Range rb)
         {
             switch (Compare(ra, rb))
@@ -219,6 +275,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Returns the wider of two ranges. One of the ranges must completely include the other one,
+        /// otherwise this will result in an <c>ArgumentException</c>.
+        /// </summary>
         public static Range Max(Range ra, Range rb)
         {
             switch (Compare(ra, rb))
@@ -238,16 +298,26 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Adds offset <paramref name="offs"/> to range <paramref name="r"/>.
+        /// </summary>
         public static Range operator+ (Range r, int offs)
         {
             return new Range(r.FirstBound + offs, r.SecondBound + offs, r.Direction);
         }
 
-        public static Range operator- (Range r, int offs)
+        /// <summary>
+        /// Subtracts offset <paramref name="offs"/> to range <paramref name="r"/>.
+        /// </summary>
+        public static Range operator -(Range r, int offs)
         {
             return new Range(r.FirstBound - offs, r.SecondBound - offs, r.Direction);
         }
 
+        /// <summary>
+        /// Enumerates all discrete indices falling into this range in ascending or descending order,
+        /// depending on the range direction.
+        /// </summary>
         public IEnumerable<int> Values
         {
             get
@@ -267,15 +337,25 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// A dimensional specifier is either a single index or a range.
+    /// </summary>
     public class DimSpec
     {
+        /// <summary>
+        /// Kind of specifier, index or range
+        /// </summary>
         public enum EKind
         {
             Index,
             Range
         }
 
+        /// <summary>
+        /// Kind of this specifier, index or range
+        /// </summary>
         public EKind Kind { get; private set; }
+
         private Range Index { get; set; }
 
         private DimSpec(int index)
@@ -306,6 +386,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Two dimensional specifiers are defined to be equal iff the are of the same kind with the same
+        /// index or range, respectively.
+        /// </summary>
         public override bool Equals(object obj)
         {
             var other = obj as DimSpec;
@@ -320,31 +404,50 @@ namespace SystemSharp.DataTypes
             return Kind.GetHashCode() ^ Index.GetHashCode();
         }
 
+        /// <summary>
+        /// The lowest index represented by this specifier, i.e. the index itself if this specifier is of index-kind.
+        /// </summary>
         public int BaseIndex
         {
             get { return Index.Direction == EDimDirection.Downto ? Index.SecondBound : Index.FirstBound; }
         }
 
+        /// <summary>
+        /// Represents <paramref name="index"/> as dimensional specifier.
+        /// </summary>
         public static implicit operator DimSpec(int index)
         {
             return new DimSpec(index);
         }
 
+        /// <summary>
+        /// Represents <paramref name="range"/> as dimensional specifier.
+        /// </summary>
         public static implicit operator DimSpec(Range range)
         {
             return new DimSpec(range);
         }
 
+        /// <summary>
+        /// Adds offset <paramref name="offs"/> to dimensional specifier <paramref name="a"/>.
+        /// </summary>
         public static DimSpec operator+ (DimSpec a, int offs)
         {
             return new DimSpec(a.Kind, a.Index + offs);
         }
 
-        public static DimSpec operator- (DimSpec a, int offs)
+        /// <summary>
+        /// Subtracts offset <paramref name="offs"/> to dimensional specifier <paramref name="a"/>.
+        /// </summary>
+        public static DimSpec operator -(DimSpec a, int offs)
         {
             return new DimSpec(a.Kind, a.Index - offs);
         }
 
+        /// <summary>
+        /// Converts an index-kind dimensional specifier to its represented index.
+        /// </summary>
+        /// <exception cref="ArgumentException">if <param name="ds"/> is not index-kind.</exception>
         public static explicit operator long(DimSpec ds)
         {
             if (ds.Kind != EKind.Index)
@@ -353,6 +456,10 @@ namespace SystemSharp.DataTypes
             return ds.Index.FirstBound;
         }
 
+        /// <summary>
+        /// Converts a range-kind dimensional specifier to its represented index.
+        /// </summary>
+        /// <exception cref="ArgumentException">if <param name="ds"/> is not range-kind.</exception>
         public static explicit operator Range(DimSpec ds)
         {
             if (ds.Kind != EKind.Range)
@@ -362,12 +469,25 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// An index specifier is an aggregation of dimensional specifiers.
+    /// </summary>
     public class IndexSpec
     {
+        /// <summary>
+        /// The empty specifier.
+        /// </summary>
         public static readonly IndexSpec Empty = new IndexSpec();
 
+        /// <summary>
+        /// The dimensional specifiers
+        /// </summary>
         public DimSpec[] Indices { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="indices">sequence of dimensional specifiers</param>
         public IndexSpec(IEnumerable<DimSpec> indices)
         {
             Contract.Requires(indices != null);
@@ -375,6 +495,10 @@ namespace SystemSharp.DataTypes
             Indices = indices.ToArray();
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="indices">sequence of dimensional specifiers</param>
         public IndexSpec(params DimSpec[] indices)
         {
             Contract.Requires(indices != null);
@@ -382,11 +506,17 @@ namespace SystemSharp.DataTypes
             Indices = indices;
         }
 
+        /// <summary>
+        /// Number of dimensional specifiers
+        /// </summary>
         public int SourceDimension
         {
             get { return Indices.Length; }
         }
 
+        /// <summary>
+        /// Dimension of result when applying this index specifier.
+        /// </summary>
         public int TargetDimension
         {
             get
@@ -401,6 +531,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Constructs an index specifier which represents applying this specifier to specifier <paramref name="first"/>.
+        /// </summary>
         public IndexSpec ApplyTo(IndexSpec first)
         {
             if (first == null)
@@ -489,7 +622,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Finds an IndexSpec second such that second.ApplyTo(this).Equals(result)
+        /// Finds an IndexSpec second such that <c>second.ApplyTo(this).Equals(result)</c>.
         /// </summary>
         /// <returns>second</returns>
         public IndexSpec Unproject(IndexSpec result)
@@ -583,6 +716,10 @@ namespace SystemSharp.DataTypes
             return new IndexSpec(rindices);
         }
 
+        /// <summary>
+        /// Applies an offset to each dimensional specifier, such that each dimensional specifier of the resulting
+        /// index specifier is based at 0.
+        /// </summary>
         public IndexSpec BaseAtZero()
         {
             var zindices = Indices.Select(i => i - i.BaseIndex);
@@ -609,6 +746,9 @@ namespace SystemSharp.DataTypes
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Two index specifiers are defined to be equal iff their underlying dimensional specifiers are equal.
+        /// </summary>
         public override bool Equals(object obj)
         {
             var other = obj as IndexSpec;
