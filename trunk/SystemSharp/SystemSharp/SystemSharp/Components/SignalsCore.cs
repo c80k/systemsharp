@@ -341,11 +341,18 @@ namespace SystemSharp.Components
         IDescriptive<SignalDescriptor>,
         IDescriptive<ISignalDescriptor>
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public SignalBase()
         {
             Context.RegisterSignal(this);
         }
 
+        /// <summary>
+        /// Creates a SysDOM signal descriptor for this signal instance.
+        /// You must override this method in your concrete signal implementation.
+        /// </summary>
         protected abstract SignalDescriptor CreateSignalDescriptor();
 
         /// <summary>
@@ -396,6 +403,9 @@ namespace SystemSharp.Components
             set; 
         }
 
+        /// <summary>
+        /// Redirects to <c>CreateSignalDescriptor</c>.
+        /// </summary>
         protected sealed override ChannelDescriptor CreateDescriptor()
         {
             return CreateSignalDescriptor();
@@ -411,6 +421,10 @@ namespace SystemSharp.Components
             get { return (SignalDescriptor)base.Descriptor; }
         }
 
+        /// <summary>
+        /// Returns the signal value datatype.
+        /// You must override this property in your concrete signal implementation.
+        /// </summary>
         public abstract TypeDescriptor ElementType { get; }
 
         public override void SetOwner(DescriptorBase owner, System.Reflection.MemberInfo declSite, IndexSpec indexSpec)
@@ -421,11 +435,20 @@ namespace SystemSharp.Components
                 pcd.AddDependency(ElementType.Package);
         }
 
+        /// <summary>
+        /// Represents this signal instance as a SysDOM signal reference.
+        /// </summary>
+        /// <param name="prop">signal property to reference</param>
         public SignalRef ToSignalRef(SignalRef.EReferencedProperty prop)
         {
             return new SignalRef(Descriptor, prop);
         }
 
+        /// <summary>
+        /// Creates a signal interface which represents this signal under application of an index or sub-range.
+        /// You must override this method if your concrete signal implementation supports the indexer property.
+        /// </summary>
+        /// <param name="idx">index or sub-range to apply</param>
         [AssumeNotCalled]
         public virtual ISignal ApplyIndex(IndexSpec idx)
         {
@@ -441,10 +464,10 @@ namespace SystemSharp.Components
     }
 
     /// <summary>
-    /// This class models a signal.
+    /// Basic signal implementation.
     /// </summary>
     /// <remarks>
-    /// A signal is a mathematical quantity which changes its value at discrete time instants.
+    /// A signal is a mquantity which changes its value at discrete time instants.
     /// </remarks>
     /// <typeparam name="T">The data type of the carried quantity.</typeparam>
     [MapToIntrinsicType(EIntrinsicTypes.Signal)]
@@ -678,8 +701,18 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methodsfor working with signals.
+    /// </summary>
     public static class Signals
     {
+        /// <summary>
+        /// Creates a signal implementation for a given initial value.
+        /// The factory method automatically selects the most suitable signal, i.e. an <c>SLSignal</c> if <paramref name="initialValue"/>
+        /// is of type <c>StdLogic</c>, <c>SLVSignal</c> if <paramref name="initialValue"/> is of type <c>StdLogicVector</c>, <c>Signal1D</c>
+        /// if <paramref name="initialValue"/> is an array or just <c>Signal</c> otherwise.
+        /// </summary>
+        /// <param name="initialValue">desired initial value for created signal</param>
         public static SignalBase CreateInstance(object initialValue)
         {
             TypeDescriptor elemType = TypeDescriptor.GetTypeOf(initialValue);

@@ -34,25 +34,68 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.DataTypes
 {
+    /// <summary>
+    /// Treatment options for arithmetic overflows
+    /// </summary>
     public enum EOverflowMode
     {
+        /// <summary>
+        /// Binary wrap in two's complement representation. 
+        /// This is the default behavior of integer arithmetic in most programming languages.
+        /// </summary>
         Wrap,
+
+        /// <summary>
+        /// Throw an exception whenever there is an arithmetic overflow.
+        /// </summary>
         Fail,
+
+        /// <summary>
+        /// Saturate towards the minimum/maximum representable value.
+        /// </summary>
         Saturate
     }
 
+    /// <summary>
+    /// Options for determining the integer and fractional widths of results in the context of
+    /// fixed-point arithmetic operators.
+    /// </summary>
     public enum EArithSizingMode
     {
+        /// <summary>
+        /// The results are sized exactly the same way like VHDL.
+        /// </summary>
         VHDLCompliant,
+
+        /// <summary>
+        /// The results are sized in a safe way, such that there is never an arithmetic overflow (except for division by 0) and
+        /// no loss of precision (except for divisions and transcendent functions).
+        /// </summary>
         Safe,
+
+        /// <summary>
+        /// The total result width matches the total width of the first operand.
+        /// </summary>
         InSizeIsOutSize
     }
 
+    /// <summary>
+    /// Provides features for getting and setting fixed-point arithmetic options.
+    /// </summary>
     public class FixedPointSettings
     {
+        /// <summary>
+        /// Gets or sets the default treatment of arithmetic overflows, i.e. when there is no process-local treatment
+        /// specified. The initial mode is <c>EOverflowMode.Wrap</c>.
+        /// </summary>
         public static EOverflowMode GlobalOverflowMode = EOverflowMode.Wrap;
 
         private static int _globalDefaultRadix = 2;
+
+        /// <summary>
+        /// Gets or sets the default radix for fixed-point-to-string conversions, i.e. when there is no process-local
+        /// radix set. The initial radix is 2 (i.e. binary representation).
+        /// </summary>
         public static int GlobalDefaultRadix
         {
             get { return _globalDefaultRadix; }
@@ -64,6 +107,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Gets or sets the default sizing mode for results of fixed-point arithmetic operations, i.e. when there is
+        /// no process-local sizing mode specified. The initial value is <c>EArithSizingMode.VHDLCompliant</c>.
+        /// </summary>
         public static EArithSizingMode GlobalArithSizingMode = EArithSizingMode.VHDLCompliant;
 
         private PLSSlot _localOverflowMode;
@@ -77,6 +124,9 @@ namespace SystemSharp.DataTypes
             _localArithSizingMode = context.AllocPLS();
         }
 
+        /// <summary>
+        /// Gets or sets the process-local treatment of arithmetic overflows.
+        /// </summary>
         public EOverflowMode OverflowMode
         {
             [StaticEvaluationDoNotAnalyze]
@@ -94,6 +144,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Gets or sets the process-local radix for fixed-point-to-string conversions.
+        /// </summary>
         public int DefaultRadix
         {
             [StaticEvaluationDoNotAnalyze]
@@ -113,6 +166,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Gets or sets the process-local sizing mode for results of fixed-point arithmetic operations.
+        /// </summary>
         public EArithSizingMode ArithSizingMode
         {
             [StaticEvaluationDoNotAnalyze]
@@ -175,12 +231,32 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// Describes a fixed-point number format.
+    /// </summary>
     public class FixFormat
     {
+        /// <summary>
+        /// Whether described number is signed.
+        /// </summary>
         public bool IsSigned { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Integer width
+        /// </summary>
         public int IntWidth { [StaticEvaluation] get; private set; }
+
+        /// <summary>
+        /// Fractional width
+        /// </summary>
         public int FracWidth { [StaticEvaluation] get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="isSigned">whether format describes signed numbers</param>
+        /// <param name="intWidth">integer width</param>
+        /// <param name="fracWidth">fractional width</param>
         public FixFormat(bool isSigned, int intWidth, int fracWidth)
         {
             IsSigned = isSigned;
@@ -188,6 +264,9 @@ namespace SystemSharp.DataTypes
             FracWidth = fracWidth;
         }
 
+        /// <summary>
+        /// total number of bits required to represent an number in this format, i.e. <c>IntWidth + FracWidth</c>.
+        /// </summary>
         public int TotalWidth
         {
             [StaticEvaluation] get { return IntWidth + FracWidth; }
@@ -202,6 +281,9 @@ namespace SystemSharp.DataTypes
             return hash;
         }
 
+        /// <summary>
+        /// Two fixed-point formats are defined to be equal iff the have the same signedness and integer/fractional widths match.
+        /// </summary>
         public override bool Equals(object obj)
         {
             FixFormat other = (FixFormat)obj;
@@ -224,14 +306,23 @@ namespace SystemSharp.DataTypes
 
     static class FixFormatToRangeConverter
     {
+        /// <summary>
+        /// Converts <paramref name="fmt"/> to a range repesentation in the way it is typically used in VHDL designs.
+        /// </summary>
         public static Range ConvertToRange(FixFormat fmt)
         {
             return new Range(fmt.IntWidth - 1, -fmt.FracWidth, EDimDirection.Downto);
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods to work with fixed-point number descriptions.
+    /// </summary>
     public static class FixPointExtensions
     {
+        /// <summary>
+        /// Extracts the fixed-point format from a SysDOM type descriptor, given that it actually describes a fixed-point number type.
+        /// </summary>
         public static FixFormat GetFixFormat(this TypeDescriptor td)
         {
             if (td.CILType.Equals(typeof(Signed)) ||
@@ -244,6 +335,9 @@ namespace SystemSharp.DataTypes
                 return null;
         }
 
+        /// <summary>
+        /// Converts the format to a SysDOM type descriptor.
+        /// </summary>
         public static TypeDescriptor ToType(this FixFormat fmt)
         {
             if (fmt.IsSigned)

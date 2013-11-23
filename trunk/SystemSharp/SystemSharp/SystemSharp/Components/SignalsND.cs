@@ -28,6 +28,12 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// The proxy represents the application of a sub-range to an underlying <c>Signal1D</c>. I.e. the proxy does not
+    /// manage the signal data by itself but instead acts as an adapter between the actual signal and the view on that signal
+    /// which results from applying the sub-range.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     class Signal1DProxy<T> :
         XInOut<T[], InOut<T>>,
         ISignal
@@ -42,6 +48,11 @@ namespace SystemSharp.Components
                 yield return _ref[i].ChangedEvent;
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="reference">underlying signal instance</param>
+        /// <param name="range">sub-range to apply</param>
         public Signal1DProxy(Signal1D<T> reference, Range range)
         {
             _ref = reference;
@@ -145,21 +156,40 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// Models a signal which carries one-dimensional signal data.
+    /// It provides indexing properties to apply an index or sub-range.
+    /// </summary>
+    /// <typeparam name="T">type of a single element of the one-dimensional data</typeparam>
     public class Signal1D<T> :
         SignalBase,
         IContainmentImplementor,
         XInOut<T[], InOut<T>>
     {
+        /// <summary>
+        /// Creates a carrier signal for a single data element.
+        /// </summary>
+        /// <param name="index">index of element</param>
+        /// <returns>the underlying carrier signal</returns>
         public delegate Signal<T> CreateFunc(int index);
 
         private Signal<T>[] _signals;
 
+        /// <summary>
+        /// Constructs an instance based on a sequence of underlying carrier signals, i.e. one signal for
+        /// each data element.
+        /// </summary>
         public Signal1D(IEnumerable<Signal<T>> signals)
         {
             _signals = signals.ToArray();
             Initialize();
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="dim">element count (length) of represented one-dimensional data</param>
+        /// <param name="creator">signal creation function</param>
         public Signal1D(int dim, CreateFunc creator)
         {
             _signals = new Signal<T>[dim];
@@ -187,12 +217,18 @@ namespace SystemSharp.Components
             ChangedEvent = new MultiEvent(this, _signals.Select(s => s.ChangedEvent));
         }
         
+        /// <summary>
+        /// Constructs a new view on this signal which results from applying <paramref name="index"/> to it.
+        /// </summary>
         public InOut<T> this[int index]
         {
             [SignalIndexer]
             get { return _signals[index]; }
         }
 
+        /// <summary>
+        /// Constructs a new view on this signal which results from applying <paramref name="index"/> to it.
+        /// </summary>
         public InOut<T> this[Unsigned index]
         {
             [SignalIndexer]
@@ -204,6 +240,9 @@ namespace SystemSharp.Components
             return _signals.Length > 0 ? _signals[0] : null;
         }
 
+        /// <summary>
+        /// Constructs a new view on this signal which results from applying sub-range <paramref name="range"/> to it.
+        /// </summary>
         public XInOut<T[], InOut<T>> this[Range index]
         {
             [SignalIndexer]
