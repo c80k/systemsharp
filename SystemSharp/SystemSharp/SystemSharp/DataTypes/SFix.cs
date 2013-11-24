@@ -107,17 +107,30 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// A signed fixed-point number
+    /// </summary>
     [MapToIntrinsicType(EIntrinsicTypes.SFix)]
     [SLVSerializable(typeof(SFix), typeof(SFixSerializer))]
     [SFixAlgebraicType]
     public struct SFix
     {
+        /// <summary>
+        /// Fixed-point zero with 1 bit integer width and 0 bits fractional width
+        /// </summary>
         public static readonly SFix Zero = new SFix(Signed.Zero, 1, 0);
+
+        /// <summary>
+        /// Signed fixed-point one, requiring 2 integer bits and 0 fractional bits
+        /// </summary>
         public static readonly SFix One = new SFix(Signed.One, 2, 0);
 
         private Signed _value;
         private FixFormat _format;
 
+        /// <summary>
+        /// The format description of this fixed-point number
+        /// </summary>
         [TypeParameter(typeof(FixFormatToRangeConverter))]        
         public FixFormat Format
         {
@@ -131,6 +144,10 @@ namespace SystemSharp.DataTypes
             private set { _format = value; }
         }
 
+        /// <summary>
+        /// Extracts the fixed-point format description from the SysDOM type descriptor, given that it represents
+        /// <c>SFix</c> or <c>Signed</c>.
+        /// </summary>
         public static FixFormat GetFormat(TypeDescriptor td)
         {
             if (!td.CILType.Equals(typeof(SFix)) &&
@@ -195,6 +212,11 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Adds <paramref name="a"/> and <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static SFix operator +(SFix a, SFix b)
         {
             Signed an, bn;
@@ -203,6 +225,11 @@ namespace SystemSharp.DataTypes
             return new SFix(rn, dfmt.IntWidth, dfmt.FracWidth);
         }
 
+        /// <summary>
+        /// Negates <paramref name="a"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static SFix operator -(SFix a)
         {
             Signed an = a.SignedValue;
@@ -221,6 +248,11 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Subtracts <paramref name="b"/> from <paramref name="a"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static SFix operator -(SFix a, SFix b)
         {
             Signed an, bn;
@@ -229,6 +261,11 @@ namespace SystemSharp.DataTypes
             return new SFix(rn, dfmt.IntWidth, dfmt.FracWidth);
         }
 
+        /// <summary>
+        /// Multiplies <paramref name="a"/> and <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static SFix operator *(SFix a, SFix b)
         {
             var tmp = new SFix(a._value * b._value,
@@ -248,6 +285,12 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Divides <paramref name="a"/> by <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> equals 0.</exception>
         public static SFix operator /(SFix a, [SFixDivisionGuard] SFix b)
         {
             Signed ar = 
@@ -260,6 +303,12 @@ namespace SystemSharp.DataTypes
             return tmp;
         }
 
+        /// <summary>
+        /// Computes the fixed-point modulus of <paramref name="a"/> and <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> is zero.</exception>
         public static SFix operator %(SFix a, [SFixDivisionGuard] SFix b)
         {
             int fracWidth = Math.Max(a.Format.FracWidth, b.Format.FracWidth);
@@ -274,6 +323,9 @@ namespace SystemSharp.DataTypes
             return tmp;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than <paramref name="b"/>.
+        /// </summary>
         public static bool operator <(SFix a, SFix b)
         {
             Signed an, bn;
@@ -281,6 +333,9 @@ namespace SystemSharp.DataTypes
             return an < bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator <=(SFix a, SFix b)
         {
             Signed an, bn;
@@ -288,13 +343,19 @@ namespace SystemSharp.DataTypes
             return an <= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> equals <paramref name="b"/>.
+        /// </summary>
         public static bool operator ==(SFix a, SFix b)
-        {
+        {            
             Signed an, bn;
             FixFormat dfmt = Equalize(a, b, out an, out bn);
             return an == bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is not equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator !=(SFix a, SFix b)
         {
             Signed an, bn;
@@ -302,6 +363,9 @@ namespace SystemSharp.DataTypes
             return an != bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator >=(SFix a, SFix b)
         {
             Signed an, bn;
@@ -309,6 +373,9 @@ namespace SystemSharp.DataTypes
             return an >= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than <paramref name="b"/>.
+        /// </summary>
         public static bool operator >(SFix a, SFix b)
         {
             Signed an, bn;
@@ -316,6 +383,9 @@ namespace SystemSharp.DataTypes
             return an > bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than <paramref name="ub"/>.
+        /// </summary>
         public static bool operator <(SFix a, UFix ub)
         {
             var b = ub.SFixValue;
@@ -324,6 +394,9 @@ namespace SystemSharp.DataTypes
             return an < bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than or equal to <paramref name="ub"/>.
+        /// </summary>
         public static bool operator <=(SFix a, UFix ub)
         {
             var b = ub.SFixValue;
@@ -332,6 +405,10 @@ namespace SystemSharp.DataTypes
             return an <= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is equal to <paramref name="ub"/> in the numerical sense.
+        /// If <paramref name="a"/> is negative, the comparison result is always <c>false</c>.
+        /// </summary>
         public static bool operator ==(SFix a, UFix ub)
         {
             var b = ub.SFixValue;
@@ -340,6 +417,10 @@ namespace SystemSharp.DataTypes
             return an == bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is not equal to <paramref name="ub"/> in the numerical sense.
+        /// If <paramref name="a"/> is negative, the comparison result is always <c>true</c>.
+        /// </summary>
         public static bool operator !=(SFix a, UFix ub)
         {
             var b = ub.SFixValue;
@@ -348,6 +429,9 @@ namespace SystemSharp.DataTypes
             return an != bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than or equal to <paramref name="ub"/>.
+        /// </summary>
         public static bool operator >=(SFix a, UFix ub)
         {
             var b = ub.SFixValue;
@@ -356,6 +440,9 @@ namespace SystemSharp.DataTypes
             return an >= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than <paramref name="ub"/>.
+        /// </summary>
         public static bool operator >(SFix a, UFix ub)
         {
             var b = ub.SFixValue;
@@ -364,6 +451,9 @@ namespace SystemSharp.DataTypes
             return an > bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="ua"/> is less than <paramref name="b"/>.
+        /// </summary>
         public static bool operator <(UFix ua, SFix b)
         {
             var a = ua.SFixValue;
@@ -372,6 +462,9 @@ namespace SystemSharp.DataTypes
             return an < bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="ua"/> is less than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator <=(UFix ua, SFix b)
         {
             var a = ua.SFixValue;
@@ -380,6 +473,10 @@ namespace SystemSharp.DataTypes
             return an <= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="ua"/> is equal to <paramref name="b"/> in the numerical sense.
+        /// If <paramref name="b"/> is negative, the comparison result is always <c>false</c>.
+        /// </summary>
         public static bool operator ==(UFix ua, SFix b)
         {
             var a = ua.SFixValue;
@@ -388,6 +485,10 @@ namespace SystemSharp.DataTypes
             return an == bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="ua"/> is not equal to <paramref name="b"/> in the numerical sense.
+        /// If <paramref name="b"/> is negative, the comparison result is always <c>true</c>.
+        /// </summary>
         public static bool operator !=(UFix ua, SFix b)
         {
             var a = ua.SFixValue;
@@ -396,6 +497,9 @@ namespace SystemSharp.DataTypes
             return an != bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="ua"/> is greater than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator >=(UFix ua, SFix b)
         {
             var a = ua.SFixValue;
@@ -404,6 +508,9 @@ namespace SystemSharp.DataTypes
             return an >= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="ua"/> is greater than <paramref name="b"/>.
+        /// </summary>
         public static bool operator >(UFix ua, SFix b)
         {
             var a = ua.SFixValue;
@@ -412,12 +519,31 @@ namespace SystemSharp.DataTypes
             return an > bn;
         }
 
+        /// <summary>
+        /// Converts <paramref name="value"/> to its signed fixed-point representation, using <paramref name="intWidth"/>
+        /// integer bits.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="intWidth"/> is less than 64, an overflow might occur. The behavior of this method in 
+        /// the presence of overflows depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(long), typeof(SFix))]
         public static SFix FromLong(long value, int intWidth)
         {
             return new SFix(Signed.FromLong(value, intWidth), intWidth, 0);
         }
 
+        /// <summary>
+        /// Converts <paramref name="value"/> to its signed fixed-point representation, using <paramref name="intWidth"/>
+        /// integer bits and <paramref name="fracWidth"/> fractional bits.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="intWidth"/> is less than 64, an overflow might occur. The behavior of this method in 
+        /// the presence of overflows depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// If <paramref name="fracWidth"/> is greater than 0, the fractional part is in fact padded with binary zeroes.
+        /// If <paramref name="fracWidth"/> is less than 0, some lower bits are cut, which might cause a loss of 
+        /// precision during the conversion.
+        /// </remarks>
         [TypeConversion(typeof(long), typeof(SFix))]
         public static SFix FromLong(long value, int intWidth, int fracWidth)
         {
@@ -425,6 +551,15 @@ namespace SystemSharp.DataTypes
                 intWidth, fracWidth);
         }
 
+        /// <summary>
+        /// Converts <paramref name="value"/> to the closest fixed-point number, using <paramref name="intWidth"/>
+        /// integer bits and <paramref name="fracWidth"/> fractional bits.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="intWidth"/> is chosen smaller than the proper representation of <paramref name="value"/>
+        /// as a fixed-point number actually requires, an arithmetic overflow will occur. The behavior of this method in 
+        /// the presence of overflows depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(double), typeof(SFix))]
         public static SFix FromDouble(double value, int intWidth, int fracWidth)
         {
@@ -433,21 +568,39 @@ namespace SystemSharp.DataTypes
             return new SFix(Signed.FromLong(lvalue, intWidth + fracWidth), intWidth, fracWidth);
         }
 
+        /// <summary>
+        /// Re-interprets <paramref name="value"/> as a fixed-point-number with <paramref name="fracWidth"/>
+        /// fractional bits. I.e. the binary two's complement representation of <paramref name="value"/>is re-interpreted.
+        /// E.g. we get that <c>SFix.FromSigned(Signed.FromLong(3, 3)).DoubleValue == 1.5</c>.
+        /// </summary>
         [TypeConversion(typeof(Signed), typeof(SFix), true)]
         public static SFix FromSigned(Signed value, int fracWidth)
-        {
+        {            
             if (value.Size > int.MaxValue)
                 throw new InvalidOperationException();
 
             return new SFix(value, (int)value.Size - fracWidth, fracWidth);
         }
 
+        /// <summary>
+        /// Interprets logic vector <paramref name="slv"/> as a fixed-point number with <paramref name="fracWidth"/>
+        /// fractional bits. The total width matches the length of the logic vector.
+        /// </summary>
+        /// <remarks>
+        /// Logic values of <c>'1'</c> and <c>'H'</c> are interpreted as ones, all other values are interpreted as zeroes.
+        /// Please keep this in mind, since logic vectors containing logic values such as <c>'Z'</c> or <c>'X'</c> may
+        /// lead to unexpected results.
+        /// </remarks>
         [TypeConversion(typeof(StdLogicVector), typeof(SFix))]
         public static SFix FromSLV(StdLogicVector slv, int fracWidth)
         {
             return FromSigned(slv.SignedValue, fracWidth);
         }
 
+        /// <summary>
+        /// Creates a SysDOM type descriptor which describes signed fixed-point numbers width <paramref name="intWidth"/>
+        /// integer bits and <paramref name="fracWidth"/> fractional bits.
+        /// </summary>
         [AssumeNotCalled]
         public static TypeDescriptor MakeType(int intWidth, int fracWidth)
         {
@@ -455,12 +608,19 @@ namespace SystemSharp.DataTypes
             return TypeDescriptor.GetTypeOf(smp);
         }
 
+        /// <summary>
+        /// Re-interprets this value as signed integer, i.e. the binary two's complement representation is re-interpreted.
+        /// E.g. <c>SFix.FromDouble(1.5, 2, 1).SignedValue.LongValue == 3</c>.
+        /// </summary>
         public Signed SignedValue
         {
             [TypeConversion(typeof(SFix), typeof(Signed))]
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns the underlying binary two's complement representation of this value as logic vector.
+        /// </summary>
         public StdLogicVector SLVValue
         {
             [TypeConversion(typeof(SFix), typeof(StdLogicVector))]
@@ -468,7 +628,7 @@ namespace SystemSharp.DataTypes
         }
 
         [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-        public class SFixUFixConversion : RewriteCall, IDoNotAnalyze, ISideEffectFree
+        private class SFixUFixConversion : RewriteCall, IDoNotAnalyze, ISideEffectFree
         {
             public SFixUFixConversion()
             {
@@ -509,6 +669,14 @@ namespace SystemSharp.DataTypes
             get { return UFix.FromUnsigned(Unsigned.FromIntX(SignedValue.IntXValue, _format.TotalWidth - 1), _format.FracWidth); }
         }
 #else
+        /// <summary>
+        /// Converts this value to an unsigned fixed-point value. The result uses the same number of fractional bits, 
+        /// but one less bit for the integer part, since the value is assumed to be positive.
+        /// </summary>
+        /// <remarks>
+        /// If the value is negative, an arithmetic overflow will occur. In that case, the behavior of this property
+        /// is determined by the currently selected arithmetic overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         public UFix UFixValue
         {
             [SFixUFixConversion]
@@ -516,6 +684,10 @@ namespace SystemSharp.DataTypes
         }
 #endif
 
+        /// <summary>
+        /// Returns the closest <c>double</c> value to this value. This conversion might induce arithmetic
+        /// overflow or loss of precision. Arithmetic overflow causes an undefined result.
+        /// </summary>
         public double DoubleValue
         {
             [TypeConversion(typeof(SFix), typeof(double))]
@@ -550,6 +722,15 @@ namespace SystemSharp.DataTypes
         // nyi
 #endif
 
+        /// <summary>
+        /// Resizes this value to <paramref name="newIntWidth"/> integer bits and <paramref name="newFracWidth"/>
+        /// fractional bits.
+        /// </summary>
+        /// <remarks>
+        /// The conversion may lead to arithmetic overflow and/or loss of precision. In case of arithmetic overflow,
+        /// the behavior of this method is determined by the currently selected arithmetic overflow mode
+        /// (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.Resize)]
         [SideEffectFree]
         public SFix Resize(int newIntWidth, int newFracWidth)
@@ -563,7 +744,6 @@ namespace SystemSharp.DataTypes
             return SFix.FromSigned(resized, newFracWidth);
         }
 
-        public const int DynamicWidth = 0;
         public const int WidthOfDataType = -1;
 
 #if USE_INTX
@@ -610,8 +790,14 @@ namespace SystemSharp.DataTypes
                 return preComma + nfi.NumberDecimalSeparator + postComma;
         }
 #else
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <param name="radix">number system base to use, only 2, 10 and 16 are supported so far</param>
+        /// <param name="format">formatting options</param>
+        /// <param name="precision">number of desired digits after the dot</param>
         [TypeConversion(typeof(SFix), typeof(string))]
-        public string ToString(int radix, IFormatProvider format, int width = DynamicWidth, int precision = 10)
+        public string ToString(int radix, IFormatProvider format, int precision = 10)
         {
             if (radix < 2)
                 throw new ArgumentException("Radix less than 2");
@@ -672,24 +858,45 @@ namespace SystemSharp.DataTypes
         }
 #endif
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <param name="radix">number system base to use, only 2, 10 and 16 are supported so far</param>
+        /// <param name="precision">number of desired digits after the dot</param>
         [TypeConversion(typeof(SFix), typeof(string))]
-        public string ToString(int radix, int width = DynamicWidth, int precision = 10)
+        public string ToString(int radix, int precision = 10)
         {
-            return ToString(radix, CultureInfo.CurrentCulture, width, precision);
+            return ToString(radix, CultureInfo.CurrentCulture, precision);
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <remarks>
+        /// The number format base is determined by the currently selected default radix (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(SFix), typeof(string))]
         public override string ToString()
         {
             return ToString(DesignContext.Instance.FixPoint.DefaultRadix, CultureInfo.CurrentCulture);
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <remarks>
+        /// The number format base is determined by the currently selected default radix (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
+        /// <param name="format">formatting options</param>
         [TypeConversion(typeof(SFix), typeof(string))]
         public string ToString(IFormatProvider format)
         {
             return ToString(DesignContext.Instance.FixPoint.DefaultRadix, format);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="obj"/> is another <c>SFix</c> or <c>UFix</c> with identical value.
+        /// </remarks>
         public override bool Equals(object obj)
         {
             if (obj is SFix)
@@ -721,13 +928,22 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods for working with <c>SFix</c> values.
+    /// </summary>
     public static class SFixExtensions
     {
+        /// <summary>
+        /// Returns the integer part of <paramref name="sfix"/>.
+        /// </summary>
         public static Signed GetIntPart(SFix sfix)
         {
             return sfix.SLVValue[sfix.Format.TotalWidth - 1, sfix.Format.FracWidth].SignedValue;
         }
 
+        /// <summary>
+        /// Returns the fractional part of <paramref name="sfix"/>.
+        /// </summary>
         public static Unsigned GetFracPart(this SFix sfix)
         {
             return sfix.SLVValue[sfix.Format.FracWidth - 1, 0].UnsignedValue;
