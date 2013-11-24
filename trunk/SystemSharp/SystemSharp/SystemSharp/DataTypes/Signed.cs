@@ -626,21 +626,28 @@ namespace SystemSharp.DataTypes
     }
 #else
     /// <summary>
-    /// This struct represents a signed integer of an arbitrary size.
+    /// Signed integer of arbitrary size
     /// </summary>
     [MapToIntrinsicType(EIntrinsicTypes.Signed)]
     [SLVSerializable(typeof(Signed), typeof(SignedToSLV))]
     [SignedAlgebraicType]
     public struct Signed : ISized
     {
+        /// <summary>
+        /// The zero as a single-bit value
+        /// </summary>
         public static readonly Signed Zero = new Signed(0, 1);
+
+        /// <summary>
+        /// Signed one, requiring two bits for representation
+        /// </summary>
         public static readonly Signed One = new Signed(1, 2);
 
         private BigInteger _value;
         private int _size;
 
         /// <summary>
-        /// Constructs the Signed struct from a value and a desired size.
+        /// Constructs a signed value from <paramref name="value"/> and a desired size.
         /// </summary>
         /// <param name="value">The integer value</param>
         /// <param name="size">The integer size (in bits)</param>
@@ -741,7 +748,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a long value to a Signed value
+        /// Converts a <c>long</c> value to a Signed value
         /// </summary>
         /// <param name="value">The value to be converted</param>
         /// <param name="size">The target size of the Signed value</param>
@@ -754,7 +761,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts an int value to a Signed value
+        /// Converts an <c>int</c> value to a Signed value
         /// </summary>
         /// <param name="value">The value to be converted</param>
         /// <param name="size">The target size of the Signed value</param>
@@ -766,13 +773,16 @@ namespace SystemSharp.DataTypes
             return new Signed(Trim(value, size), size);
         }
 
+        /// <summary>
+        /// Represents <paramref name="value"/> as <c>Signed</c> value.
+        /// </summary>
         public static Signed FromBigInt(BigInteger value, int size)
         {
             return new Signed(Trim(value, size), size);
         }
 
         /// <summary>
-        /// Converts this Signed value to an StdLogicVector representation.
+        /// Returns the two's complement binary representation of this value as logic vector.
         /// </summary>        
         public StdLogicVector SLVValue
         {
@@ -804,11 +814,22 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this value to its <c>BigInteger</c> representation.
+        /// </summary>
         public BigInteger BigIntValue
         {
             get { return _value; }
         }
 
+        /// <summary>
+        /// Converts this value to its <c>long</c> representation.
+        /// </summary>
+        /// <remarks>
+        /// If this value requires more than 64 bits to represent, an arithmetic overflow will occur.
+        /// In that case, the behavior of this conversion is determined by the currently set arithmetic
+        /// overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         public long LongValue
         {
             [TypeConversion(typeof(Signed), typeof(long))]
@@ -856,6 +877,12 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <param name="radix">number system base to use, only 2, 10 and 16 are supported so far</param>
+        /// <param name="pad">If set to <c>true</c>, the result will be padded with leading zereos, such that
+        /// all values of the same bit width use the same number of text characters.</param>
         public string ToString(int radix, bool pad = false)
         {
             int maxDigits = Math.Max((int)Math.Ceiling((double)Size * Math.Log(2.0, radix)), 1);
@@ -890,6 +917,13 @@ namespace SystemSharp.DataTypes
             return _value.ToString(format);
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <remarks>
+        /// The number system base is determined by the currently set default radix
+        /// (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(Signed), typeof(string))]
         [SideEffectFree]
         public override string ToString()
@@ -897,6 +931,9 @@ namespace SystemSharp.DataTypes
             return ToString(DesignContext.Instance.FixPoint.DefaultRadix);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="obj"/> is another <c>Signed</c> of same value and same size.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is Signed)
@@ -906,7 +943,9 @@ namespace SystemSharp.DataTypes
                     object.Equals(_value, other._value);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -915,7 +954,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Returns the size (in bits) of this Signed value.
+        /// Returns the size (in bits) of this value.
         /// </summary>
         [TypeParameter(typeof(IntToZeroBasedDownRangeConverter))]
         public int Size
@@ -929,10 +968,13 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts this Signed value to a new size.
+        /// Converts this value to a new size.
         /// </summary>
-        /// <param name="newWidth">The new size to which this Signed should be converted</param>
-        /// <returns>The converted Signed value</returns>
+        /// <remarks>
+        /// The conversion might lead to an arithmetic overflow. In that case, the behavior of this
+        /// method is determined by the currently set arithmetic overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
+        /// <param name="newWidth">new desired size</param>
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.Resize)]
         [SideEffectFree]
         public Signed Resize(int newWidth)
@@ -942,11 +984,12 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Adds two Signed values.
+        /// Adds <paramref name="a"/> and <paramref name="b"/>.
         /// </summary>
-        /// <param name="a">The first operand</param>
-        /// <param name="b">The second operand</param>
-        /// <returns>The sum</returns>
+        /// <remarks>
+        /// The size of the result is determined according to the currently selected arithmetic
+        /// sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         public static Signed operator +(Signed a, Signed b)
         {
             int size = Math.Max(a.Size, b.Size);
@@ -969,11 +1012,12 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Subtracts two Signed values.
+        /// Subtracts <paramref name="b"/> from <paramref name="a"/>.
         /// </summary>
-        /// <param name="a">The first operand</param>
-        /// <param name="b">The second operand</param>
-        /// <returns>The difference</returns>
+        /// <remarks>
+        /// The size of the result is determined according to the currently selected arithmetic
+        /// sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         public static Signed operator -(Signed a, Signed b)
         {
             int size = Math.Max(a.Size, b.Size);
@@ -996,10 +1040,12 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Negates a Signed value.
+        /// Negates <paramref name="a"/>.
         /// </summary>
-        /// <param name="a">The value</param>
-        /// <returns>The negated value</returns>
+        /// <remarks>
+        /// The size of the result is determined according to the currently selected arithmetic
+        /// sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         public static Signed operator -(Signed a)
         {
             int rsize = a.Size;
@@ -1021,11 +1067,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Multiplies two Signed values.
+        /// Multiplies <paramref name="a"/> and <paramref name="b"/>.
         /// </summary>
-        /// <param name="a">The first factor</param>
-        /// <param name="b">The second factor</param>
-        /// <returns>The product</returns>
+        /// <remarks>
+        /// The size of the result is the sum of <paramref name="a"/>'s and <paramref name="b"/>'s size.
+        /// </remarks>
         public static Signed operator *(Signed a, Signed b)
         {
             int rsize = a.Size + b.Size;
@@ -1033,11 +1079,12 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Divides two Signed values.
+        /// Divides <paramref name="a"/> by <paramref name="b"/>.
         /// </summary>
-        /// <param name="a">The dividend</param>
-        /// <param name="b">The divisor</param>
-        /// <returns>The quotient</returns>
+        /// <remarks>
+        /// The size of the result is <paramref name="a"/>'s size + 1.
+        /// </remarks>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> equals 0.</exception>
         public static Signed operator /(Signed a, [SignedDivisionGuard] Signed b)
         {
             int rsize = a.Size + 1;
@@ -1045,11 +1092,12 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the remainder of a divided by b.
+        /// Computes the remainder of <paramref name="a"/> divided by <paramref name="b"/>.
         /// </summary>
-        /// <param name="a">Dividend</param>
-        /// <param name="b">Divisor</param>
-        /// <returns>Remainder</returns>
+        /// <remarks>
+        /// The size of the result is <paramref name="b"/>'s size.
+        /// </remarks>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> equals 0.</exception>
         public static Signed operator %(Signed a, Signed b)
         {
             int rsize = b.Size;
@@ -1062,6 +1110,15 @@ namespace SystemSharp.DataTypes
             return new Signed(rem, rsize);
         }
 
+        /// <summary>
+        /// Computes both the quotient and the remainder of <paramref name="a"/> divided by <paramref name="b"/>.
+        /// </summary>
+        /// <param name="quot">reference to the quotient</param>
+        /// <param name="rem">reference to the remainder</param>
+        /// <remarks>
+        /// The size of the quotient is <paramref name="a"/>'s size, that of the remainder is <paramref name="b"/>'s size.
+        /// </remarks>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> equals 0.</exception>
         public static void DivMod(Signed a, Signed b, out Signed quot, out Signed rem)
         {
             BigInteger birem;
@@ -1070,6 +1127,14 @@ namespace SystemSharp.DataTypes
             rem = new Signed(birem, (int)b.Size);
         }
 
+        /// <summary>
+        /// Increments <paramref name="a"/> by one.
+        /// </summary>
+        /// <remarks>
+        /// The size of the result will always stay the same by definition. Therefore, the operation may cause an
+        /// arithmetic overflow. In that case, the behavior of this operation is determined by the currently selected
+        /// arithmetic overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [RewriteIncrement(true, false)]
         [SideEffectFree]
         public static Signed operator ++(Signed a)
@@ -1077,6 +1142,14 @@ namespace SystemSharp.DataTypes
             return (a + 1).Resize((int)a.Size);
         }
 
+        /// <summary>
+        /// Decrements <paramref name="a"/> by one.
+        /// </summary>
+        /// <remarks>
+        /// The size of the result will always stay the same by definition. Therefore, the operation may cause an
+        /// arithmetic overflow. In that case, the behavior of this operation is determined by the currently selected
+        /// arithmetic overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [RewriteIncrement(true, true)]
         [SideEffectFree]
         public static Signed operator --(Signed a)
@@ -1085,11 +1158,14 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Performs a left-shift on a Signed value.
+        /// Shifts <paramref name="x"/> by <paramref name="count"/> bits to the left.
         /// </summary>
-        /// <param name="x">The value to be shifted</param>
-        /// <param name="count">The number of bits to shift left</param>
-        /// <returns>The shifted value</returns>
+        /// <remarks>
+        /// The width of the result is that of <paramref name="x"/> by definition. Therefore,
+        /// this operation may lead to an arithmetic overflow. In that case, the behavior of this
+        /// operation is determined by the currently selected arithmetic overflow mode
+        /// (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [SideEffectFree]
         public static Signed operator <<(Signed x, int count)
         {
@@ -1097,17 +1173,17 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Performs a logic right-shift on a Signed value.
+        /// Shifts <paramref name="x"/> by <paramref name="count"/> bits to the right.
         /// </summary>
-        /// <param name="x">The value to be shifted</param>
-        /// <param name="count">The number of bits to shift right</param>
-        /// <returns>The shifted value</returns>
         [SideEffectFree]
         public static Signed operator >>(Signed x, int count)
         {
             return new Signed(Trim(x.BigIntValue >> count, x.Size), x.Size);
         }
 
+        /// <summary>
+        /// Converts <paramref name="value"/> to its <c>Signed representation</c>, using as much bits as required.
+        /// </summary>
         [SideEffectFree]
         public static implicit operator Signed(long value)
         {
@@ -1122,36 +1198,57 @@ namespace SystemSharp.DataTypes
             return FromLong(value, size);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than <paramref name="b"/>.
+        /// </summary>
         public static bool operator <(Signed a, Signed b)
         {
             return a.BigIntValue < b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than <paramref name="b"/>.
+        /// </summary>
         public static bool operator >(Signed a, Signed b)
         {
             return a.BigIntValue > b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator <=(Signed a, Signed b)
         {
             return a.BigIntValue <= b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator >=(Signed a, Signed b)
         {
             return a.BigIntValue >= b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator ==(Signed a, Signed b)
         {
             return a.BigIntValue == b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is not equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator !=(Signed a, Signed b)
         {
             return a.BigIntValue != b.BigIntValue;
         }
 
+        /// <summary>
+        /// Creates a SysDOM type descriptor which describes <c>Signed</c> values of <paramref name="width"/> bits length.
+        /// </summary>
         public static TypeDescriptor MakeType(int width)
         {
             return TypeDescriptor.GetTypeOf(Signed.FromInt(0, width));

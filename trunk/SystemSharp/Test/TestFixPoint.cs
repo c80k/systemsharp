@@ -125,7 +125,7 @@ namespace Test
                 {
                     if (j > 0)
                         Console.Write(" ");
-                    Console.Write(A[i, j].ToString(10, 2, 2));
+                    Console.Write(A[i, j].ToString(10, 2));
                 }
             }
         }
@@ -197,9 +197,9 @@ namespace Test
                     bc += Ac[i, j] * x[j];
                 }
                 SFix d = bc - b[i];
-                Console.Write("b[" + i + "] = " + b[i].ToString(10, 2, 2));
-                Console.Write(" / " + bc.ToString(10, 2, 2));
-                Console.WriteLine(" / d = " + d.ToString(10, 2, 2));
+                Console.Write("b[" + i + "] = " + b[i].ToString(10, 2));
+                Console.Write(" / " + bc.ToString(10, 2));
+                Console.WriteLine(" / d = " + d.ToString(10, 2));
             }
         }
     }

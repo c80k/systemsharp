@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -269,18 +269,28 @@ namespace SystemSharp.DataTypes
             return sign.Concat(exponent.Concat(mantissa));
         }
 
+        /// <summary>
+        /// Converts the value to its IEEE 754 binary encoding as <c>StdLogicVector</c>.
+        /// </summary>
         [TypeConversion(typeof(double), typeof(StdLogicVector))]
         public static StdLogicVector ToSLV(this double value)
         {
             return ToSLV(value, FloatFormat.DoubleFormat);
         }
 
+        /// <summary>
+        /// Converts the value to its IEEE 754 binary encoding as <c>StdLogicVector</c>.
+        /// </summary>
         [TypeConversion(typeof(float), typeof(StdLogicVector))]
         public static StdLogicVector ToSLV(this float value)
         {
             return ToSLV(value, FloatFormat.SingleFormat);
         }
 
+        /// <summary>
+        /// Extracts the floating-point format description from the SysDOM type descriptor, given that
+        /// it actually describes floating-point numbers.
+        /// </summary>
         public static FloatFormat GetFloatFormat(this TypeDescriptor td)
         {
             if (td.CILType.Equals(typeof(float)))
