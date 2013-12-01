@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -28,29 +28,89 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.DataTypes
 {
+    /// <summary>
+    /// Provides services to represent datatypes of higher abstraction levels by hardware-near types.
+    /// </summary>
     public class TypeLowering
     {
+        /// <summary>
+        /// Abstract base class for implementing a type lowering service for a particular type.
+        /// </summary>
         public abstract class TypeLoweringInfo
         {
+            /// <summary>
+            /// Constructs an instance.
+            /// </summary>
+            /// <param name="orgType">Datatype for which this service is implemented.</param>
             public TypeLoweringInfo(Type orgType)
             {
                 OrgType = orgType;
             }
 
+            /// <summary>
+            /// Datatype for which this service is implemented.
+            /// </summary>
             public Type OrgType { get; private set; }
+
+            /// <summary>
+            /// Returns <c>true</c> if <c>OrgType</c> is a hardware type.
+            /// </summary>
             public abstract bool IsHardwareType { get; }
+
+            /// <summary>
+            /// Returns <c>true</c> if <c>OrgType</c> is a wire type.
+            /// </summary>
             public abstract bool IsWireType { get; }
+
+            /// <summary>
+            /// Returns <c>true</c> if <c>OrgType</c> described signed numbers.
+            /// </summary>
             public abstract bool IsSigned { get; }
+
+            /// <summary>
+            /// Returns <c>true</c> of <c>OrgType</c> has a hardware type representations.
+            /// </summary>
             public abstract bool HasHardwareType { get; }
+
+            /// <summary>
+            /// Returns <c>true</c> if <c>OrgType</c> has a wire type representation.
+            /// </summary>
             public abstract bool HasWireType { get; }
+
+            /// <summary>
+            /// Returns <c>true</c> if the serialization of any <c>OrgType</c> instance has the same size.
+            /// </summary>
             public abstract bool HasFixedSize { get; }
+
+            /// <summary>
+            /// Returns the fixed size of any <c>OrgType</c> instance serizalization.
+            /// </summary>
             public abstract int FixedSize { get; }
+
+            /// <summary>
+            /// Constructs a wire type for <paramref name="ctype"/>, whereby <paramref name="ctype"/> must describe <c>OrgType</c>.
+            /// </summary>
             public abstract TypeDescriptor MakeWireType(TypeDescriptor ctype);
+
+            /// <summary>
+            /// Constructs a hardware type for <paramref name="ctype"/>, whereby <paramref name="ctype"/> must describe <c>OrgType</c>.
+            /// </summary>
             public abstract TypeDescriptor MakeHardwareType(TypeDescriptor ctype);
+
+            /// <summary>
+            /// Serializes <paramref name="value"/>.
+            /// </summary>
             public abstract StdLogicVector ConvertValueToWireType(object value);
+
+            /// <summary>
+            /// Serializes <paramref name="value"/> as any hardware type of choice.
+            /// </summary>
             public abstract object ConvertValueToHardwareType(object value);
         }
 
+        /// <summary>
+        /// Type lowering service for <c>StdLogic</c>
+        /// </summary>
         class SLType : TypeLoweringInfo
         {
             public SLType() :
@@ -115,6 +175,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>StdLogicVector</c>
+        /// </summary>
         class SLVType : TypeLoweringInfo
         {
             public SLVType() :
@@ -178,6 +241,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>Signed</c>
+        /// </summary>
         class SignedType : TypeLoweringInfo
         {
             public SignedType() :
@@ -241,6 +307,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>Unsigned</c>
+        /// </summary>
         class UnsignedType : TypeLoweringInfo
         {
             public UnsignedType() :
@@ -304,6 +373,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>SFix</c>
+        /// </summary>
         class SFixType : TypeLoweringInfo
         {
             public SFixType() :
@@ -368,6 +440,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>UFix</c>
+        /// </summary>
         class UFixType : TypeLoweringInfo
         {
             public UFixType() :
@@ -432,6 +507,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>sbyte</c>, <c>byte</c>, <c>short</c>, <c>ushort</c>, <c>int</c>, <c>uint</c>,
+        /// <c>long</c>, <c>ulong</c>.
+        /// </summary>
         class NativeIntegralType : TypeLoweringInfo
         {
             private bool _isSigned;
@@ -512,6 +591,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>float</c> and <c>double</c>
+        /// </summary>
         class NativeFloatType : TypeLoweringInfo
         {
             private int _size;
@@ -578,6 +660,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Type lowering service for <c>bool</c>
+        /// </summary>
         class NativeBool : TypeLoweringInfo
         {
             public NativeBool() :
@@ -642,6 +727,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// The singleton instance of the type lowering service
+        /// </summary>
         public static readonly TypeLowering Instance = new TypeLowering();
 
         private Dictionary<Type, TypeLoweringInfo> _tiLookup = new Dictionary<Type, TypeLoweringInfo>();
@@ -667,22 +755,31 @@ namespace SystemSharp.DataTypes
             DeclareType(new UFixType());
         }
 
+        /// <summary>
+        /// Adds another type lowering service
+        /// </summary>
+        /// <param name="tli">type lowering service to add</param>
         public void DeclareType(TypeLoweringInfo tli)
         {
             _tiLookup[tli.OrgType] = tli;
         }
 
+        /// <summary>
+        /// Returns a wire-level type for <paramref name="otype"/>.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If <paramref name="otype"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="otype"/> is incomplete or is not convertible to a wire-level type.</exception>
         public TypeDescriptor GetWireType(TypeDescriptor otype)
         {
-            Contract.Requires(otype != null);
-            Contract.Requires(otype.IsUnconstrained || otype.IsComplete, "Incomplete type");
+            Contract.Requires<ArgumentNullException>(otype != null, "otype");
+            Contract.Requires<ArgumentException>(otype.IsUnconstrained || otype.IsComplete, "Incomplete type");
 
             TypeLoweringInfo tli;
             if (_tiLookup.TryGetValue(otype.CILType, out tli))
             {
                 if (!tli.HasWireType)
                 {
-                    throw new InvalidOperationException("Not convertible to a wire type " + otype.Name);
+                    throw new ArgumentException("Not convertible to a wire type " + otype.Name);
                 }
                 return tli.MakeWireType(otype);
             }
@@ -693,10 +790,15 @@ namespace SystemSharp.DataTypes
             }            
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="otype"/> has a wire-level type.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If <paramref name="otype"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="otype"/> is incomplete.</exception>
         public bool HasWireType(TypeDescriptor otype)
         {
-            Contract.Requires(otype != null);
-            Contract.Requires(otype.IsUnconstrained || otype.IsComplete, "Incomplete type");
+            Contract.Requires<ArgumentNullException>(otype != null, "otype");
+            Contract.Requires<ArgumentException>(otype.IsUnconstrained || otype.IsComplete, "Incomplete type");
 
             TypeLoweringInfo tli;
             if (_tiLookup.TryGetValue(otype.CILType, out tli))
@@ -705,16 +807,26 @@ namespace SystemSharp.DataTypes
             return tli.HasWireType;
         }
 
+        /// <summary>
+        /// Returns the size of a wire-level serizalization of <paramref name="otype"/>.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If <paramref name="otype"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="otype"/> is incomplete or is not convertible to a wire-level type.</exception>
         public int GetWireWidth(TypeDescriptor otype)
         {
             TypeDescriptor wtype = GetWireType(otype);
             return wtype.Constraints[0].FirstBound - wtype.Constraints[0].SecondBound + 1;
         }
 
+        /// <summary>
+        /// Returns a hardware-level type for <paramref name="otype"/>.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">If <paramref name="otype"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="otype"/> is incomplete or is not convertible to a hardware-level type.</exception>
         public TypeDescriptor GetHardwareType(TypeDescriptor otype)
         {
-            Contract.Requires(otype != null);
-            Contract.Requires(otype.IsUnconstrained || otype.IsComplete, "Incomplete type");
+            Contract.Requires<ArgumentNullException>(otype != null, "otype");
+            Contract.Requires<ArgumentException>(otype.IsUnconstrained || otype.IsComplete, "Incomplete type");
 
             TypeLoweringInfo tli;
             if (_tiLookup.TryGetValue(otype.CILType, out tli))
@@ -731,14 +843,14 @@ namespace SystemSharp.DataTypes
             }
         }
 
-        public TypeDescriptor[] GetWireTypes(IEnumerable<TypeDescriptor> otypes)
-        {
-            return otypes.Select(t => GetWireType(t)).ToArray();
-        }
-
+        /// <summary>
+        /// Converts <paramref name="value"/> to a hardware-level serialization.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">if <paramref name="value"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">if <paramref name="value"/> does not have any known hardware-level serialization.</exception>
         public object ConvertToHardwareType(object value)
         {
-            Contract.Requires(value != null);
+            Contract.Requires<ArgumentNullException>(value != null, "value");
             
             Type otype = value.GetType();
 
@@ -746,7 +858,7 @@ namespace SystemSharp.DataTypes
             if (_tiLookup.TryGetValue(otype, out tli))
             {
                 if (!tli.HasHardwareType)
-                    throw new InvalidOperationException("Not convertible to a hardware type " + otype.Name);
+                    throw new ArgumentException("Not convertible to a hardware type " + otype.Name);
 
                 return tli.ConvertValueToHardwareType(value);
             }

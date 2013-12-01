@@ -244,6 +244,9 @@ namespace SystemSharp.DataTypes
             DontCare
         }
 
+        /// <summary>
+        /// Character representations of StdLogic values
+        /// </summary>
         public static readonly char[] Literals = { 'U', 'X', '0', '1', 'Z', 'W', 'L', 'H', '-' };
 
         private static readonly string[] ResolutionMapStr =
@@ -271,35 +274,67 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Uninitialized
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic U = new StdLogic(EValues.Uninitialized);
 
+        /// <summary>
+        /// Invalid, conflict or unknown
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic X = new StdLogic(EValues.Unknown);
 
+        /// <summary>
+        /// Logical zero
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic _0 = new StdLogic(EValues.Logic0);
 
+        /// <summary>
+        /// Logical one
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic _1 = new StdLogic(EValues.Logic1);
 
+        /// <summary>
+        /// High impedance
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic Z = new StdLogic(EValues.HighZ);
 
+        /// <summary>
+        /// Weak
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic W = new StdLogic(EValues.Weak);
 
+        /// <summary>
+        /// Weak 0
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic L = new StdLogic(EValues.Weak0);
 
+        /// <summary>
+        /// Weak 1
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic H = new StdLogic(EValues.Weak1);
 
+        /// <summary>
+        /// Don't care
+        /// </summary>
         [ModelElement]
         public static readonly StdLogic DC = new StdLogic(EValues.DontCare);
 
         private EValues _value;
 
+        /// <summary>
+        /// Converts an <c>StdLogic</c> value literal to its character representation.
+        /// </summary>
+        /// <param name="value">literal to convert</param>
+        /// <returns>character representation</returns>
         [TypeConversion(typeof(StdLogic), typeof(char))]
         [SideEffectFree]
         public static char ToChar(EValues value)
@@ -307,6 +342,12 @@ namespace SystemSharp.DataTypes
             return Literals[(int)value];
         }
 
+        /// <summary>
+        /// Interprets a character as <c>StdLogic</c> literal.
+        /// </summary>
+        /// <param name="c">character to interpret, one of 'U', 'X', '0', '1', 'Z', 'W', 'L', 'H', '-'</param>
+        /// <returns>corresponding <c>StdLogic</c> literal</returns>
+        /// <exception cref="ArgumentException">if <paramref name="c"/> does not represent an <c>StdLogic</c> literal</exception>
         [TypeConversion(typeof(StdLogic), typeof(EValues))]
         [SideEffectFree]
         public static EValues ToEnum(char c)
@@ -315,7 +356,7 @@ namespace SystemSharp.DataTypes
                 if (Literals[i] == c)
                     return (EValues)i;
 
-            throw new ArgumentException("Illegal literal");
+            throw new ArgumentException("Illegal literal", "c");
         }
 
         private StdLogic(EValues value)
@@ -335,6 +376,9 @@ namespace SystemSharp.DataTypes
             return _value.GetHashCode();
         }
 
+        /// <summary>
+        /// Two <c>StdLogic</c> values are defined to be equal iff they represent the same logic literal.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is StdLogic)
@@ -343,15 +387,23 @@ namespace SystemSharp.DataTypes
                 return _value == sl._value;
             }
             else
+            {
                 return false;
+            }
         }
 
+        /// <summary>
+        /// Implicitly converts a logic literal to its <c>StdLogic</c> representation.
+        /// </summary>
         [StaticEvaluation]
         public static implicit operator StdLogic(EValues value)
         {
             return new StdLogic(value);
         }
 
+        /// <summary>
+        /// Implicitly converts an <c>StdLogic</c> instance to its logic literal.
+        /// </summary>
         [StaticEvaluation]
         public static implicit operator EValues(StdLogic sl)
         {
@@ -359,16 +411,19 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a character implicitly to StdLogic.
+        /// Implicitly converts a character to <c>StdLogic</c>.
         /// </summary>
         /// <param name="value">One of 'U', 'X', '0', '1', 'Z', 'W', 'L', 'H', '-'</param>
-        /// <returns>The StdLogic representation</returns>
+        /// <returns>The <c>StdLogic</c> representation</returns>
         [StaticEvaluation]
         public static implicit operator StdLogic(char value)
         {
             return ToEnum(value);
         }
 
+        /// <summary>
+        /// Implicitly converts <paramref name="sl"/> to its representing character.
+        /// </summary>
         [StaticEvaluation]
         public static implicit operator char(StdLogic sl)
         {
@@ -376,10 +431,10 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a boolean value implicitly to StdLogic
+        /// Converts a boolean value implicitly to <c>StdLogic</c>
         /// </summary>
         /// <param name="b">The boolean value</param>
-        /// <returns>The StdLogic representation ('0' for false, '1' for true)</returns>
+        /// <returns>The <c>StdLogic</c> representation ('0' for false, '1' for true)</returns>
         [TypeConversion(typeof(bool), typeof(StdLogic))]
         [SideEffectFree]
         public static implicit operator StdLogic(bool b)
@@ -387,7 +442,10 @@ namespace SystemSharp.DataTypes
             return b ? _1 : _0;
         }
 
-        //[MapToIntrinsicFunction(typeof(StdLogic), typeof(bool))]
+        /// <summary>
+        /// Implicitly converts <paramref name="sl"/> to a boolean value.
+        /// </summary>
+        /// <returns><c>true</c> if <paramref name="sl"/> is <c>StdLogic._1</c>, <c>false otherwiese</c></returns>
         [AutoConversion(AutoConversion.EAction.Exclude)]
         [SideEffectFree]
         public static implicit operator bool(StdLogic sl)
@@ -398,13 +456,19 @@ namespace SystemSharp.DataTypes
             return sl == '1';
         }
 
+        /// <summary>
+        /// Performs logic resolution of two <c>StdLogic</c> values.
+        /// </summary>
+        /// <param name="x">a logical value</param>
+        /// <param name="y">another logical value</param>
+        /// <returns>resolution result</returns>
         public StdLogic Resolve(StdLogic x, StdLogic y)
         {
             return ResolutionMap[(int)(EValues)x, (int)(EValues)y];
         }
 
         /// <summary>
-        /// Returns true if this instance represents either '0' or 'L'
+        /// Returns <c>true</c> if this instance represents either '0' or 'L'.
         /// </summary>
         public bool Is0
         {
@@ -415,7 +479,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Returns true if this instance represents either '1' or 'H'
+        /// Returns <c>true</c> if this instance represents either '1' or 'H'.
         /// </summary>
         public bool Is1
         {
@@ -456,6 +520,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Appends another logical value to this value and returns the resulting logic vector.
+        /// </summary>
         [SLVConcatRewriter]
         [SideEffectFree]
         public StdLogicVector Concat(StdLogic sl)
@@ -463,6 +530,9 @@ namespace SystemSharp.DataTypes
             return StdLogicVector.FromStdLogic(sl, this);
         }
 
+        /// <summary>
+        /// Appends a logical vector to this value and returns the resulting logic vector.
+        /// </summary>
         [SLVConcatRewriter]
         [SideEffectFree]
         public StdLogicVector Concat(StdLogicVector slv)
@@ -471,10 +541,8 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the logic complement (NOT) of an StdLogic instance.
+        /// Computes the logic complement (NOT) of <paramref name="sl"/>.
         /// </summary>
-        /// <param name="sl">The StdLogic value to be complemented</param>
-        /// <returns></returns>
         public static StdLogic operator !(StdLogic sl)
         {
             switch ((EValues)sl)
@@ -560,7 +628,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Returns true if two StdLogic values are equal.
+        /// Returns <c>true</c> if two <c>StdLogic</c> values are equal.
         /// </summary>
         /// <param name="sa">The first value</param>
         /// <param name="sb">The second value</param>
@@ -571,7 +639,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Returns true if two StdLogic values are unequal.
+        /// Returns <c>true</c> if two StdLogic values are unequal.
         /// </summary>
         /// <param name="sa">The first value</param>
         /// <param name="sb">The second value</param>
@@ -719,12 +787,18 @@ namespace SystemSharp.DataTypes
         ISizeOf
     {
         /// <summary>
-        /// A zero-sized logic vector
+        /// The zero-sized logic vector
         /// </summary>
         public static StdLogicVector Empty = new StdLogicVector();
 
         private StdLogic[] _value;
 
+        /// <summary>
+        /// Constructs a logical vector by repeating a given logic value.
+        /// </summary>
+        /// <param name="v">logic value</param>
+        /// <param name="count">amount of repetitions</param>
+        /// <returns>resulting logic vector</returns>
         public static StdLogicVector AllSame(StdLogic v, long count)
         {
             StdLogic[] result = new StdLogic[count];
@@ -799,6 +873,12 @@ namespace SystemSharp.DataTypes
             return AllSame(StdLogic.DC, count);
         }
 
+        /// <summary>
+        /// Constructs a one-hot encoded logic vector.
+        /// </summary>
+        /// <param name="count">desired length</param>
+        /// <param name="pos">0-based position of '1'</param>
+        /// <returns>resulting one-hot encoded vector</returns>
         public static StdLogicVector OneHot(int count, int pos)
         {
             StdLogicVector result = StdLogicVector._0s(count);
@@ -806,6 +886,12 @@ namespace SystemSharp.DataTypes
             return result;
         }
 
+        /// <summary>
+        /// Constructs a one-cold encoded logic vector.
+        /// </summary>
+        /// <param name="count">desired length</param>
+        /// <param name="pos">0-based position of '0'</param>
+        /// <returns>resulting one-hot encoded vector</returns>
         public static StdLogicVector OneCold(int count, int pos)
         {
             StdLogicVector result = StdLogicVector._1s(count);
@@ -823,6 +909,11 @@ namespace SystemSharp.DataTypes
             _value = new StdLogic[size];
         }
 
+        /// <summary>
+        /// Constructs a logic vector from chaining multiple logic values.
+        /// </summary>
+        /// <param name="bits">logic values to chain, first value being the left-most and most significant bit</param>
+        /// <returns>resulting logic vector</returns>
         public static StdLogicVector FromStdLogic(params StdLogic[] bits)
         {
             return new StdLogicVector(bits);
@@ -857,6 +948,9 @@ namespace SystemSharp.DataTypes
             return hash;
         }
 
+        /// <summary>
+        /// Two logic vectors are defined to be equal iff they have the same length and are bit-wise identical.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is StdLogicVector)
@@ -877,11 +971,13 @@ namespace SystemSharp.DataTypes
                 return true;
             }
             else
+            {
                 return false;
+            }
         }
 
         /// <summary>
-        /// Returns the length (in bits) of this StdLogicVector.
+        /// Returns the length (i.e. number of bits) of this logic vector.
         /// </summary>
         [TypeParameter(typeof(IntToZeroBasedDownRangeConverter))]
         public int Size
@@ -905,7 +1001,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Provides access to a single bit within the StdLogicVector.
+        /// Provides access to a single bit within this logic vector.
         /// </summary>
         /// <param name="index">The index of the desired bit</param>
         /// <returns>The indexed bit</returns>
@@ -963,7 +1059,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Provides access to a single bit within the StdLogicVector.
+        /// Provides access to a single bit within this logic vector.
         /// </summary>
         /// <param name="index">The index of the desired bit</param>
         /// <returns>The indexed bit</returns>
@@ -980,7 +1076,7 @@ namespace SystemSharp.DataTypes
                 return _value[uindex];
             }
             [SliceWriter]
-            set
+            internal set
             {
                 ulong uindex = index.ULongValue;
                 if (uindex >= (ulong)Size)
@@ -991,7 +1087,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Provides access to a single bit within the StdLogicVector.
+        /// Provides access to a single bit within this logic vector.
         /// </summary>
         /// <param name="index">The index of the desired bit</param>
         /// <returns>The indexed bit</returns>
@@ -1008,7 +1104,7 @@ namespace SystemSharp.DataTypes
                 return _value[iindex];
             }
             [SliceWriter]
-            set
+            internal set
             {
                 long iindex = index.LongValue;
                 if (iindex >= Size)
@@ -1019,7 +1115,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Provides access to a slice of bits within the StdLogicVector.
+        /// Provides access to a slice of bits within this logic vector.
         /// </summary>
         /// <param name="i0">The first index of the desired slice.</param>
         /// <param name="i1">The second index of the desired slice.</param>
@@ -1040,7 +1136,7 @@ namespace SystemSharp.DataTypes
                 return result;
             }
             [SliceWriter]
-            set
+            internal set
             {
                 int size = Size;
                 int subsize = i0 - i1 + 1;
@@ -1055,7 +1151,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Provides access to a slice of bits within the StdLogicVector.
+        /// Provides access to a slice of bits within this logic vector.
         /// </summary>
         /// <param name="i0">The first index of the desired slice.</param>
         /// <param name="i1">The second index of the desired slice.</param>
@@ -1078,7 +1174,7 @@ namespace SystemSharp.DataTypes
                 return result;
             }
             [SliceWriter]
-            set
+            internal set
             {
                 int size = Size;
                 int ii0 = (int)i0.LongValue;
@@ -1095,7 +1191,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Provides access to a slice of bits within the StdLogicVector.
+        /// Provides access to a slice of bits within this logic vector.
         /// </summary>
         /// <param name="i0">The first index of the desired slice.</param>
         /// <param name="i1">The second index of the desired slice.</param>
@@ -1118,7 +1214,7 @@ namespace SystemSharp.DataTypes
                 return result;
             }
             [SliceWriter]
-            set
+            internal set
             {
                 int size = Size;
                 int ii0 = (int)i0.ULongValue;
@@ -1135,9 +1231,9 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Appends an StdLogicVector to this StdLogicVector.
+        /// Appends another logic vector to this logic vector.
         /// </summary>
-        /// <param name="sv">The StdLogicVector to be appended</param>
+        /// <param name="sv">The logic vector to be appended</param>
         /// <returns>The concatenation of both</returns>
         [SLVConcatRewriter]
         [SideEffectFree]
@@ -1152,9 +1248,9 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Appends an StdLogic to this StdLogicVector.
+        /// Appends a logic value to this logic vector.
         /// </summary>
-        /// <param name="sl">The StdLogic to be appended</param>
+        /// <param name="sl">The logic value to be appended</param>
         /// <returns>The concatenation of both</returns>
         [SLVConcatRewriter]
         [SideEffectFree]
@@ -1176,14 +1272,18 @@ namespace SystemSharp.DataTypes
         /// <summary>
         /// Implicitly converts a string representation to a logic vector.
         /// </summary>
-        /// <param name="value">The string literal to be converted</param>
-        /// <returns>Its StdLogicVector representation</returns>
+        /// <param name="value">The string to be converted, in either binary or hexadecimal econding.
+        /// Using binary encoding, each character being one of one 'U', 'X', '0', '1', 'Z', 'W', 'L', 'H', '-'
+        /// Using hexadecimal encoding, the value must be prefixed by 'x' (case sensitive).
+        /// </param>
+        /// <returns>Its logic vector representation</returns>
+        /// <exception cref="ArgumentNullException">if <paramref name="value"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">if <paramref name="value"/> contains an illegal character.</exception>
         [TypeConversion(typeof(string), typeof(StdLogicVector))]
         [SideEffectFree]
         public static implicit operator StdLogicVector(string value)
         {
-            if (value == null)
-                throw new ArgumentException("value must not be null");
+            Contract.Requires<ArgumentNullException>(value != null, "value");
 
             if (value.Length == 0)
                 return StdLogicVector.Empty;
@@ -1229,15 +1329,22 @@ namespace SystemSharp.DataTypes
             return result;
         }
 
+        /// <summary>
+        /// Implicitly converts an array of logic values to a logic vector.
+        /// </summary>
+        /// <param name="vs">array of logic values</param>
+        /// <returns>logic vector representation</returns>
+        /// <exception cref="ArgumentNullException">if <paramref name="vs"/> is <c>null</c>.</exception>
         [TypeConversion(typeof(StdLogic[]), typeof(StdLogicVector))]
         [SideEffectFree]
         public static implicit operator StdLogicVector(StdLogic[] vs)
         {
+            Contract.Requires<ArgumentNullException>(vs != null, "vs");
             return new StdLogicVector(vs);
         }
 
         /// <summary>
-        /// Computes the bitwise complement of an StdLogicVector
+        /// Computes the bitwise complement of a logic vector.
         /// </summary>
         /// <param name="a">The vector to complement</param>
         /// <returns>The bitwise complement</returns>
@@ -1251,7 +1358,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the bitwise complement of an StdLogicVector
+        /// Computes the bitwise complement of a logic vector.
         /// </summary>
         /// <param name="a">The vector to complement</param>
         /// <returns>The bitwise complement</returns>
@@ -1265,7 +1372,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the arithmetic sum of two StdLogicVectors, assuming integer arithmetic in two's complement representation.
+        /// Computes the arithmetic sum of two logic vector, assuming integer arithmetic in two's complement representation.
         /// </summary>
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
@@ -1289,7 +1396,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the arithmetic difference of two StdLogicVectors, assuming integer arithmetic in two's complement representation.
+        /// Computes the arithmetic difference of two logic vectors, assuming integer arithmetic in two's complement representation.
         /// </summary>
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
@@ -1313,7 +1420,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the bitwise conjunction (AND) of two StdLogicVectors.
+        /// Computes the bitwise conjunction (AND) of two logic vectors.
         /// </summary>
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
@@ -1336,7 +1443,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the bitwise disjunction (OR) of two StdLogicVectors.
+        /// Computes the bitwise disjunction (OR) of two logic vectors.
         /// </summary>
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
@@ -1359,7 +1466,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Computes the bitwise anti-valence (XOR) of two StdLogicVectors.
+        /// Computes the bitwise anti-valence (XOR) of two logic vectors.
         /// </summary>
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
@@ -1381,12 +1488,18 @@ namespace SystemSharp.DataTypes
             return result;
         }
 
+        /// <summary>
+        /// Compares two logic vectors for bitwise equality. If they differ in length, <c>false</c> is returned.
+        /// </summary>
         [SideEffectFree]
         public static bool operator ==(StdLogicVector a, StdLogicVector b)
         {
             return a.Equals(b);
         }
 
+        /// <summary>
+        /// Checks whether two logic vectors are different in at least one bit. If they differ in length, <c>true</c> is returned.
+        /// </summary>
         [SideEffectFree]
         public static bool operator !=(StdLogicVector a, StdLogicVector b)
         {
@@ -1394,7 +1507,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Performs the bitwise resolution of two StdLogicVectors
+        /// Performs the bitwise resolution of two logic vector.
         /// </summary>
         /// <param name="x">The first operand</param>
         /// <param name="y">The second operand</param>
@@ -1417,7 +1530,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Returns true iff each vector element is either '0' or '1'
+        /// Returns <c>true</c> iff each vector element is either '0' or '1'.
         /// </summary>
         public bool IsProper
         {
@@ -1436,8 +1549,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts this StdLogicVector to an int, assuming a two's complement encoding with the MSB denoting the sign.
+        /// Converts this logic vector to an <c>int</c>, assuming a two's complement encoding with the MSB denoting the sign.
+        /// Bits with value '1' are interpreted as logical ones, all other values as logical zeroes.
+        /// The vector length must not exceed 32 bits, even if the exceeding bits are logical zeroes.
         /// </summary>
+        /// <exception cref="InvalidOperationException">if vector length exceeds 32</exception>
         public int IntValue
         {
             [TypeConversion(typeof(StdLogicVector), typeof(int))]
@@ -1466,8 +1582,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts this StdLogicVector to a long, assuming a two's complement encoding with the MSB denoting the sign.
-        /// </summary>        
+        /// Converts this logic vector to a <c>long</c>, assuming a two's complement encoding with the MSB denoting the sign.
+        /// Bits with value '1' are interpreted as logical ones, all other values as logical zeroes.
+        /// The vector length must not exceed 64 bits, even if the exceeding bits are logical zeroes.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">if vector length exceeds 64</exception>
         public long LongValue
         {
             [TypeConversion(typeof(StdLogicVector), typeof(long))]
@@ -1496,8 +1615,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts this StdLogicVector to a ulong.
+        /// Converts this logic vector to a <c>ulong</c>, assuming a binary integer econding.
+        /// Bits with value '1' are interpreted as logical ones, all other values as logical zeroes.
+        /// The vector length must not exceed 64 bits, even if the exceeding bits are logical zeroes.
         /// </summary>
+        /// <exception cref="InvalidOperationException">if vector length exceeds 64</exception>
         public ulong ULongValue
         {
             [TypeConversion(typeof(StdLogicVector), typeof(ulong))]
@@ -1536,6 +1658,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this logic vector to an <c>Unsigned</c> value, assuming a two's complement encoding with the MSB denoting the sign.
+        /// Bits with value '1' are interpreted as logical ones, all other values as logical zeroes.
+        /// </summary>
         public Unsigned UnsignedValue
         {
             [TypeConversion(typeof(StdLogicVector), typeof(Unsigned))]
@@ -1565,6 +1691,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this logic vector to a <c>Signed</c> value, assuming a two's complement encoding with the MSB denoting the sign.
+        /// Bits with value '1' are interpreted as logical ones, all other values as logical zeroes.
+        /// </summary>
         public Signed SignedValue
         {
             [TypeConversion(typeof(StdLogicVector), typeof(Signed))]
@@ -1675,11 +1805,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a long value to its two's complement enconding.
+        /// Converts a <c>long</c> value to its two's complement enconding.
         /// </summary>
         /// <param name="value">The value to be converted</param>
         /// <param name="size">The target bit width</param>
-        /// <returns>The binary encoding</returns>
+        /// <returns>The binary encoding as logic vector</returns>
         [FromXRewriter(typeof(long))]
         [SideEffectFree]
         public static StdLogicVector FromLong(long value, int size)
@@ -1688,11 +1818,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts an int value to its two's complement enconding.
+        /// Converts an <c>int</c> value to its two's complement enconding.
         /// </summary>
         /// <param name="value">The value to be converted</param>
         /// <param name="size">The target bit width</param>
-        /// <returns>The binary encoding</returns>
+        /// <returns>The binary encoding as logic vector</returns>
         [FromXRewriter(typeof(int))]
         [SideEffectFree]
         public static StdLogicVector FromInt(int value, int size)
@@ -1701,11 +1831,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a ulong value to its binary enconding.
+        /// Converts a <c>ulong</c> value to its binary enconding.
         /// </summary>
         /// <param name="value">The value to be converted</param>
         /// <param name="size">The target bit width</param>
-        /// <returns>The binary encoding</returns>
+        /// <returns>The binary encoding as logic vector</returns>
         [FromXRewriter(typeof(ulong))]
         [SideEffectFree]
         public static StdLogicVector FromULong(ulong value, int size)
@@ -1714,11 +1844,11 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a uint value to its binary enconding.
+        /// Converts a <c>uint</c> value to its binary enconding.
         /// </summary>
         /// <param name="value">The value to be converted</param>
         /// <param name="size">The target bit width</param>
-        /// <returns>The binary encoding</returns>
+        /// <returns>The binary encoding as logic vector</returns>
         [FromXRewriter(typeof(uint))]
         [SideEffectFree]
         public static StdLogicVector FromUInt(uint value, int size)
@@ -1726,8 +1856,15 @@ namespace SystemSharp.DataTypes
             return Unsigned.FromUInt(value, size).SLVValue;
         }
 
+        /// <summary>
+        /// Serializes <paramref name="value"/> as logic vector.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">if value is <c>null</c></exception>
+        /// <exception cref="ArgumentException">if there is no known serializer for the type of the supplied value.</exception>
         public static StdLogicVector Serialize(object value)
         {
+            Contract.Requires<ArgumentNullException>(value != null, "value");
+
             Type srcType = value.GetType();
             ISerializer ser = SLVSerializable.TryGetSerializer(srcType);
             if (ser == null)
@@ -1747,29 +1884,58 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Deserializes a given logic vector as a desired target type.
+        /// </summary>
+        /// <param name="slv">logic vector to be deserialized</param>
+        /// <param name="tgtType">target type for deserialization</param>
+        /// <returns>deserialized instance</returns>
+        /// <exception cref="ArgumentNullException">if <paramref name="tgtType"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">if there is no serializer for desired target type.</exception>
         [DeserializeRewriter]
         public static object Deserialize(StdLogicVector slv, TypeDescriptor tgtType)
         {
+            Contract.Requires<ArgumentNullException>(tgtType != null, "tgtType");
+
             ISerializer ser = SLVSerializable.TryGetSerializer(tgtType.CILType);
             if (ser == null)
                 throw new ArgumentException("Serialization not supported for type " + tgtType);
             return ser.Deserialize(slv, tgtType);
         }
 
+        /// <summary>
+        /// Constructs a type descriptor which describes a logic vector of given length.
+        /// </summary>
+        /// <param name="slvlength">logic vector length</param>
+        /// <returns>according type descriptor</returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="slvlength"/> is negative.</exception>
         public static TypeDescriptor MakeType(long slvlength)
         {
+            Contract.Requires<ArgumentOutOfRangeException>(slvlength >= 0, "slvlength must be nonnegative.");
             return TypeDescriptor.GetTypeOf(_0s(slvlength));
         }
 
+        /// <summary>
+        /// Returns the length of logic vectors being described <paramref name="type"/>,
+        /// given that <paramref name="type"/> actually describes logic vectors.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">if <paramref name="type"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">if <paramref name="type"/> does not describe <c>StdLogicVector</c> or is incomplete.</exception>
         public static int GetLength(TypeDescriptor type)
         {
-            Contract.Requires(type.CILType.Equals(typeof(StdLogicVector)));
-            Contract.Requires(type.IsComplete);
+            Contract.Requires<ArgumentNullException>(type != null, "type");
+            Contract.Requires<ArgumentException>(type.CILType.Equals(typeof(StdLogicVector)), "type does not describe StdLogicVector.");
+            Contract.Requires<ArgumentException>(type.IsComplete, "type is not complete.");
 
             return (int)type.TypeParams[0];
         }
     }
 
+    /// <summary>
+    /// Base class for indexable signals which perform resolution whenever there are multiple writers in the same delta cycle.
+    /// </summary>
+    /// <typeparam name="TA">type of data carried by the signal</typeparam>
+    /// <typeparam name="TE">type of a single element of the data carried by the signal</typeparam>
     public class SizedResolvedSignal<TA, TE> :
         ResolvedSignal<TA>, IIndexable<InOut<TA>, InOut<TE>>
         where TA : IResolvable<TA>, IIndexable<TA, TE>, IConcatenable<TA, TE>
@@ -1954,11 +2120,18 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="size">data-element size</param>
         public SizedResolvedSignal(int size)
         {
             Size = size;
         }
 
+        /// <summary>
+        /// Returns the data-element size
+        /// </summary>
         public int Size
         {
             [MapToIntrinsicFunction(IntrinsicFunction.EAction.PropertyRef, ESizedProperties.Size)]
@@ -1998,6 +2171,12 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Returns a sub-signal which represents a slice with the specified bounds.
+        /// </summary>
+        /// <param name="i0">left-end index of slice</param>
+        /// <param name="i1">right-end index of slice</param>
+        /// <exception cref="ArgumentOutOfRangeException">if the specified slice bounds are invalid.</exception>
         public InOut<TA> this[int i0, int i1]
         {
             [MapToSlice]
@@ -2008,6 +2187,11 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Returns a sub-signal which represents a single data element at the specified index.
+        /// </summary>
+        /// <param name="index">index to be accessed inside data element</param>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="index"/> is invalid.</exception>
         public InOut<TE> this[int index]
         {
             [MapToIntrinsicFunction(IntrinsicFunction.EAction.Index)]
@@ -2018,9 +2202,19 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Constructs a sub-signal which provides access to the index or slice being specified by <paramref name="idx"/>.
+        /// </summary>
+        /// <param name="idx">index specified to be applied.</param>
+        /// <returns>sub-signal, representing either a slice or an index.</returns>
+        /// <exception cref="ArgumentNullException">if <paramref name="idx"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">if <paramref name="idx"/> has a source dimension greater than 1 or contains
+        /// invalid slice bounds.</exception>
         [AssumeNotCalled]
         public override ISignal ApplyIndex(IndexSpec idx)
         {
+            Contract.Requires<ArgumentNullException>(idx != null, "idx");
+
             if (idx.Indices.Length == 0)
             {
                 return this;
@@ -2045,22 +2239,35 @@ namespace SystemSharp.DataTypes
             }
             else
             {
-                throw new ArgumentException();
+                throw new ArgumentException("idx must not contain more than one index.");
             }
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods for working with logic values, vectors and signals.
+    /// </summary>
     public static class StdLogicExtensions
     {
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="slin"/> made a rising edge transition, i.e. its previous value is '0'
+        /// whereas its current value if '1'.
+        /// </summary>
         [SignalProperty(SignalRef.EReferencedProperty.RisingEdge)]
         public static bool RisingEdge(this In<StdLogic> slin)
         {
+            Contract.Requires<ArgumentNullException>(slin != null, "slin");
             return slin.Pre == '0' && slin.Cur == '1';
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="slin"/> made a falling edge transition, i.e. its previous value is '1'
+        /// whereas its current value if '0'.
+        /// </summary>
         [SignalProperty(SignalRef.EReferencedProperty.FallingEdge)]
         public static bool FallingEdge(this In<StdLogic> slin)
         {
+            Contract.Requires<ArgumentNullException>(slin != null, "slin");
             return slin.Pre == '1' && slin.Cur == '0';
         }
 
@@ -2095,23 +2302,40 @@ namespace SystemSharp.DataTypes
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// A signal which carries logic values
+    /// </summary>
     public class SLSignal :
         ResolvedSignal<StdLogic>
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public SLSignal()
         {
             InitialValue = 'U';
         }
     }
 
+    /// <summary>
+    /// A signal which carries logic vectors.
+    /// </summary>
     public class SLVSignal : SizedResolvedSignal<StdLogicVector, StdLogic>
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="size">desired logic vector size</param>
         public SLVSignal(int size) :
             base(size)
         {
             InitialValue = StdLogicVector.Us(size);
         }
 
+        /// <summary>
+        /// Constructs an instance with given initial value.
+        /// </summary>
+        /// <param name="initValue">desired initial value</param>
         public SLVSignal(StdLogicVector initValue) :
             base(initValue.Size)
         {
@@ -2119,28 +2343,33 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods to work with logic vector-valued signals.
+    /// </summary>
     public static class SLVExtensions
     {
+        /// <summary>
+        /// Returns the data vector size by querying the underlying <c>SLVSignal</c>.
+        /// </summary>
         public static int Size(this InOut<StdLogicVector> port)
         {
             return ((SLVSignal)port).Size;
         }
 
+        /// <summary>
+        /// Returns the data vector size by querying the underlying <c>SLVSignal</c>.
+        /// </summary>
         public static int Size(this In<StdLogicVector> port)
         {
             return ((SLVSignal)port).Size;
         }
 
+        /// <summary>
+        /// Returns the data vector size by querying the underlying <c>SLVSignal</c>.
+        /// </summary>
         public static int Size(this Out<StdLogicVector> port)
         {
             return ((SLVSignal)port).Size;
-        }
-
-        public static async Task<StdLogicVector> Add(this Task<StdLogicVector> a, Task<StdLogicVector> b)
-        {
-            var av = await a;
-            var bv = await b;
-            return av + bv;
         }
     }
 
