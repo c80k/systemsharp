@@ -107,17 +107,32 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// An unsigned fixed-point number
+    /// </summary>
     [MapToIntrinsicType(EIntrinsicTypes.UFix)]
     [SLVSerializable(typeof(UFix), typeof(UFixSerializer))]
     [UFixAlgebraicType]
     public struct UFix
     {
+
+        /// <summary>
+        /// Fixed-point zero with 1 bit integer width and 0 bits fractional width
+        /// </summary>
         public static readonly UFix Zero = new UFix(Unsigned.Zero, 1, 0);
+
+        /// <summary>
+        /// Unsigned fixed-point one, requiring 1 integer bit and 0 fractional bits
+        /// </summary>
         public static readonly UFix One = new UFix(Unsigned.One, 1, 0);
 
         private Unsigned _value;
         private FixFormat _format;
 
+        /// <summary>
+        /// Extracts the fixed-point format description from the SysDOM type descriptor, given that it represents
+        /// <c>UFix</c> or <c>Unsigned</c>.
+        /// </summary>
         public static FixFormat GetFormat(TypeDescriptor td)
         {
             if (!td.CILType.Equals(typeof(UFix)) &&
@@ -129,6 +144,9 @@ namespace SystemSharp.DataTypes
             return new FixFormat(false, range.FirstBound + 1, -range.SecondBound);
         }
 
+        /// <summary>
+        /// The format description of this fixed-point number
+        /// </summary>
         [TypeParameter(typeof(FixFormatToRangeConverter))]        
         public FixFormat Format
         {
@@ -195,6 +213,11 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Adds <paramref name="a"/> and <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static UFix operator +(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -203,6 +226,11 @@ namespace SystemSharp.DataTypes
             return new UFix(rn, dfmt.IntWidth, dfmt.FracWidth);
         }
 
+        /// <summary>
+        /// Subtracts <paramref name="b"/> from <paramref name="a"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static UFix operator -(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -211,11 +239,21 @@ namespace SystemSharp.DataTypes
             return new UFix(rn, dfmt.IntWidth, dfmt.FracWidth);
         }
 
+        /// <summary>
+        /// Negates <paramref name="a"/>, resulting in a signed value.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static SFix operator -(UFix a)
         {
             return (-a.SFixValue).Resize(a.Format.IntWidth + 1, a.Format.FracWidth);
         }
 
+        /// <summary>
+        /// Multiplies <paramref name="a"/> and <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         public static UFix operator *(UFix a, UFix b)
         {
             FixFormat dfmt = new FixFormat(true,
@@ -224,6 +262,12 @@ namespace SystemSharp.DataTypes
             return new UFix(a._value * b._value, dfmt.IntWidth, dfmt.FracWidth);
         }
 
+        /// <summary>
+        /// Divides <paramref name="a"/> by <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> equals 0.</exception>
         public static UFix operator /(UFix a, [UFixDivisionGuard] UFix b)
         {
             Unsigned ar = 
@@ -234,6 +278,12 @@ namespace SystemSharp.DataTypes
                 a.Format.FracWidth + b.Format.IntWidth);
         }
 
+        /// <summary>
+        /// Computes the fixed-point modulus of <paramref name="a"/> and <paramref name="b"/>.
+        /// The integer and fractional width of the result is determined according to the 
+        /// current arithmetic sizing mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
+        /// <exception cref="DivisionByZeroException">if <paramref name="b"/> is zero.</exception>
         public static UFix operator %(UFix a, [SFixDivisionGuard] UFix b)
         {
             int fracWidth = Math.Max(a.Format.FracWidth, b.Format.FracWidth);
@@ -248,6 +298,9 @@ namespace SystemSharp.DataTypes
             return tmp;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than <paramref name="b"/>.
+        /// </summary>
         public static bool operator <(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -255,6 +308,9 @@ namespace SystemSharp.DataTypes
             return an < bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator <=(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -262,6 +318,9 @@ namespace SystemSharp.DataTypes
             return an <= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> equals <paramref name="b"/>.
+        /// </summary>
         public static bool operator ==(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -269,6 +328,9 @@ namespace SystemSharp.DataTypes
             return an == bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is not equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator !=(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -276,6 +338,9 @@ namespace SystemSharp.DataTypes
             return an != bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator >=(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -283,6 +348,9 @@ namespace SystemSharp.DataTypes
             return an >= bn;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than <paramref name="b"/>.
+        /// </summary>
         public static bool operator >(UFix a, UFix b)
         {
             Unsigned an, bn;
@@ -290,13 +358,29 @@ namespace SystemSharp.DataTypes
             return an > bn;
         }
 
-
+        /// <summary>
+        /// Converts <paramref name="value"/> to its unsigned fixed-point representation, using <paramref name="intWidth"/>
+        /// integer bits.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="intWidth"/> is less than 64, an overflow might occur. The behavior of this method in 
+        /// the presence of overflows depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(ulong), typeof(UFix))]
         public static UFix FromULong(ulong value, int intWidth)
         {
             return new UFix(Unsigned.FromULong(value, intWidth), intWidth, 0);
         }
 
+        /// <summary>
+        /// Converts <paramref name="value"/> to the closest fixed-point number, using <paramref name="intWidth"/>
+        /// integer bits and <paramref name="fracWidth"/> fractional bits.
+        /// </summary>
+        /// <remarks>
+        /// If <paramref name="intWidth"/> is chosen smaller than the proper representation of <paramref name="value"/>
+        /// as a fixed-point number actually requires, an arithmetic overflow will occur. The behavior of this method in 
+        /// the presence of overflows depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(double), typeof(UFix))]
         public static UFix FromDouble(double value, int intWidth, int fracWidth)
         {
@@ -305,6 +389,11 @@ namespace SystemSharp.DataTypes
             return new UFix(Unsigned.FromULong(lvalue, intWidth + fracWidth), intWidth, fracWidth);
         }
 
+        /// <summary>
+        /// Re-interprets <paramref name="value"/> as a fixed-point-number with <paramref name="fracWidth"/>
+        /// fractional bits. I.e. the binary two's complement representation of <paramref name="value"/>is re-interpreted.
+        /// E.g. we get that <c>UFix.FromUnsigned(Unsigned.FromULong(3, 3)).DoubleValue == 1.5</c>.
+        /// </summary>
         [TypeConversion(typeof(Unsigned), typeof(UFix), true)]
         public static UFix FromUnsigned(Unsigned value, int fracWidth)
         {
@@ -314,12 +403,25 @@ namespace SystemSharp.DataTypes
             return new UFix(value, (int)value.Size - fracWidth, fracWidth);
         }
 
+        /// <summary>
+        /// Interprets logic vector <paramref name="slv"/> as a fixed-point number with <paramref name="fracWidth"/>
+        /// fractional bits. The total width matches the length of the logic vector.
+        /// </summary>
+        /// <remarks>
+        /// Logic values of <c>'1'</c> and <c>'H'</c> are interpreted as ones, all other values are interpreted as zeroes.
+        /// Please keep this in mind, since logic vectors containing logic values such as <c>'Z'</c> or <c>'X'</c> may
+        /// lead to unexpected results.
+        /// </remarks>
         [TypeConversion(typeof(StdLogicVector), typeof(UFix))]
         public static UFix FromSLV(StdLogicVector slv, int fracWidth)
         {
             return FromUnsigned(slv.UnsignedValue, fracWidth);
         }
 
+        /// <summary>
+        /// Creates a SysDOM type descriptor which describes unsigned fixed-point numbers with <paramref name="intWidth"/>
+        /// integer bits and <paramref name="fracWidth"/> fractional bits.
+        /// </summary>
         [AssumeNotCalled]
         public static TypeDescriptor MakeType(int intWidth, int fracWidth)
         {
@@ -327,12 +429,19 @@ namespace SystemSharp.DataTypes
             return TypeDescriptor.GetTypeOf(smp);
         }
 
+        /// <summary>
+        /// Re-interprets this value as unsigned integer, i.e. the binary representation is re-interpreted.
+        /// E.g. <c>UFix.FromDouble(1.5, 2, 1).UnsignedValue.ULongValue == 3</c>.
+        /// </summary>
         public Unsigned UnsignedValue
         {
             [TypeConversion(typeof(UFix), typeof(Unsigned))]
             get { return _value; }
         }
 
+        /// <summary>
+        /// Returns the underlying binary representation of this value as logic vector.
+        /// </summary>
         public StdLogicVector SLVValue
         {
             [TypeConversion(typeof(UFix), typeof(StdLogicVector))]
@@ -340,7 +449,7 @@ namespace SystemSharp.DataTypes
         }
 
         [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-        public class UFixSFixConversion : RewriteCall, IDoNotAnalyze, ISideEffectFree
+        private class UFixSFixConversion : RewriteCall, IDoNotAnalyze, ISideEffectFree
         {
             public UFixSFixConversion()
             {
@@ -373,6 +482,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this number to signed fixed-point format.
+        /// </summary>
         public SFix SFixValue
         {
             [UFixSFixConversion]
@@ -383,12 +495,25 @@ namespace SystemSharp.DataTypes
 #endif
         }
 
+        /// <summary>
+        /// Returns the closest <c>double</c> value to this value. This conversion might induce arithmetic
+        /// overflow or loss of precision. Arithmetic overflow causes an undefined result.
+        /// </summary>
         public double DoubleValue
         {
             [TypeConversion(typeof(UFix), typeof(double))]
             get { return SFixValue.DoubleValue; }
         }
 
+        /// <summary>
+        /// Resizes this value to <paramref name="newIntWidth"/> integer bits and <paramref name="newFracWidth"/>
+        /// fractional bits.
+        /// </summary>
+        /// <remarks>
+        /// The conversion may lead to arithmetic overflow and/or loss of precision. In case of arithmetic overflow,
+        /// the behavior of this method is determined by the currently selected arithmetic overflow mode
+        /// (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.Resize)]
         [SideEffectFree]
         public UFix Resize(int newIntWidth, int newFracWidth)
@@ -433,6 +558,12 @@ namespace SystemSharp.DataTypes
                 return preComma + nfi.NumberDecimalSeparator + postComma;
         }
 #else
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <param name="radix">number system base to use, only 2, 10 and 16 are supported so far</param>
+        /// <param name="format">formatting options</param>
+        /// <param name="precision">number of desired digits after the dot</param>
         [TypeConversion(typeof(UFix), typeof(string))]
         public string ToString(int radix, IFormatProvider format, int precision = 10)
         {
@@ -482,24 +613,45 @@ namespace SystemSharp.DataTypes
         }
 #endif
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <param name="radix">number system base to use, only 2, 10 and 16 are supported so far</param>
+        /// <param name="precision">number of desired digits after the dot</param>
         [TypeConversion(typeof(UFix), typeof(string))]
         public string ToString(int radix, int precision = 10)
         {
             return ToString(radix, CultureInfo.CurrentCulture, precision);
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <remarks>
+        /// The number format base is determined by the currently selected default radix (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
+        /// <param name="format">formatting options</param>
         [TypeConversion(typeof(UFix), typeof(string))]
         public string ToString(IFormatProvider format)
         {
             return ToString(DesignContext.Instance.FixPoint.DefaultRadix, CultureInfo.CurrentCulture);
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <remarks>
+        /// The number format base is determined by the currently selected default radix (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(UFix), typeof(string))]
         public override string ToString()
         {
             return ToString(DesignContext.Instance.FixPoint.DefaultRadix, CultureInfo.CurrentCulture);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="obj"/> is another <c>SFix</c> or <c>UFix</c> with identical value.
+        /// </remarks>
         public override bool Equals(object obj)
         {
             if (obj is UFix)
@@ -529,13 +681,22 @@ namespace SystemSharp.DataTypes
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods for working with <c>UFix</c> values.
+    /// </summary>
     public static class UFixExtensions
     {
+        /// <summary>
+        /// Returns the integer part of <paramref name="sfix"/>.
+        /// </summary>
         public static Unsigned GetIntPart(this UFix ufix)
         {
             return ufix.SLVValue[ufix.Format.TotalWidth - 1, ufix.Format.FracWidth].UnsignedValue;
         }
 
+        /// <summary>
+        /// Returns the fractional part of <paramref name="sfix"/>.
+        /// </summary>
         public static Unsigned GetFracPart(this UFix ufix)
         {
             return ufix.SLVValue[ufix.Format.FracWidth - 1, 0].UnsignedValue;
