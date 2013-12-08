@@ -629,7 +629,7 @@ namespace SystemSharp.DataTypes
     }
 #else
     /// <summary>
-    /// This struct represents an unsigned integer of an arbitrary size.
+    /// An unsigned integer
     /// </summary>
     [MapToIntrinsicType(EIntrinsicTypes.Unsigned)]
     [SLVSerializable(typeof(Unsigned), typeof(UnsignedSerializer))]
@@ -649,11 +649,11 @@ namespace SystemSharp.DataTypes
         /// <param name="size">The desired size (in bits)</param>
         private Unsigned(BigInteger value, int size)
         {
-            Contract.Requires(size >= 0);
-            Contract.Requires(
+            Contract.Requires<ArgumentOutOfRangeException>(size >= 0, "size must be positive.");
+            Contract.Requires<ArgumentOutOfRangeException>(
                 value == null ||
                 value.CompareTo(0) == 0 ||
-                (value <= ((BigInteger.One << size) - 1)));
+                (value >= 0 && value <= ((BigInteger.One << size) - 1)), "value out of range");
 
             _value = value;
             _size = size;
@@ -729,11 +729,12 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts a uint value to an Unsigned value.
+        /// Converts a <c>uint</c> value to an <c>Unsigned</c> value.
         /// </summary>
-        /// <param name="value">The uint value</param>
+        /// <param name="value">The value to convert</param>
         /// <param name="size">The desired width</param>
-        /// <returns>The Unsigned value</returns>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="size"/> is 0 or less, or if
+        /// <paramref name="value"/> is out of representable range.</exception>
         [TypeConversion(typeof(uint), typeof(Unsigned))]
         [SideEffectFree]
         public static Unsigned FromUInt(uint value, int size)
@@ -741,6 +742,13 @@ namespace SystemSharp.DataTypes
             return new Unsigned(Trim(value, size), size);
         }
 
+        /// <summary>
+        /// Converts a non-negative <c>BigInteger</c> value to an <c>Unsigned</c> value.
+        /// </summary>
+        /// <param name="value">The value to convert</param>
+        /// <param name="size">The desired width</param>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="size"/> is 0 or less, or if
+        /// <paramref name="value"/> is negative or out of representable range.</exception>
         [StaticEvaluation]
         public static Unsigned FromBigInt(BigInteger value, int size)
         {
@@ -748,7 +756,7 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// Converts this Unsigned value to an StdLogicVector.
+        /// Returns the binary representation of this value.
         /// </summary>        
         public StdLogicVector SLVValue
         {
@@ -779,11 +787,21 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this value to <c>BigInteger</c>.
+        /// </summary>
         public BigInteger BigIntValue
         {
             get { return _value; }
         }
 
+        /// <summary>
+        /// Converts this value to <c>ulong</c>. If this value is larger than 64 bits, an arithmetic overflow might
+        /// occur. In that case, the behavior of this conversion depends on the currently selected arithmetic overflow mode
+        /// (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
+        /// <exception cref="InvalidOperationException">if this value is larger than 64 bits and current arithmetic overflow
+        /// mode is <c>EOverflowMode.Fail</c></exception>.
         public ulong ULongValue
         {
             [TypeConversion(typeof(Unsigned), typeof(ulong))]
@@ -825,6 +843,13 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this value to <c>ulong</c>. If this value is larger than 31 bits, an arithmetic overflow might
+        /// occur. In that case, the behavior of this conversion depends on the currently selected arithmetic overflow mode
+        /// (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
+        /// <exception cref="InvalidOperationException">if this value is larger than 31 bits and current arithmetic overflow
+        /// mode is <c>EOverflowMode.Fail</c></exception>.
         public int IntValue
         {
             [TypeConversion(typeof(Unsigned), typeof(int))]
@@ -851,6 +876,10 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this value to <c>Signed</c>. Because of the signed format, the resulting
+        /// value requires one more bit than this representation.
+        /// </summary>
         public Signed SignedValue
         {
             [TypeConversion(typeof(Unsigned), typeof(Signed))]
@@ -861,6 +890,11 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <param name="radix">number system base to use, only 2, 10 and 16 are supported so far</param>
+        /// <param name="pad">whether to pad the returned string with leading zeroes</param>
         public string ToString(int radix, bool pad = false)
         {
             int maxDigits = Math.Max((int)Math.Ceiling((double)Size * Math.Log(2.0, radix)), 1);
@@ -893,6 +927,12 @@ namespace SystemSharp.DataTypes
             return _value.ToString(format);
         }
 
+        /// <summary>
+        /// Converts this value to a textual representation.
+        /// </summary>
+        /// <remarks>
+        /// The number format base is determined by the currently selected default radix (<seealso cref="FixedPointSettings"/>).
+        /// </remarks>
         [TypeConversion(typeof(Unsigned), typeof(string))]
         [SideEffectFree]
         public override string ToString()
@@ -900,6 +940,9 @@ namespace SystemSharp.DataTypes
             return ToString(DesignContext.Instance.FixPoint.DefaultRadix);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="obj"/> is another <c>Unsigned</c> with identical size and value.
+        /// </remarks>
         public override bool Equals(object obj)
         {
             if (obj is Unsigned)
@@ -909,7 +952,9 @@ namespace SystemSharp.DataTypes
                     object.Equals(_value, other._value));
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -1020,6 +1065,9 @@ namespace SystemSharp.DataTypes
             }
         }
 
+        /// <summary>
+        /// Converts <paramref name="value"/> implcitly to <c>Unsigned</c>.
+        /// </summary>
         [SideEffectFree]
         public static implicit operator Unsigned(ulong value)
         {
@@ -1080,6 +1128,9 @@ namespace SystemSharp.DataTypes
             return new Unsigned(Trim(a.BigIntValue - b.BigIntValue, rsize), rsize);
         }
 
+        /// <summary>
+        /// Negates <paramref name="a"/>, returning a <c>Signed</c>.
+        /// </summary>
         public static Signed operator -(Unsigned a)
         {
             return (-a.SignedValue).Resize(a.Size);
@@ -1114,6 +1165,7 @@ namespace SystemSharp.DataTypes
         /// <param name="a">The dividend</param>
         /// <param name="b">The divisor</param>
         /// <returns>The quotient</returns>
+        /// <exception cref="DivideByZeroException">if <paramref name="b"/> is zero.</exception>
         public static Unsigned operator /(Unsigned a, [UnsignedDivisionGuard] Unsigned b)
         {
             int rsize = a.Size;
@@ -1126,12 +1178,21 @@ namespace SystemSharp.DataTypes
         /// <param name="a">Dividend</param>
         /// <param name="b">Divisor</param>
         /// <returns>Remainder</returns>
+        /// <exception cref="DivideByZeroException">if <paramref name="b"/> is zero.</exception>
         public static Unsigned operator %(Unsigned a, Unsigned b)
         {
             int rsize = b.Size;
             return new Unsigned(a.BigIntValue % b.BigIntValue, rsize);
         }
 
+        /// <summary>
+        /// Computes quotient and remainder of the division <paramref name="a"/>/<paramref name="b"/>.
+        /// </summary>
+        /// <param name="a">The dividend</param>
+        /// <param name="b">The divisor</param>
+        /// <param name="quot">Reference to computed quotient</param>
+        /// <param name="rem">Reference to computed remainder</param>
+        /// <exception cref="DivideByZeroException">if <paramref name="b"/> is zero.</exception>
         public static void DivMod(Unsigned a, Unsigned b, out Unsigned quot, out Unsigned rem)
         {
             BigInteger birem;
@@ -1140,12 +1201,22 @@ namespace SystemSharp.DataTypes
             rem = new Unsigned(birem, b.Size);
         }
 
+        /// <summary>
+        /// Increments <paramref name="a"/> by one. By definition, the result keeps its size. If the increment results in an
+        /// arithmetic overflow, the behavior of this method 
+        /// depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         [RewriteIncrement(false, false)]
         public static Unsigned operator ++(Unsigned a)
         {
             return (a + 1).Resize((int)a.Size);
         }
 
+        /// <summary>
+        /// Decrements <paramref name="a"/> by one. By definition, the result keeps its size. If <paramref name="a"/> is 0,
+        /// the behavior of this method 
+        /// depends on the currently selected overflow mode (<seealso cref="FixedPointSettings"/>).
+        /// </summary>
         [RewriteIncrement(false, true)]
         public static Unsigned operator --(Unsigned a)
         {
@@ -1174,36 +1245,57 @@ namespace SystemSharp.DataTypes
             return new Unsigned(Trim(x.BigIntValue >> count, x.Size), x.Size);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than <paramref name="b"/>.
+        /// </summary>
         public static bool operator <(Unsigned a, Unsigned b)
         {
             return a.BigIntValue < b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than <paramref name="b"/>.
+        /// </summary>
         public static bool operator >(Unsigned a, Unsigned b)
         {
             return a.BigIntValue > b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is less than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator <=(Unsigned a, Unsigned b)
         {
             return a.BigIntValue <= b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is greater than or equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator >=(Unsigned a, Unsigned b)
         {
             return a.BigIntValue >= b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> equals <paramref name="b"/>.
+        /// </summary>
         public static bool operator ==(Unsigned a, Unsigned b)
         {
             return a.BigIntValue == b.BigIntValue;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff <paramref name="a"/> is not equal to <paramref name="b"/>.
+        /// </summary>
         public static bool operator !=(Unsigned a, Unsigned b)
         {
             return a.BigIntValue != b.BigIntValue;
         }
 
+        /// <summary>
+        /// Creates a SysDOM type descriptor which describes unsigned numbers with <paramref name="size"/> integer bits.
+        /// </summary>
         public static TypeDescriptor MakeType(int size)
         {
             return TypeDescriptor.GetTypeOf(Unsigned.FromUInt(0, size));
@@ -1211,8 +1303,14 @@ namespace SystemSharp.DataTypes
     }
 #endif
 
+    /// <summary>
+    /// This static class provides convenience methods for working with <c>Unsigned</c> values.
+    /// </summary>
     public static class UnsignedExtensions
     {
+        /// <summary>
+        /// Returns the element at <paramref name="index"/> from <paramref name="array"/>.
+        /// </summary>
         [MapToIntrinsicFunction(IntrinsicFunction.EAction.GetArrayElement)]
         public static T Get<T>(this T[] array, Unsigned index)
         {
