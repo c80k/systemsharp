@@ -30,6 +30,9 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// A control path builder for classic finite state machine (FSM) implementations.
+    /// </summary>
     public class FSMControlpathBuilder: IControlpathBuilder
     {
         private class FactoryImpl : IControlpathBuilderFactory
@@ -147,6 +150,9 @@ namespace SystemSharp.Assembler.DesignGen
             _host.Descriptor.GetDocumentation().Documents.Add(new Document(procName + "_FSM_report.txt", flowSpec.GetMUXReport()));
         }
 
+        /// <summary>
+        /// Returns the factory for constructing instances of this class.
+        /// </summary>
         public static readonly IControlpathBuilderFactory Factory = new FactoryImpl();
     }
 }

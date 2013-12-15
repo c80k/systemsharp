@@ -30,6 +30,11 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This trivial interconnect builder assigns each data transfer to an individual register.
+    /// It is intended as a "null hypothesis" performance comparisons between different interconnect builders
+    /// and should not be used in practice.
+    /// </summary>
     public class MaxRegInterconnectBuilder : IInterconnectBuilder
     {
         private class FactoryImpl : IInterconnectBuilderFactory
@@ -233,6 +238,9 @@ namespace SystemSharp.Assembler.DesignGen
             AssembleFlowMatrix();
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class.
+        /// </summary>
         public static readonly IInterconnectBuilderFactory Factory = new FactoryImpl();
     }
 }

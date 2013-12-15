@@ -31,6 +31,10 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This control-path builder constructs finite state machine (FSM) implementations which control the
+    /// data-flows inside the data-path by tri-state buses.
+    /// </summary>
     public class TristateBusFSMControlpathBuilder : IControlpathBuilder
     {
         private class FactoryImpl : IControlpathBuilderFactory
@@ -275,6 +279,9 @@ namespace SystemSharp.Assembler.DesignGen
             _binder.CreateProcess(SystemSharp.Components.Process.EProcessKind.Triggered, fudFunc, sens.ToArray());
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class.
+        /// </summary>
         public static readonly IControlpathBuilderFactory Factory = new FactoryImpl();
     }
 }

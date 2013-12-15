@@ -25,8 +25,25 @@ using System.Text;
 
 namespace SystemSharp.Assembler.DesignGen
 {
-    public static class MicrocodeAlgorithms
+    /// <summary>
+    /// This static class provides helper methods for creating horizontally microcoded architectures.
+    /// </summary>
+    static class MicrocodeAlgorithms
     {
+        /// <summary>
+        /// Computes a common encoding for two sequences of symbols, such that the result requires a minimum number of symbols.
+        /// Symbols are represented by non-negative integers, each value representing a different symbol. A symbol value of 0 has a 
+        /// special meaning and is interpreted as "don't care".
+        /// </summary>
+        /// <param name="seq0">a sequence of symbols</param>
+        /// <param name="numSymbols0">number of different non-"don't care" symbols used in <paramref name="seq0"/>, i.e.
+        /// the maximum number inside <paramref name="seq0"/></param>
+        /// <param name="seq1">another sequence of symbols</param>
+        /// <param name="numSymbols1">number of different non-"don't care" symbols used in <paramref name="seq1"/>, i.e.
+        /// the maximum number inside <paramref name="seq1"/></param>
+        /// <param name="encMap0">output parameter to receive the mapping of each result symbol to the original symbol from <paramref name="seq0"/></param>
+        /// <param name="encMap1">output parameter to receive the mapping of each result symbol to the original symbol from <paramref name="seq1"/></param>
+        /// <returns>the common encoding of both sequences</returns>
         public static int[] EncodeTogether(
             int[] seq0, int numSymbols0, int[] seq1, int numSymbols1, 
             out int[] encMap0, out int[] encMap1)

@@ -10,6 +10,11 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This interconnect builder is based on the <c>HClustInterconnectBuilder</c>. As a preprocessing step,
+    /// it splits each data-flow into a sequence of chained data-flows, each requiring a single clock step.
+    /// In doing so, the inference of shift registers by FPGA synthesis is supported.
+    /// </summary>
     public class StagePlexInterconnectBuilder: IInterconnectBuilder
     {
         private class FactoryImpl : IInterconnectBuilderFactory
@@ -20,6 +25,9 @@ namespace SystemSharp.Assembler.DesignGen
             }
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class.
+        /// </summary>
         public static readonly IInterconnectBuilderFactory Factory = new FactoryImpl();
 
         private Component _host;
@@ -70,7 +78,7 @@ namespace SystemSharp.Assembler.DesignGen
         {
             _host = host;
             _binder = binder;
-            _hcib = new HClustInterconnectBuilder(host, binder);
+            _hcib = (HClustInterconnectBuilder)HClustInterconnectBuilder.Factory.Create(host, binder);
         }
 
         private int _tmpIdx;

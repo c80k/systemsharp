@@ -30,6 +30,10 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This interconnect builder shares data transfers in a single register whenever possible, i.e. when the lifetimes
+    /// of the respective transfers do not overlap. It is based on the famous left-edge algorithm.
+    /// </summary>
     public class MinRegInterconnectBuilder: IInterconnectBuilder
     {
         private class FactoryImpl : IInterconnectBuilderFactory
@@ -343,6 +347,9 @@ namespace SystemSharp.Assembler.DesignGen
             AssembleFlowMatrix();
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class.
+        /// </summary>
         public static readonly IInterconnectBuilderFactory Factory = new FactoryImpl();
     }
 }

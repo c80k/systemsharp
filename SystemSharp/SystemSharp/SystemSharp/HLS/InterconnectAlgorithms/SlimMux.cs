@@ -27,7 +27,7 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.SchedulingAlgorithms
 {
-    public interface ISlimMuxAdapter<Tn, Tp, Tf>
+    interface ISlimMuxAdapter<Tn, Tp, Tf>
     {
         IPropMap<Tf, long> DepartureTime { get; }
         IPropMap<Tf, long> ArrivalTime { get; }
@@ -47,7 +47,7 @@ namespace SystemSharp.SchedulingAlgorithms
         bool IsPipeBound(Tp pipe, long time, out Tn emitter, out long emitTime);
     }
 
-    public class SlimMux<Tn, Tp, Tf>
+    class SlimMux<Tn, Tp, Tf>
     {
         private abstract class Hop
         {

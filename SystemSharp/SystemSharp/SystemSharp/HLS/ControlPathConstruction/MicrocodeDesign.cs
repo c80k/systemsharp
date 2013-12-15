@@ -638,7 +638,7 @@ namespace SystemSharp.Assembler.DesignGen
         }
     }
 
-    public class MicrocodeDesigner
+    class MicrocodeDesigner
     {
         private MicroString[] _strings;
         private ValueFlowCoder _vcf;

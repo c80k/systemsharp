@@ -32,13 +32,32 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.HLS.AllocationPolicies
 {
+    /// <summary>
+    /// Factory-pattern interface for the context-sensitive allocation policy
+    /// </summary>
     public interface IContextSensitiveAllocationPolicyFactory :
         IAllocationPolicyFactory
     {
+        /// <summary>
+        /// Configures the maximum admissible cost of resource sharing is terms of a heuristic measure. That measure is
+        /// derived from the multiplexer complexity which arises from sharing a functional unit.
+        /// </summary>
         double MaxCost { get; set; }
+
+        /// <summary>
+        /// The returned dictionary configures the maximum admissible amount of functional units per component class
+        /// (i.e. class type of functional unit is key, value is maximum amount). If a particular functional unit type
+        /// is not present as key, an infinite number of admissible instances is assumed.
+        /// </summary>
         Dictionary<object, int> FULimits { get; }
     }
 
+    /// <summary>
+    /// The context-sensitive allocation policy bases the allocation/sharing decision on a heuristic measure which
+    /// estimates the expected multiplexer complexity, arising from sharing a particular function unit. It first selects
+    /// the functional unit which causes the least complexity. If that complexity exceeds a user-configured maximum cost,
+    /// a new functional unit is allocated.
+    /// </summary>
     public class ContextSensitiveAllocation: IAllocationPolicy
     {
         private class FactoryImpl : IContextSensitiveAllocationPolicyFactory
@@ -157,6 +176,9 @@ namespace SystemSharp.HLS.AllocationPolicies
             public long DriveTime { get; set; }
         }
 
+        /// <summary>
+        /// Creates a new factory for constructing instances of this class.
+        /// </summary>
         public static IContextSensitiveAllocationPolicyFactory CreateFactory()
         {
             return new FactoryImpl();
@@ -172,7 +194,17 @@ namespace SystemSharp.HLS.AllocationPolicies
         {
         }
 
+        /// <summary>
+        /// Configures the maximum admissible cost of resource sharing is terms of a heuristic measure. That measure is
+        /// derived from the multiplexer complexity which arises from sharing a functional unit.
+        /// </summary>
         public double MaxCost { get; set; }
+
+        /// <summary>
+        /// The returned dictionary configures the maximum admissible amount of functional units per component class
+        /// (i.e. class type of functional unit is key, value is maximum amount). If a particular functional unit type
+        /// is not present as key, an infinite number of admissible instances is assumed.
+        /// </summary>
         public Dictionary<object, int> FULimits { get; private set; }
 
         public EAllocationDecision SelectBestMapping(XIL3Instr instr, long cstep, IEnumerable<IXILMapping> mappings, out IXILMapping bestMapping)

@@ -104,10 +104,17 @@ namespace SystemSharp.SchedulingAlgorithms
         }
     }
 
+    /// <summary>
+    /// The scheduling algorithm failed because there is no feasible schedule under the given constraints.
+    /// </summary>
     public class NotSchedulableException : Exception
     {
     }
 
+    /// <summary>
+    /// This trivial scheduling algorithm puts all operations in serial order, without considering any parallelism. It is 
+    /// intended as a "null hypothesis" for performance evaluations and should not be used in practice.
+    /// </summary>
     public class SequentialScheduler: 
         IBasicBlockSchedulingAlgorithm
     {
@@ -151,9 +158,15 @@ namespace SystemSharp.SchedulingAlgorithms
             constraints.EndTime = curTime;
         }
 
+        /// <summary>
+        /// Returns the one and only instance of the sequential scheduling algorithm.
+        /// </summary>
         public static readonly SequentialScheduler Instance = new SequentialScheduler();
     }
 
+    /// <summary>
+    /// Classic as-soon-as-possible (ASAP) scheduling algorithm.
+    /// </summary>
     public class ASAPScheduler: 
         IBasicBlockSchedulingAlgorithm
     {
@@ -162,6 +175,10 @@ namespace SystemSharp.SchedulingAlgorithms
             ConstrainedResources = constrainedResources;
         }
 
+        /// <summary>
+        /// Whether the scheduling is performed under resource constraints, i.e. assigning an instruction to
+        /// a particular c-step might fail because of limited parallelism.
+        /// </summary>
         public bool ConstrainedResources { get; private set; }
 
         internal static void CheckInput<T>(ISchedulingAdapter<T> a, IList<T> instructions)
@@ -302,15 +319,27 @@ namespace SystemSharp.SchedulingAlgorithms
             constraints.EndTime = Schedule(scha, nodes, nodes, constraints);
         }
 
+        /// <summary>
+        /// Returns the one and only instance for unconstrained case, i.e. the algorithm is always free to assign any
+        /// instruction to any c-step, regardless of the arising parallelism.
+        /// </summary>
         public static readonly ASAPScheduler Instance = new ASAPScheduler(true);
+
+        /// <summary>
+        /// Returns the one and only instance for resource-constrained case, i.e. assigning a particular instruction to
+        /// a particular c-step might fail because of limited parallelism.
+        /// </summary>
         public static readonly ASAPScheduler InstanceUnlimitedResources = new ASAPScheduler(false);
     }
 
-    public class ALAPScheduler: 
+    /// <summary>
+    /// Classic as-late-as-possible (ASAP) scheduling algorithm.
+    /// </summary>
+    public class ALAPScheduler : 
         IBasicBlockSchedulingAlgorithm,
         ICFGSchedulingAlgorithm
     {
-        public ALAPScheduler(bool constrainedResources)
+        private ALAPScheduler(bool constrainedResources)
         {
             ConstrainedResources = constrainedResources;
         }
@@ -320,6 +349,10 @@ namespace SystemSharp.SchedulingAlgorithms
             return nodes;
         }
 
+        /// <summary>
+        /// Whether the scheduling is performed under resource constraints, i.e. assigning an instruction to
+        /// a particular c-step might fail because of limited parallelism.
+        /// </summary>
         public bool ConstrainedResources { get; private set; }
 
         public long Schedule<T>(ISchedulingAdapter<T> a, IList<T> nodes, IList<T> end, SchedulingConstraints constraints)
@@ -448,7 +481,16 @@ namespace SystemSharp.SchedulingAlgorithms
             constraints.StartTime = Schedule(scha, nodes, nodes, constraints);
         }
 
+        /// <summary>
+        /// Returns the one and only instance for unconstrained case, i.e. the algorithm is always free to assign any
+        /// instruction to any c-step, regardless of the arising parallelism.
+        /// </summary>
         public static readonly ALAPScheduler Instance = new ALAPScheduler(true);
+
+        /// <summary>
+        /// Returns the one and only instance for resource-constrained case, i.e. assigning a particular instruction to
+        /// a particular c-step might fail because of limited parallelism.
+        /// </summary>
         public static readonly ALAPScheduler InstanceUnlimitedResources = new ALAPScheduler(false);
 
         public virtual void Schedule<T>(ControlFlowGraph<T> cfg, SchedulingConstraints constraints, ISchedulingAdapter<T> scha) where T : Analysis.IInstruction
