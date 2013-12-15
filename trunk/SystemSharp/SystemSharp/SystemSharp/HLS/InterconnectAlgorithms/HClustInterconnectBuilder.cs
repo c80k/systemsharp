@@ -36,6 +36,10 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This interconnect builder is based on a hierarchical clustering algorithm which takes some heuristic measures into account.
+    /// Those measures estimate the multiplexer complexity of sharing data transfers in a single register.
+    /// </summary>
     public class HClustInterconnectBuilder: IInterconnectBuilder
     {
         private class FactoryImpl : IInterconnectBuilderFactory
@@ -161,7 +165,12 @@ namespace SystemSharp.Assembler.DesignGen
         private bool[] _isMemMap;
         private int[] _idxMap;
 
-        public HClustInterconnectBuilder(Component host, IAutoBinder binder)
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="host">hosting component</param>
+        /// <param name="binder">binder service</param>
+        private HClustInterconnectBuilder(Component host, IAutoBinder binder)
         {
             _host = host;
             _binder = binder;
@@ -723,6 +732,9 @@ namespace SystemSharp.Assembler.DesignGen
             VerifyResult();
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class.
+        /// </summary>
         public static readonly IInterconnectBuilderFactory Factory = new FactoryImpl();
     }
 }

@@ -32,6 +32,9 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This control-path builder creates horizontally microcoded architectures (HMAs).
+    /// </summary>
     public class MicrocodeControlpathBuilder: IControlpathBuilder
     {
         private class FactoryImpl : IControlpathBuilderFactory
@@ -53,8 +56,20 @@ namespace SystemSharp.Assembler.DesignGen
             }
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class, using the default configuration <c>maxSelWidth = 6</c>,
+        /// <c>staged = false</c>, <c>registered = false</c>.
+        /// </summary>
         public static readonly IControlpathBuilderFactory Factory = new FactoryImpl(6, false, false);
 
+        /// <summary>
+        /// Creates a factory for creating instances of this class, using a user-defined configuration.
+        /// </summary>
+        /// <param name="maxSelWidth">maximum admissible selection input width of a control-word decoder</param>
+        /// <param name="staged">A staged control-word decoder introduces an additional register at the decoding output, 
+        /// allowing for faster clock speeds.</param>
+        /// <param name="registered">Whether to insert an additional register inside the staged decoder - only meaningful if
+        /// <paramref name="staged"/> is <c>true</c>.</param>
         public static IControlpathBuilderFactory CreateFactory(int maxSelWidth = 6, bool staged = false, bool registered = false)
         {
             return new FactoryImpl(maxSelWidth, staged, registered);

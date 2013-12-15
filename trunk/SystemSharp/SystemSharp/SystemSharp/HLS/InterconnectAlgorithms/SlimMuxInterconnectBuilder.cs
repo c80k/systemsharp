@@ -32,6 +32,11 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler.DesignGen
 {
+    /// <summary>
+    /// This interconnect builder is based on the assumption that the fan-in of the largest multiplexer limits the design performance.
+    /// It routes data transfers over potentially multiple chained registers, such that many small multiplexers are preferred over
+    /// few large multiplexers.
+    /// </summary>
     public class SlimMuxInterconnectBuilder: IInterconnectBuilder
     {
         private class FactoryImpl : IInterconnectBuilderFactory
@@ -42,6 +47,9 @@ namespace SystemSharp.Assembler.DesignGen
             }
         }
 
+        /// <summary>
+        /// Returns a factory for creating instances of this class.
+        /// </summary>
         public static readonly IInterconnectBuilderFactory Factory = new FactoryImpl();
 
         private Component _host;
