@@ -28,7 +28,7 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.SchedulingAlgorithms
 {
-    public interface IFDSAdapater<T>
+    interface IFDSAdapater<T>
     {
         IPropMap<T, int> Index { get; }
         IPropMap<T, long> Latency { get; }
@@ -540,6 +540,9 @@ namespace SystemSharp.SchedulingAlgorithms
         }
     }
 
+    /// <summary>
+    /// An implementation of Paulin and Knight's famous force-directed scheduling algorithm.
+    /// </summary>
     public class ForceDirectedScheduler : 
         IBasicBlockSchedulingAlgorithm,
         ICFGSchedulingAlgorithm
@@ -708,6 +711,9 @@ namespace SystemSharp.SchedulingAlgorithms
             }
         }
 
+        /// <summary>
+        /// The one and only instance of the algorithm.
+        /// </summary>
         public static readonly ForceDirectedScheduler Instance = new ForceDirectedScheduler();
     }
 }

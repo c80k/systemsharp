@@ -29,6 +29,11 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.SchedulingAlgorithms
 {
+    /// <summary>
+    /// Trivial basic block scheduling algorithms which schedules all operations strictly sequentially.
+    /// This algorithm is intended to be used as a "null hypothesis" for performance comparisons and should
+    /// not be used in practice.
+    /// </summary>
     public class OneInstructionPerCStepScheduler :
         IBasicBlockSchedulingAlgorithm
     {
@@ -97,6 +102,9 @@ namespace SystemSharp.SchedulingAlgorithms
             constraints.EndTime = Schedule(scha, nodes, nodes, constraints.StartTime);
         }
 
+        /// <summary>
+        /// The one and only instance of this algorithm
+        /// </summary>
         public static readonly OneInstructionPerCStepScheduler Instance = new OneInstructionPerCStepScheduler();
     }
 }

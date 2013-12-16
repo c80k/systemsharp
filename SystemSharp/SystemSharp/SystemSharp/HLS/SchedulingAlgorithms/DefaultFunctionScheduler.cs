@@ -25,6 +25,10 @@ using SystemSharp.Analysis;
 
 namespace SystemSharp.SchedulingAlgorithms
 {
+    /// <summary>
+    /// A default implementation of a function-level scheduler which relies on a user-defined basic block
+    /// scheduling algorithm.
+    /// </summary>
     public class DefaultFunctionScheduler: ICFGSchedulingAlgorithm
     {
         private IBasicBlockSchedulingAlgorithm _bbsched;
@@ -47,6 +51,10 @@ namespace SystemSharp.SchedulingAlgorithms
             _bbsched = bbsched;
         }
 
+        /// <summary>
+        /// Constructs an instance of the function-level scheduler.
+        /// </summary>
+        /// <param name="bbsched">basic block scheduling algorithm to use</param>
         public static ICFGSchedulingAlgorithm Create(IBasicBlockSchedulingAlgorithm bbsched)
         {
             return new DefaultFunctionScheduler(bbsched);
@@ -55,6 +63,10 @@ namespace SystemSharp.SchedulingAlgorithms
 
     public static class DefaultFunctionSchedulerExtensions
     {
+        /// <summary>
+        /// Converts a basic block scheduling algorithm to a function-level scheduler, using <c>DefaultFunctionScheduler</c>.
+        /// </summary>
+        /// <param name="alg">basic block scheduling algorithm</param>
         public static ICFGSchedulingAlgorithm ToFunctionScheduler(this IBasicBlockSchedulingAlgorithm alg)
         {
             return DefaultFunctionScheduler.Create(alg);
