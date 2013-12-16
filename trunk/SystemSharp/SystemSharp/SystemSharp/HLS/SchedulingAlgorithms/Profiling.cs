@@ -31,21 +31,54 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Assembler
 {
+    /// <summary>
+    /// A schedule profiler is used to back-annotate the time between two user-defined points of program execution, resulting
+    /// from their schedule.
+    /// </summary>
     public class ScheduleProfiler
     {
+        /// <summary>
+        /// User-defined name of the profiled path
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Index of first instruction to profile
+        /// </summary>
         internal ILIndexRef FirstILIndex { get; set; }
+
+        /// <summary>
+        /// Index of last instruction to profile
+        /// </summary>
         internal ILIndexRef LastILIndex { get; set; }
 
+        /// <summary>
+        /// Back-annotated c-step at which first instruction was scheduled
+        /// </summary>
         public long FirstCStep { get; internal set; }
+
+        /// <summary>
+        /// Back-annotated c-step at which last instruction was scheduled
+        /// </summary>
         public long LastCStep { get; internal set; }
+
+        /// <summary>
+        /// Whether back-annotation was successful
+        /// </summary>
         public bool IsValid { get; internal set; }
         
+        /// <summary>
+        /// Duration of the profiled path, in c-steps
+        /// </summary>
         public long CStepSpan
         {
             get { return LastCStep - FirstCStep + 1; }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="name">user-defined name</param>
         public ScheduleProfiler(string name)
         {
             Name = name;
@@ -90,6 +123,10 @@ namespace SystemSharp.Assembler
         }
     }
 
+    /// <summary>
+    /// This static class provides methods for measuring and back-annotating the time between two user-defined points
+    /// of program execution which is implied by the scheduling algorithm and its configuration.
+    /// </summary>
     public static class SchedulingProfilers
     {
         private class ProfileRewriter: RewriteCall
@@ -135,11 +172,19 @@ namespace SystemSharp.Assembler
             }
         }
 
+        /// <summary>
+        /// Determines the point of program execution where to start profiling.
+        /// </summary>
+        /// <param name="prof">associated profiler</param>
         [ProfileRewriter(true)]
         public static void StartProfile(ScheduleProfiler prof)
         {
         }
 
+        /// <summary>
+        /// Determines the point of program execution where to stop profiling.
+        /// </summary>
+        /// <param name="prof">associated profiler</param>
         [ProfileRewriter(false)]
         public static void StopProfile(ScheduleProfiler prof)
         {

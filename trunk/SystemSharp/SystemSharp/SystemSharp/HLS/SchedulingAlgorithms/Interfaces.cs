@@ -28,10 +28,25 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.SchedulingAlgorithms
 {
+    /// <summary>
+    /// Models a scheduling dependency between any two operations.
+    /// </summary>
+    /// <typeparam name="T">Type of operation/task/instruction to consider</typeparam>
     public class ScheduleDependency<T>
     {
+        /// <summary>
+        /// Predecessing operation/task/instruction
+        /// </summary>
         public T Task { get; private set; }
+
+        /// <summary>
+        /// Minimum number of c-steps to lapse after initiiation of <c>Task</c>
+        /// </summary>
         public long MinDelay { get; private set; }
+
+        /// <summary>
+        /// Maximum number of c-steps to lapse after initiiation of <c>Task</c>
+        /// </summary>
         public long MaxDelay { get; private set; }
 
         internal ScheduleDependency(T task, long minDelay, long maxDelay)
@@ -47,6 +62,9 @@ namespace SystemSharp.SchedulingAlgorithms
             MaxDelay = maxDelay;
         }
 
+        /// <summary>
+        /// Two dependencies are defined to be equal iff they refer to the same task and have the same minimum/maximum delays.
+        /// </summary>
         public override bool Equals(object obj)
         {
             var other = obj as ScheduleDependency<T>;
@@ -71,18 +89,76 @@ namespace SystemSharp.SchedulingAlgorithms
         }
     }
 
+    /// <summary>
+    /// A scheduling adapter is used to extract the scheduling-relevant properties
+    /// from any type of operation/task/instruction.
+    /// </summary>
+    /// <typeparam name="T">type of operation/task/instruction</typeparam>
     [ContractClass(typeof(SchedulingAdapterContractClass<>))]
     public interface ISchedulingAdapter<T>
     {
+        /// <summary>
+        /// Returns a readable property map which maps each operation to a unique instruction index.
+        /// </summary>
         IPropMap<T, int> Index { get; }
+
+        /// <summary>
+        /// Returns a readable property map which maps each operation to its predecessor dependencies.
+        /// </summary>
         IPropMap<T, ScheduleDependency<T>[]> Preds { get; }
+
+        /// <summary>
+        /// Returns a readable property map which maps each operation to its successor dependencies.
+        /// </summary>
         IPropMap<T, ScheduleDependency<T>[]> Succs { get; }
+
+        /// <summary>
+        /// Returns a readable property map which maps each operation to its operands. An operand is represented
+        /// by a unique integer index (like a handle) that equals the result index of the producing instruction.
+        /// </summary>
         IPropMap<T, int[]> Operands { get; }
+
+        /// <summary>
+        /// Returns a readable property map which maps each operation to its result. A result is represented
+        /// by a unique integer index (like a handle) that equals the operand indices of its consuming instructions.
+        /// Single assignment is mandatory, i.e. no two operations may produce the same result index.
+        /// </summary>
         IPropMap<T, int[]> Results { get; }
+
+        /// <summary>
+        /// Returns a readable property map which maps each operation to its latency (measured in c-steps).
+        /// </summary>
         IPropMap<T, long> Latency { get; }
+
+        /// <summary>
+        /// Returns a readable and writeable property map to receive the c-step which was selected by the
+        /// scheduling algorithm.
+        /// </summary>
         IPropMap<T, long> CStep { get; }
+
+        /// <summary>
+        /// Returns a readable property map which classifies each operation with respect to its type.
+        /// The actual type of the returned object does not matter. Two operations are considered to be
+        /// of equal type if their according classification objects are equal in terms of <c>object.Equals</c>.
+        /// The classification is required for resource-constrained scheduling algorithms, such as
+        /// force-directed scheduling: any two operations of the same type are assumed to compete for the same set
+        /// of execution resources.
+        /// </summary>
         IPropMap<T, object> IClass { get; }
+
+        /// <summary>
+        /// Tries to assign an operation to a particular c-step which is determined by the scheduling algorithm.
+        /// </summary>
+        /// <param name="task">operation to assign</param>
+        /// <param name="cstep">selected c-step</param>
+        /// <param name="preHint">out parameter to receive a viable earlier c-step if the assignment is inhibited</param>
+        /// <param name="postHint">out parameter to receive a viale later c-step if the assignment is inhibited</param>
+        /// <returns><c>true</c> if the assignment is successful, <c>false</c> if inhibited</returns>
         bool TryPin(T task, long cstep, out long preHint, out long postHint);
+
+        /// <summary>
+        /// Clears all assigned operation/c-step mappings.
+        /// </summary>
         void ClearSchedule();
     }
 
@@ -173,46 +249,79 @@ namespace SystemSharp.SchedulingAlgorithms
         }
     }
 
-    public class ConstrainedPath
-    {
-        public int First { get; private set; }
-        public int Last { get; private set; }
-        public long MinCSteps { get; private set; }
-        public long MaxCSteps { get; private set; }
-
-        public ConstrainedPath(int first, int last, int minCSteps, int maxCSteps)
-        {
-            First = first;
-            Last = last;
-            MinCSteps = minCSteps;
-            MaxCSteps = maxCSteps;
-        }
-    }
-
+    /// <summary>
+    /// Provides requirements and hints to the scheduling algorithm.
+    /// </summary>
+    /// <remarks>
+    /// The underlying concept is somewhat unclear and not sound, so this class should be subject
+    /// to major refactorings.
+    /// </remarks>
     public class SchedulingConstraints
     {
+        /// <summary>
+        /// Earliest c-step to assign.
+        /// </summary>
         public long StartTime { get; set; }
-        public long EndTime { get; set; }
-        public double SchedScale { get; set; }
-        public List<ScheduleProfiler> Profilers { get; private set; }
-        public bool MinimizeNumberOfFUs { get; set; }
-        //public List<ConstrainedPath> ConstrainedPaths { get; private set; }
 
+        /// <summary>
+        /// Latest c-step to assign.
+        /// </summary>
+        public long EndTime { get; set; }
+
+        /// <summary>
+        /// Scaling factor for time/resource tradeoff scheduling algorithms which gets multiplied with the
+        /// ASAP schedule length to determine the admissible time frame. Therefore required to be >= 1.
+        /// </summary>
+        public double SchedScale { get; set; }
+
+        /// <summary>
+        /// Attached profilers.
+        /// </summary>
+        public List<ScheduleProfiler> Profilers { get; private set; }
+
+        /// <summary>
+        /// Whether the scheduling algorithm should try to minimize the number of functional units,
+        /// possibly at the expense of the resulting design performance.
+        /// </summary>
+        public bool MinimizeNumberOfFUs { get; set; }
+
+        /// <summary>
+        /// Constructs an instance and assigns some default values.
+        /// </summary>
         public SchedulingConstraints()
         {
             Profilers = new List<ScheduleProfiler>();
-            //ConstrainedPaths = new List<ConstrainedPath>();
             SchedScale = 1.1;
         }
     }
 
+    /// <summary>
+    /// Interface of a scheduling algorithm at the basic block level.
+    /// </summary>
     public interface IBasicBlockSchedulingAlgorithm
     {
+        /// <summary>
+        /// Performs scheduling for a given sequence of operations/instructions/tasks.
+        /// </summary>
+        /// <typeparam name="T">type of operation/instruction/task</typeparam>
+        /// <param name="tasks">sequence of operations to schedule</param>
+        /// <param name="scha">scheduling adapter, exposing all scheduling-relevant operation properties</param>
+        /// <param name="constraints">scheduling constraints</param>
         void Schedule<T>(IEnumerable<T> tasks, ISchedulingAdapter<T> scha, SchedulingConstraints constraints);
     }
 
+    /// <summary>
+    /// Interface of a function-level scheduling algorithm.
+    /// </summary>
     public interface ICFGSchedulingAlgorithm
     {
+        /// <summary>
+        /// Performs scheduling for a given control-flow graph.
+        /// </summary>
+        /// <typeparam name="T">type of instruction</typeparam>
+        /// <param name="cfg">control-flow graph to schedule</param>
+        /// <param name="constraints">scheduling constraints</param>
+        /// <param name="scha">scheduling adapter, exposing all scheduling-relevant operation properties</param>
         void Schedule<T>(ControlFlowGraph<T> cfg, SchedulingConstraints constraints, ISchedulingAdapter<T> scha)
             where T: IInstruction;
     }

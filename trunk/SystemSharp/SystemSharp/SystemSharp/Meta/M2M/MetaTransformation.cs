@@ -25,8 +25,15 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Meta.M2M
 {
+    /// <summary>
+    /// Some kind of transformation which is applied to the whole design.
+    /// </summary>
     public abstract class MetaTransformation
     {
+        /// <summary>
+        /// Applies this transformation to a particular design.
+        /// </summary>
+        /// <param name="design">Design context to which the transformation should be applied.</param>
         public abstract void ApplyTo(DesignContext design);
     }
 }

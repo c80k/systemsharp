@@ -29,6 +29,10 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.Meta.M2M
 {
+    /// <summary>
+    /// This transformation rewrites the design, such that no method drives a signal which is not declared in its argument
+    /// list. This is accomplished by promoting any driven signal to a new method parameter and adapting all calls of that method.
+    /// </summary>
     public class SubprogramsDontDriveSignals: MetaTransformation
     {
         private IEnumerable<SignalArgumentDescriptor> InspectMethod(MethodDescriptor md)
