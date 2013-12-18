@@ -40,16 +40,52 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Meta
 {
+    /// <summary>
+    /// Visitor interface for descriptors.
+    /// </summary>
     public interface IDescriptorVisitor
     {
+        /// <summary>
+        /// Called for component descriptor.
+        /// </summary>
+        /// <param name="cd">the component descriptor</param>
         void VisitComponentDescriptor(ComponentDescriptor cd);
+
+        /// <summary>
+        /// Called for field descriptor.
+        /// </summary>
+        /// <param name="fd">the field descriptor</param>
         void VisitFieldDescriptor(FieldDescriptor fd);
+
+        /// <summary>
+        /// Called for signal descriptor.
+        /// </summary>
+        /// <param name="sd">the signal descriptor</param>
         void VisitSignalDescriptor(SignalDescriptor sd);
+
+        /// <summary>
+        /// Called for port descriptor.
+        /// </summary>
+        /// <param name="pd">the port descriptor</param>
         void VisitPortDescriptor(PortDescriptor pd);
+
+        /// <summary>
+        /// Called for method descriptor.
+        /// </summary>
+        /// <param name="md">the method descriptor</param>
         void VisitMethodDescriptor(MethodDescriptor md);
+
+        /// <summary>
+        /// Called for process descriptor.
+        /// </summary>
+        /// <param name="pd">the process descriptor</param>
         void VisitProcessDescriptor(ProcessDescriptor pd);
     }
 
+    /// <summary>
+    /// The default implementation of the descriptor visitor pattern redirects to user-defined delegates
+    /// which are accessible by properties.
+    /// </summary>
     public class DefaultDescriptorVisitor : IDescriptorVisitor
     {
         public delegate void ComponentDescriptorHandler(ComponentDescriptor cd);
@@ -69,11 +105,34 @@ namespace SystemSharp.Meta
             OnProcess = (x) => { };
         }
 
+        /// <summary>
+        /// Gets or sets the handler for component descriptors.
+        /// </summary>
         public ComponentDescriptorHandler OnComponent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the handler for field descriptors.
+        /// </summary>
         public FieldDescriptorHandler OnField { get; set; }
+
+        /// <summary>
+        /// Gets or sets the handler for signal descriptors.
+        /// </summary>
         public SignalDescriptorHandler OnSignal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the handler for port descriptors.
+        /// </summary>
         public PortDescriptorHandler OnPort { get; set; }
+
+        /// <summary>
+        /// Gets or sets the handler for method descriptors.
+        /// </summary>
         public MethodDescriptorHandler OnMethod { get; set; }
+
+        /// <summary>
+        /// Gets or sets the handler for process descriptors.
+        /// </summary>
         public ProcessDescriptorHandler OnProcess { get; set; }
 
         public void VisitComponentDescriptor(ComponentDescriptor cd)
@@ -107,9 +166,18 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// This interface describes model elements which are owned by some superordinate descriptor.
+    /// </summary>
     [ContractClass(typeof(ContainmentImplementorContractClass))]
     public interface IContainmentImplementor
     {
+        /// <summary>
+        /// Associates this model element with its owning descriptor.
+        /// </summary>
+        /// <param name="owner">owning descriptor</param>
+        /// <param name="declSite">declaration site of this element</param>
+        /// <param name="indexSpec">index specifier within declaration site (if the latter is an array)</param>
         void SetOwner(DescriptorBase owner, MemberInfo declSite, IndexSpec indexSpec);
     }
 
@@ -123,14 +191,48 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Basic interface of all descriptors.
+    /// </summary>
     [ContractClass(typeof(DescriptorContractClass))]
     public interface IDescriptor: IAttributed
     {
+        /// <summary>
+        /// Returns the owning descriptor.
+        /// </summary>
         DescriptorBase Owner { get; }
+
+        /// <summary>
+        /// Returns the name of the described element.
+        /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Adds a subordinate instance descriptor.
+        /// </summary>
+        /// <param name="desc">descriptor to add</param>
+        /// <param name="declSite">declaration site of descriptor</param>
+        /// <param name="indexSpec">index specifier within declaration site (if the latter is an array)</param>
         void AddChild(InstanceDescriptor desc, FieldInfo declSite, IndexSpec indexSpec);
+
+        /// <summary>
+        /// Adds a subordinate descriptor.
+        /// </summary>
+        /// <param name="desc">descriptor to add</param>
+        /// <param name="name">name of described element</param>
         void AddChild(DescriptorBase desc, string name);
+
+        /// <summary>
+        /// Returns all subordinate descriptors.
+        /// </summary>
         IEnumerable<DescriptorBase> Children { get; }
+
+        /// <summary>
+        /// Retrieves this descriptor's reference to the given descriptor.
+        /// </summary>
+        /// <typeparam name="T">type of descriptor</typeparam>
+        /// <param name="child">subordinate descriptor</param>
+        /// <returns>this descriptor's reference to the specified descriptor, which will be equivalent in terms of the <c>Equals</c> method.</returns>
         T Canonicalize<T>(T child) where T : DescriptorBase;
     }
 
@@ -207,11 +309,26 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// A document of SysDOM's integrated documentation system.
+    /// </summary>
     public class Document
     {
+        /// <summary>
+        /// Name of the document
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Content of the document
+        /// </summary>
         public object Content { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="name">name of the document</param>
+        /// <param name="content">document content</param>
         public Document(string name, object content)
         {
             Name = name;
@@ -219,30 +336,53 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// A container of multiple <c>Document</c>s. Instances of this class may be as properties attached
+    /// to any descriptor and consitute some user-defined documentation.
+    /// </summary>
     public class Documentation
     {
+        /// <summary>
+        /// Returns the list of documents which are included in this container.
+        /// </summary>
         public List<Document> Documents { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public Documentation()
         {
             Documents = new List<Document>();
         }
     }
 
+    /// <summary>
+    /// Base implementation of any descriptor.
+    /// </summary>
     public abstract class DescriptorBase :
         AttributedObject,
         IDescriptor
     {
         private Dictionary<DescriptorBase, DescriptorBase> _children = new Dictionary<DescriptorBase, DescriptorBase>();
 
+        /// <summary>
+        /// Owner of this descriptor.
+        /// </summary>
         public virtual DescriptorBase Owner { get; internal set; }
 
         private string _name;
+
+        /// <summary>
+        /// Returns the name of the described element.
+        /// </summary>
         public virtual string Name
         {
             get { return _name; }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public DescriptorBase()
         {
             _name = "";
@@ -269,6 +409,10 @@ namespace SystemSharp.Meta
             _children[desc] = desc;
         }
 
+        /// <summary>
+        /// Removes a subordinate descriptor.
+        /// </summary>
+        /// <param name="desc">descriptor to remove</param>
         public void RemoveChild(DescriptorBase desc)
         {
             _children.Remove(desc);
@@ -293,6 +437,9 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Returns the root descriptor.
+        /// </summary>
         public DesignDescriptor GetDesign()
         {
             DescriptorBase cur = this;
@@ -303,6 +450,9 @@ namespace SystemSharp.Meta
 
         public bool IsActive { get; internal set; }
 
+        /// <summary>
+        /// Retrieves the documentation container for this descriptor.
+        /// </summary>
         public Documentation GetDocumentation()
         {
             Documentation doc;
@@ -319,6 +469,9 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods for working with descriptors.
+    /// </summary>
     public static class Descriptors
     {
         private static IEnumerable<T> SelectChildren<T>(this IDescriptor me) where T : IDescriptor
@@ -337,159 +490,177 @@ namespace SystemSharp.Meta
                    select (T)d;
         }
 
+        /// <summary>
+        /// Returns all type descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<TypeDescriptor> GetTypes(this IDescriptor me)
         {
             return SelectChildren<TypeDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all field descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<FieldDescriptor> GetFields(this IDescriptor me)
         {
             return SelectChildren<FieldDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all non-constant field descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<FieldDescriptor> GetVariables(this IDescriptor me)
         {
             return GetFields(me).Where(fd => !fd.IsConstant);
         }
 
+        /// <summary>
+        /// Returns all constant field descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<FieldDescriptor> GetConstants(this IDescriptor me)
         {
             return GetFields(me).Where(fd => fd.IsConstant);
         }
 
+        /// <summary>
+        /// Returns all sub-component descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<IComponentDescriptor> GetChildComponents(this IDescriptor me)
         {
             return SelectChildren<IComponentDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all channel descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<ChannelDescriptor> GetChannels(this IDescriptor me)
         {
             return SelectChildren<ChannelDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all signal descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<ISignalDescriptor> GetSignals(this IDescriptor me)
         {
             return SelectChildren<ISignalDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all port descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<IPortDescriptor> GetPorts(this IDescriptor me)
         {
             return SelectChildren<IPortDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all signal argument descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<SignalArgumentDescriptor> GetSignalArguments(this IDescriptor me)
         {
             return SelectChildren<SignalArgumentDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all method descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<MethodDescriptor> GetMethods(this IDescriptor me)
         {
             return SelectChildren<MethodDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all active method descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<MethodDescriptor> GetActiveMethods(this IDescriptor me)
         {
             return SelectChildren<MethodDescriptor>(me).Where(md => md.IsActive);
         }
 
+        /// <summary>
+        /// Returns all process descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<ProcessDescriptor> GetProcesses(this IDescriptor me)
         {
             return SelectChildren<ProcessDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all argument descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<ArgumentDescriptor> GetArguments(this IDescriptor me)
         {
             return SelectChildrenOrdered<ArgumentDescriptor>(me);
         }
 
+        /// <summary>
+        /// Returns all package descriptors owned by <paramref name="me"/>.
+        /// </summary>
         public static IEnumerable<PackageDescriptor> GetPackages(this IDescriptor me)
         {
             return SelectChildren<PackageDescriptor>(me);
         }
 
+        /// <summary>
+        /// Retrieves the descriptor of the process with name <paramref name="name"/> from <paramref name="me"/>.
+        /// </summary>
         public static ProcessDescriptor FindProcess(this IDescriptor me, string name)
         {
             return GetProcesses(me).Where(p => p.Name == name).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves the descriptor of the method with name <paramref name="name"/> from <paramref name="me"/>.
+        /// </summary>
         public static MethodDescriptor FindMethod(this IDescriptor me, string name)
         {
             return GetMethods(me).Where(p => p.Name == name).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves the descriptor of the method with reflection info <paramref name="method"/> from <paramref name="me"/>.
+        /// </summary>
         public static MethodDescriptor FindMethod(this IDescriptor me, MethodBase method)
         {
             return GetMethods(me).Where(p => p.Method.Equals(method)).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves the descriptor of the component with name <paramref name="name"/> from <paramref name="me"/>.
+        /// </summary>
         public static IComponentDescriptor FindComponent(this IDescriptor me, string name)
         {
             return GetChildComponents(me).Where(c => c.Name == name).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves the descriptor of the field with name <paramref name="name"/> from <paramref name="me"/>.
+        /// </summary>
         public static FieldDescriptor FindField(this IDescriptor me, string name)
         {
             return GetFields(me).Where(f => f.Name == name).FirstOrDefault();
         }
 
-        // Redundant by GetBoundSignal()
-        /*public static ISignalOrPortDescriptor AsSignal(this ISignalOrPortDescriptor sd)
-        {
-            IPortDescriptor pd = sd as IPortDescriptor;
-            if (pd == null)
-                return sd;
-            else
-                return pd.BoundSignal;
-        }*/
-
-#if false
         /// <summary>
-        /// Given some signal or port, this method searches the local signal and port lists to either find a 
-        /// port which is equivalent to the given one (bound to the same signal) or the signal itself (if it is
-        /// declared inside this component.
+        /// Retrieves the descriptor of the port with name <paramref name="name"/> from <paramref name="me"/>.
         /// </summary>
-        /// <param name="desc">a signal or port descriptor</param>
-        /// <returns>An equivalent signal or port descriptor which is valid within the scope of this component.</returns>
-        public static ISignalOrPortDescriptor FindSignalOrPort(this IComponentDescriptor me, ISignalOrPortDescriptor desc)
-        {
-            // Shortcut for directly owned signals. The procedure does not involve a signal instance.
-            // Therefore, it is suitable even for descriptors without signal instance.
-            if (desc.Owner == me)
-                return desc;
-
-            if (desc is SignalArgumentDescriptor)
-                return desc;
-
-            if (me.GetSignals().Contains(desc) ||
-                me.GetSignals().Contains(desc.GetUnindexedContainer()))
-                return desc;
-
-            IPortDescriptor pResult = me
-                .GetPorts()
-                .Where(p => p.BoundSignal.Equals(desc.GetBoundSignal()))
-                .FirstOrDefault();
-            if (pResult != null)
-                return pResult;
-
-            var ports = me
-                .GetPorts()
-                .Where(p => p.BoundSignal.GetUnindexedContainer().Equals(desc.GetBoundSignal().GetUnindexedContainer()));
-
-
-            return null;
-        }
-#endif
-
         public static IPortDescriptor FindPort(this IComponentDescriptor me, string name)
         {
             return me.GetPorts().Where(p => p.Name == name).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Retrieves the descriptor of the signal with name <paramref name="name"/> from <paramref name="me"/>.
+        /// </summary>
         public static ISignalDescriptor FindSignal(this IComponentDescriptor me, string name)
         {
             return me.GetSignals().Where(s => s.Name == name).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Computes the fully-qualified name of <paramref name="me"/>.
+        /// </summary>
         public static string GetFullName(this IDescriptor me)
         {
             string result = "";
@@ -505,18 +676,32 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Base class for all descriptors which describe an instance of <c>IDescriptive</c>.
+    /// </summary>
     public abstract class InstanceDescriptor :
         DescriptorBase
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="instance">object to describe</param>
         public InstanceDescriptor(IDescriptive instance)
         {
             Instance = instance;
             Index = IndexSpec.Empty;
         }
 
+        /// <summary>
+        /// The described object
+        /// </summary>
         public IDescriptive Instance { get; private set; }
 
         private IndexSpec _index;
+
+        /// <summary>
+        /// Index specifier of described object inside its owning descriptor
+        /// </summary>
         public IndexSpec Index
         {
             get { return _index; }
@@ -560,33 +745,86 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Typed interface for all instance descriptors.
+    /// </summary>
+    /// <typeparam name="ObjectType">type of described instance</typeparam>
     public interface IInstanceDescriptor<ObjectType> : IDescriptor
     {
+        /// <summary>
+        /// The described instance
+        /// </summary>
         ObjectType Instance { get; }
+
+        /// <summary>
+        /// Returns a clone, but with empty index specifier.
+        /// </summary>
         InstanceDescriptor RemoveIndex();
     }
 
+    /// <summary>
+    /// Interface for all objects which are described by a descriptor.
+    /// </summary>
     public interface IDescriptive
     {
+        /// <summary>
+        /// The descriptor for this instance.
+        /// </summary>
         DescriptorBase Descriptor { get; }
     }
 
+    /// <summary>
+    /// Typed interface for all objects which are described by a descriptor.
+    /// </summary>
     public interface IDescriptive<DescType> :
         IDescriptive
     {
+        /// <summary>
+        /// The descriptor for this instance.
+        /// </summary>
         new DescType Descriptor { get; }
     }
 
+    /// <summary>
+    /// Describes a field.
+    /// </summary>
     public abstract class FieldDescriptor : DescriptorBase
     {
+        /// <summary>
+        /// Type descriptor of the field
+        /// </summary>
         public TypeDescriptor Type { get; protected set; }
+
+        /// <summary>
+        /// Whether the type descriptor of the field had to be guessed because of incomplete information.
+        /// </summary>
         public bool TypeIsGuessed { get; protected set; }
+
+        /// <summary>
+        /// Whether the field is constant.
+        /// </summary>
         public bool IsConstant { get; internal set; }
+
+        /// <summary>
+        /// The constant field value.
+        /// </summary>
         public object ConstantValue { get; internal set; }
+
+        /// <summary>
+        /// Returns <c>true</c> if the field is read by some process in context <paramref name="context"/>.
+        /// </summary>
         public abstract bool IsReadInCurrentContext(DesignContext context);
+
+        /// <summary>
+        /// Returns <c>true</c> if the field is written by some process in context <paramref name="context"/>.
+        /// </summary>
         public abstract bool IsWrittenInCurrentContext(DesignContext context);
 
-        public FieldDescriptor(TypeDescriptor type)
+        /// <summary>
+        /// Constructs a new field descriptor.
+        /// </summary>
+        /// <param name="type">type descriptor of the field</param>
+        internal FieldDescriptor(TypeDescriptor type)
         {
             Type = type;
         }
@@ -604,7 +842,14 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Returns the current field value.
+        /// </summary>
         public abstract object Value { get; }
+
+        /// <summary>
+        /// Whether the described field is static.
+        /// </summary>
         public abstract bool IsStatic { get; }
     }
 
@@ -1395,7 +1640,9 @@ namespace SystemSharp.Meta
                 return PackageName == pd.PackageName;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
