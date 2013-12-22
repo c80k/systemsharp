@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,11 +25,27 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Meta
 {
+    /// <summary>
+    /// This attribute is usually attached to signal descriptors and indicates that the underlying
+    /// signal is used as a clock line.
+    /// </summary>
     public class ClockSpecAttribute
     {
+        /// <summary>
+        /// Clock period
+        /// </summary>
         public Time Period { get; private set; }
+
+        /// <summary>
+        ///  Clock duty cycle
+        /// </summary>
         public double Duty { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance of this attribute.
+        /// </summary>
+        /// <param name="period">clock period</param>
+        /// <param name="duty">duty cycle</param>
         public ClockSpecAttribute(Time period, double duty)
         {
             Period = period;

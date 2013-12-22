@@ -19,20 +19,74 @@
 
 namespace SystemSharp.Meta
 {
+    /// <summary>
+    /// Provides symbols for all types which are considered "System#-intrinsic".
+    /// </summary>
     public enum EIntrinsicTypes
     {
+        /// <summary>
+        /// System# DesignContext class
+        /// </summary>
         DesignContext,
+
+        /// <summary>
+        /// CLI string/String class
+        /// </summary>
         String,
+
+        /// <summary>
+        /// System# Time
+        /// </summary>
         Time,
+
+        /// <summary>
+        /// System# StdLogic
+        /// </summary>
         StdLogic,
+
+        /// <summary>
+        /// System# StdLogicVector
+        /// </summary>
         StdLogicVector,
+
+        /// <summary>
+        /// System# SignalBase and all classes inheriting from it
+        /// </summary>
         Signal,
+
+        /// <summary>
+        /// System# Signed
+        /// </summary>
         Signed,
+
+        /// <summary>
+        /// System# Unsigned
+        /// </summary>
         Unsigned,
+
+        /// <summary>
+        /// System# SFix
+        /// </summary>
         SFix,
+
+        /// <summary>
+        /// System# UFix
+        /// </summary>
         UFix,
+
+        /// <summary>
+        /// CLI StreamReader, StreamWriter
+        /// </summary>
         File,
+
+        /// <summary>
+        /// All kinds of CLI Tuple
+        /// </summary>
         Tuple,
+
+        /// <summary>
+        /// Any type which is kind of intrinsic but must not be used during runtime (at least for decompilation)
+        /// </summary>
         IllegalRuntimeType
     }    
 }

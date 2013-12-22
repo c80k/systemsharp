@@ -29,6 +29,10 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Meta
 {
+    /// <summary>
+    /// This static class provides a service for inspecting a design context for structural or programatic use
+    /// of data types. It will add according package dependencies for those types.
+    /// </summary>
     public static class TypeDependencyResolution
     {
         private class StmtTypeResolver : 
@@ -332,6 +336,10 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Inspects the design for structural or programatic use of data types. It ensures that every component and
+        /// package holds according dependencies to all the types it is using.
+        /// </summary>
         public static void ResolveTypeDependencies(this DesignDescriptor design)
         {
             foreach (var component in design.GetChildComponents().ToArray())

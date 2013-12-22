@@ -853,11 +853,26 @@ namespace SystemSharp.Meta
         public abstract bool IsStatic { get; }
     }
 
+    /// <summary>
+    /// Describes a field which is represented by a field of the Common Language Infrastructure (CLI).
+    /// </summary>
     public class CILFieldDescriptor : FieldDescriptor
     {
+        /// <summary>
+        /// The corresponding CLI field
+        /// </summary>
         public FieldInfo Field { get; private set; }
+
+        /// <summary>
+        /// The object which instantiates the field
+        /// </summary>
         public object Instance { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="field">CLI field information</param>
+        /// <param name="instance">object which instantiated the field</param>
         public CILFieldDescriptor(FieldInfo field, object instance) :
             base(field.FieldType)
         {
@@ -895,6 +910,9 @@ namespace SystemSharp.Meta
             return Field.Name + ": " + Type.ToString();
         }
 
+        /// <summary>
+        /// Two field descriptors are considered equal iff they belong to the same instance and same CLI field information.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is CILFieldDescriptor)
@@ -903,7 +921,9 @@ namespace SystemSharp.Meta
                 return Field.Equals(fd.Field) && Instance == fd.Instance;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -912,21 +932,33 @@ namespace SystemSharp.Meta
                 (Instance == null ? 0 : Instance.GetHashCode());
         }
 
+        /// <summary>
+        /// Returns the current value of the field with respect to the corresponding field instance.
+        /// </summary>
         public override object Value
         {
             get { return Field.GetValue(Instance); }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> iff the CLI field is static.
+        /// </summary>
         public override bool IsStatic
         {
             get { return Field.IsStatic; }
         }
 
+        /// <summary>
+        /// Returns all processes which perform write accesses on the field.
+        /// </summary>
         public IEnumerable<SystemSharp.Components.Process> DrivingProcesses
         {
             get { return _drivingProcesses.AsEnumerable(); }
         }
 
+        /// <summary>
+        /// Returns all processes which perform read accesses on the field.
+        /// </summary>
         public IEnumerable<SystemSharp.Components.Process> ReadingProcesses
         {
             get { return _readingProcesses.AsEnumerable(); }
@@ -956,31 +988,62 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// The abstract base class for describing a channel. Each channel specialization should provide its own
+    /// descriptor class that inherits from this class.
+    /// </summary>
     public abstract class ChannelDescriptor :
         InstanceDescriptor
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="instance">channel to describe</param>
         public ChannelDescriptor(IDescriptive instance) :
             base(instance)
         {
         }
 
+        /// <summary>
+        /// The channel instance this descriptor is bound to.
+        /// </summary>
         public Channel BoundChannel { get; internal set; }
     }
 
+    /// <summary>
+    /// Represents the common properties of either a signal or a port.
+    /// </summary>
     public interface ISignalOrPortDescriptor :
         IDescriptor
     {
+        /// <summary>
+        /// Returns the type descriptor of the inderlying (if applicable: bound) signal instance.
+        /// </summary>
         TypeDescriptor InstanceType { get; }
+
+        /// <summary>
+        /// Returns the type descriptor of a data element being communicated by the described signal or port.
+        /// </summary>
         TypeDescriptor ElementType { get; }
+
+        /// <summary>
+        /// Returns the initial value of the (if applicable: bound) signal.
+        /// </summary>
         object InitialValue { get; }
     }
 
+    /// <summary>
+    /// Describes a signal.
+    /// </summary>
     public interface ISignalDescriptor :
         ISignalOrPortDescriptor,
         IInstanceDescriptor<SignalBase>
     {
     }
 
+    /// <summary>
+    /// The data flow direction of a port
+    /// </summary>
     public enum EPortDirection
     {
         In,
@@ -988,24 +1051,56 @@ namespace SystemSharp.Meta
         InOut
     };
 
+    /// <summary>
+    /// Describes a port.
+    /// </summary>
     public interface IPortDescriptor : ISignalOrPortDescriptor
     {
+        /// <summary>
+        /// Returns the data flow direction of the described port.
+        /// </summary>
         EPortDirection Direction { get; }
+
+        /// <summary>
+        /// Returns a usage hint of the described port.
+        /// </summary>
         EPortUsage Usage { get; }
+
+        /// <summary>
+        /// Reserved for future use or deprecation... ;-)
+        /// </summary>
         string Domain { get; }
+
+        /// <summary>
+        /// Returns the descriptor of the port-bound signal, if any.
+        /// </summary>
         ISignalDescriptor BoundSignal { get; }
     }
 
+    /// <summary>
+    /// Describes a port.
+    /// </summary>
     public class PortDescriptor :
         DescriptorBase,
         IPortDescriptor
     {
+        /// <summary>
+        /// Constructs a port descriptor instance.
+        /// </summary>
+        /// <param name="declSite">CLI property information on the port</param>
+        /// <param name="boundSignal">signal descriptor which is bound to the port</param>
+        /// <param name="elementType">type descriptor of data which is communicated by the port</param>
+        /// <param name="direction">data flow direction of the port</param>
         public PortDescriptor(
             PropertyInfo declSite,
             SignalDescriptor boundSignal,
             TypeDescriptor elementType,
             EPortDirection direction)
         {
+            Contract.Requires<ArgumentNullException>(declSite != null, "declSite");
+            Contract.Requires<ArgumentNullException>(boundSignal != null, "boundSignal");
+            Contract.Requires<ArgumentNullException>(elementType != null, "elementType");
+
             DeclarationSite = declSite;
             BoundSignal = boundSignal;
             ElementType = elementType;
@@ -1020,13 +1115,39 @@ namespace SystemSharp.Meta
 
         public override string Name { get { return DeclarationSite.Name; } }
 
+        /// <summary>
+        /// CLI property information on the port.
+        /// </summary>
         public PropertyInfo DeclarationSite { get; private set; }
+
+        /// <summary>
+        /// Type descriptor of data which is communicated by the port.
+        /// </summary>
         public TypeDescriptor ElementType { get; private set; }
+
+        /// <summary>
+        /// Data flow direction of the port.
+        /// </summary>
         public EPortDirection Direction { get; private set; }
+
+        /// <summary>
+        /// Usage hint of the port.
+        /// </summary>
         public EPortUsage Usage { get; private set; }
+
+        /// <summary>
+        /// Reserved for future use or deprecation. ;-)
+        /// </summary>
         public string Domain { get; private set; }
+
+        /// <summary>
+        /// Descriptor of signal which is bound to the port.
+        /// </summary>
         public ISignalDescriptor BoundSignal { get; private set; }
 
+        /// <summary>
+        /// Returns the type descriptor of the bound signal instance.
+        /// </summary>
         public TypeDescriptor InstanceType
         {
             get
@@ -1037,6 +1158,9 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Returns the initial signal value.
+        /// </summary>
         public object InitialValue
         {
             get { return BoundSignal.InitialValue; }
@@ -1050,16 +1174,25 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Describes a signal.
+    /// </summary>
     public class SignalDescriptor :
         ChannelDescriptor,
         ISignalDescriptor
     {
+        /// <summary>
+        /// Constructs a signal descriptor instance.
+        /// </summary>
+        /// <param name="instance">described signal instance</param>
+        /// <param name="elementType"></param>
         public SignalDescriptor(
             SignalBase instance,
             TypeDescriptor elementType) :
             base(instance)
         {
-            Contract.Requires(elementType != null);
+            Contract.Requires<ArgumentNullException>(instance != null, "instance");
+            Contract.Requires<ArgumentNullException>(elementType != null, "elementType");
 
             ElementType = elementType;
             Index = elementType.Index;
@@ -1072,6 +1205,9 @@ namespace SystemSharp.Meta
             get { return TypeDescriptor.GetTypeOf(SignalInstance); }
         }
 
+        /// <summary>
+        /// All port descriptors which are bound to the described signal.
+        /// </summary>
         public PortDescriptor[] BoundPorts { get; internal set; }
 
         public SignalBase SignalInstance
@@ -1089,6 +1225,9 @@ namespace SystemSharp.Meta
             get { return Instance.InitialValueObject; }
         }
 
+        /// <summary>
+        /// Two signal descriptors are considered equal iff they refer to the same signal instance.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is SignalDescriptor)
@@ -1116,15 +1255,27 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Anything which relies on a particular ordering among similar instances inside the same descriptor.
+    /// </summary>
     public interface IOrdered
     {
+        /// <summary>
+        /// Returns the 0-based order index.
+        /// </summary>
         int Order { get; }
     }
 
+    /// <summary>
+    /// Describes a method argument.
+    /// </summary>
     public class ArgumentDescriptor :
         DescriptorBase,
         IOrdered
     {
+        /// <summary>
+        /// Logical data direction of the argument
+        /// </summary>
         public enum EArgDirection
         {
             In, Out, InOut
@@ -1135,8 +1286,17 @@ namespace SystemSharp.Meta
         private EVariability _variability;
         private int _order;
 
+        /// <summary>
+        /// Constructs an argument descriptor instance.
+        /// </summary>
+        /// <param name="arg">argument literal</param>
+        /// <param name="dir">logical data direction of argument</param>
+        /// <param name="variability">variability classification of argument</param>
+        /// <param name="order">0-based position of argument inside the argument list</param>
         public ArgumentDescriptor(IStorableLiteral arg, EArgDirection dir, EVariability variability, int order)
         {
+            Contract.Requires<ArgumentNullException>(arg != null, "arg");
+
             _arg = arg;
             _dir = dir;
             _variability = variability;
@@ -1148,26 +1308,41 @@ namespace SystemSharp.Meta
             get { return _arg.Name; }
         }
 
+        /// <summary>
+        /// Returns the used argument literal.
+        /// </summary>
         public IStorableLiteral Argument
         {
             get { return _arg; }
         }
 
+        /// <summary>
+        /// Returns the logical data-flow direction of the argument.
+        /// </summary>
         public EArgDirection Direction
         {
             get { return _dir; }
         }
 
+        /// <summary>
+        /// Returns a sample value of the argument.
+        /// </summary>
         public object Sample
         {
             get { return _arg.Type.GetSampleInstance(ETypeCreationOptions.AnyObject); }
         }
 
+        /// <summary>
+        /// Returns the variability classification of the argument.
+        /// </summary>
         public EVariability Variability
         {
             get { return _variability; }
         }
 
+        /// <summary>
+        /// Returns the 0-based position of the argument inside the argument list.
+        /// </summary>
         public int Order
         {
             get { return _order; }
@@ -1207,62 +1382,114 @@ namespace SystemSharp.Meta
             #endregion
         }
 
+        /// <summary>
+        /// An equality comparer which compares argument descriptors based on their type and direction
+        /// (i.e. not on name and not on position).
+        /// </summary>
         public static readonly IEqualityComparer<ArgumentDescriptor> TypeAndDirectionComparer =
             new ArgumentTypeAndDirectionComparer();
     }
 
+    /// <summary>
+    /// Describes a method argument which is a signal.
+    /// </summary>
     public class SignalArgumentDescriptor :
         ArgumentDescriptor,
         ISignalOrPortDescriptor
     {
         private EArgDirection _flowDir;
 
+        /// <summary>
+        /// Constructs a signal argument descriptor instance.
+        /// </summary>
+        /// <param name="sref">reference to signal which is passed to the method</param>
+        /// <param name="dir">logical data-flow direction of the argument (usually <c>EArgDirection.In</c>)</param>
+        /// <param name="flowDir">logical data-flow direction of the signal access (depending on the port direction if a port is accessed)</param>
+        /// <param name="variability">variability classification of the argument</param>
+        /// <param name="order">positiion of the argument inside the argument list</param>
         public SignalArgumentDescriptor(SignalRef sref, EArgDirection dir, EArgDirection flowDir, EVariability variability, int order) :
             base(sref, dir, variability, order)
         {
-            Contract.Requires(sref.Prop == SignalRef.EReferencedProperty.Instance);
+            Contract.Requires<ArgumentNullException>(sref != null, "sref");
+            Contract.Requires<ArgumentOutOfRangeException>(sref.Prop == SignalRef.EReferencedProperty.Instance, 
+                "Signal reference sref must reference signal instance.");
 
             _flowDir = flowDir;
         }
 
+        /// <summary>
+        /// Returns the type descriptor of the data which is communicated by the signal.
+        /// </summary>
         public TypeDescriptor ElementType
         {
             get { return SignalInstance.ElementType; }
         }
 
+        /// <summary>
+        /// Returns a sample instance of the described argument.
+        /// </summary>
         public SignalBase SignalInstance
         {
             get { return (SignalBase)Sample; }
         }
 
+        /// <summary>
+        /// Returns the type descriptor of a signal instance passed by the described argument.
+        /// </summary>
         public TypeDescriptor InstanceType
         {
             get { return Argument.Type; }
         }
 
+        /// <summary>
+        /// Returns the data-flow direction of the signal access.
+        /// </summary>
         public EArgDirection FlowDirection
         {
             get { return _flowDir; }
         }
 
+        /// <summary>
+        /// Returns <c>IndexSpec.Empty</c>.
+        /// </summary>
         public IndexSpec Index
         {
             get { return IndexSpec.Empty; }
         }
 
+        /// <summary>
+        /// Returns <c>null</c>.
+        /// </summary>
         public object InitialValue
         {
             get { return null; }
         }
     }
 
+    /// <summary>
+    /// This abstract class describes code in the CLI and SysDOM domain.
+    /// </summary>
     public abstract class CodeDescriptor :
         DescriptorBase
     {
+        /// <summary>
+        /// Describes a possible constraint on the value range of a variable.
+        /// </summary>
         public class ValueRangeConstraint
         {
+            /// <summary>
+            /// Whether <c>MinValue</c> and <c>MaxValue</c> are valid.
+            /// </summary>
             public bool IsConstrained { get; private set; }
+
+            /// <summary>
+            /// The minimum value.
+            /// </summary>
             public long MinValue { get; private set; }
+
+            /// <summary>
+            /// The maximum value.
+            /// </summary>
             public long MaxValue { get; private set; }
 
             private ValueRangeConstraint()
@@ -1270,6 +1497,11 @@ namespace SystemSharp.Meta
                 IsConstrained = false;
             }
 
+            /// <summary>
+            /// Constructs a new constraint.
+            /// </summary>
+            /// <param name="minValue">minimum value</param>
+            /// <param name="maxValue">maximum value</param>
             public ValueRangeConstraint(long minValue, long maxValue)
             {
                 MinValue = minValue;
@@ -1277,17 +1509,43 @@ namespace SystemSharp.Meta
                 IsConstrained = true;
             }
 
-            public static ValueRangeConstraint Unconstrained = new ValueRangeConstraint();
+            /// <summary>
+            /// The one and only instance of "no constraint".
+            /// </summary>
+            public static readonly ValueRangeConstraint Unconstrained = new ValueRangeConstraint();
         }
 
         private HashSet<ISignalOrPortDescriptor> _drivenSignals = new HashSet<ISignalOrPortDescriptor>();
 
+        /// <summary>
+        /// CLI information on the user-visible async method, <c>null</c> if the described method is not async.
+        /// </summary>
         public MethodInfo AsyncMethod { get; private set; }
+
+        /// <summary>
+        /// CLI information on the actual method implementation.
+        /// </summary>
         public MethodBase Method { get; private set; }
+
+        /// <summary>
+        /// SysDOM description of the CLI method, possibly with optimizations with respect to the method's call context.
+        /// </summary>
         public Function Implementation { get; internal set; }
+
+        /// <summary>
+        /// SysDOM description of the CLI method, without any optimization with respect to the method's call context.
+        /// </summary>
         public Function GenuineImplementation { get; internal set; }
+
+        /// <summary>
+        /// Range constraints of the method's local variables.
+        /// </summary>
         public ValueRangeConstraint[] ValueRangeConstraints { get; internal set; }
 
+        /// <summary>
+        /// Constructs a code descriptor instance.
+        /// </summary>
+        /// <param name="method">CLI information on method</param>
         public CodeDescriptor(MethodBase method)
         {
             if (method.IsAsync())
@@ -1302,6 +1560,10 @@ namespace SystemSharp.Meta
             _name = method.Name;
         }
 
+        /// <summary>
+        /// Constructs a code descriptor instance without CLI information.
+        /// </summary>
+        /// <param name="name">name of the process or method</param>
         public CodeDescriptor(string name)
         {
             _name = name;
@@ -1313,6 +1575,9 @@ namespace SystemSharp.Meta
             get { return _name; }
         }
 
+        /// <summary>
+        /// Returns all signals and ports which are driven by the described code.
+        /// </summary>
         public IEnumerable<ISignalOrPortDescriptor> DrivenSignals
         {
             get
@@ -1323,6 +1588,9 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Adds a port or signal descriptor to the list of driven signals.
+        /// </summary>
         public void AddDrivenSignal(ISignalOrPortDescriptor signal)
         {
             _drivenSignals.Add(signal);
@@ -1333,6 +1601,9 @@ namespace SystemSharp.Meta
             return Name;
         }
 
+        /// <summary>
+        /// Two code descriptors are considered equal iff the have the same owner and the same name.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is CodeDescriptor)
@@ -1342,7 +1613,9 @@ namespace SystemSharp.Meta
                     Name.Equals(cd.Name);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -1351,21 +1624,40 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Describes a process.
+    /// </summary>
     public class ProcessDescriptor : CodeDescriptor
     {
+        /// <summary>
+        /// Constructs a process descriptor instance, based on an existing process.
+        /// </summary>
+        /// <param name="method">CLI information on the method which implements the process</param>
+        /// <param name="instance">process instance</param>
         public ProcessDescriptor(MethodBase method, SystemSharp.Components.Process instance) :
             base(method)
         {
+            Contract.Requires<ArgumentNullException>(method != null, "method");
+            Contract.Requires<ArgumentNullException>(instance != null, "instance");
+
             Instance = instance;
             Kind = instance.Kind;
         }
 
+        /// <summary>
+        /// Constructs a process descriptor instance, without requiring an underlying existing process.
+        /// </summary>
+        /// <param name="name">name of the process</param>
         public ProcessDescriptor(string name) :
             base(name)
         {
         }
 
         private ISignalOrPortDescriptor[] _sensitivity;
+
+        /// <summary>
+        /// The sensitivity list of the process.
+        /// </summary>
         public ISignalOrPortDescriptor[] Sensitivity
         {
             get { return _sensitivity; }
@@ -1376,9 +1668,19 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Kind of described process.
+        /// </summary>
         public SystemSharp.Components.Process.EProcessKind Kind { get; set; }
+
+        /// <summary>
+        /// Instance of described process.
+        /// </summary>
         public SystemSharp.Components.Process Instance { get; private set; }
 
+        /// <summary>
+        /// Two process descriptors are considered equal iff they have the same owner and the same name.
+        /// </summary>
         public override bool Equals(object obj)
         {
             ProcessDescriptor pd = obj as ProcessDescriptor;
@@ -1394,28 +1696,47 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Describes a method.
+    /// </summary>
     public class MethodDescriptor : CodeDescriptor
     {
+        /// <summary>
+        /// Constructs a method descriptor instance.
+        /// </summary>
+        /// <param name="method">CLI information on described method</param>
+        /// <param name="argValueSamples">sample argument values</param>
+        /// <param name="argVariabilities">variability classification of arguments</param>
         public MethodDescriptor(
             MethodBase method,
             object[] argValueSamples,
             EVariability[] argVariabilities) :
             base(method)
         {
-            Contract.Requires(argVariabilities != null &&
-                argVariabilities.Length == method.GetParameters().Length);
+            Contract.Requires<ArgumentNullException>(method != null, "method");
+            Contract.Requires<ArgumentNullException>(argValueSamples != null, "argValueSamples");
+            Contract.Requires<ArgumentNullException>(argVariabilities != null, "argVariabilities");
+            Contract.Requires<ArgumentException>(argVariabilities.Length == method.GetParameters().Length, 
+                "argVariabilities must contain exactly as many elements as there are method parameters.");
+
             Debug.Assert(argValueSamples.All(s => s != null));
+
             ArgValueSamples = argValueSamples;
             ArgVariabilities = argVariabilities;
             InitArguments();
         }
 
+        /// <summary>
+        /// Returns a descriptor of the method return type.
+        /// </summary>
         public TypeDescriptor ReturnType
         {
             get
             {
                 if (ReturnValueSample != null)
+                {
                     return TypeDescriptor.GetTypeOf(ReturnValueSample);
+                }
                 else
                 {
                     Type returnType;
@@ -1425,9 +1746,24 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Sample instances of the method arguments.
+        /// </summary>
         public object[] ArgValueSamples { get; private set; }
+
+        /// <summary>
+        /// Variability classifications of the method arguments.
+        /// </summary>
         public EVariability[] ArgVariabilities { get; private set; }
+
+        /// <summary>
+        /// Sample instance of method return value.
+        /// </summary>
         public object ReturnValueSample { get; internal set; }
+
+        /// <summary>
+        /// Process which calls the described method.
+        /// </summary>
         public ProcessDescriptor CallingProcess { get; internal set; }
 
         private void InitArguments()
@@ -1482,6 +1818,11 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Two method descriptors are considered equal iff the following conditions are fulfilled:
+        /// 1.: Both have the same owner. 2.: Both describe the same CLI method. 3.: The type descriptors of their
+        /// arguments are element-wise equal.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is MethodDescriptor)
@@ -1499,7 +1840,9 @@ namespace SystemSharp.Meta
                         ArgumentDescriptor.TypeAndDirectionComparer);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -1513,7 +1856,7 @@ namespace SystemSharp.Meta
         }
     }
 
-    public static class IntToZeroBasedUpRangeConverter
+    static class IntToZeroBasedUpRangeConverter
     {
         public static Range ConvertToRange(int arg)
         {
@@ -1521,7 +1864,7 @@ namespace SystemSharp.Meta
         }
     }
 
-    public static class IntToZeroBasedDownRangeConverter
+    static class IntToZeroBasedDownRangeConverter
     {
         public static Range ConvertToRange(int arg)
         {
@@ -1529,8 +1872,11 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// Declares an instance member of a data type as a type parameter.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class TypeParameter : Attribute
+    class TypeParameter : Attribute
     {
         public Type RangeConverter { get; private set; }
 
@@ -1540,11 +1886,29 @@ namespace SystemSharp.Meta
         }
     }
 
+    /// <summary>
+    /// This interface describes the common properties of packages and components.
+    /// </summary>
     public interface IPackageOrComponentDescriptor
     {
+        /// <summary>
+        /// Adds a package to the dependencies of the described element.
+        /// </summary>
         void AddDependency(PackageDescriptor pd);
+
+        /// <summary>
+        /// Returns all packages the described package or component depends on.
+        /// </summary>
         IEnumerable<PackageDescriptor> Dependencies { get; }
+
+        /// <summary>
+        /// Returns the position of the descibed package or component with respect to the required compilation order.
+        /// </summary>
         int DependencyOrder { get; }
+
+        /// <summary>
+        /// Returns the library name of the described element.
+        /// </summary>
         string Library { get; }
     }
 
@@ -1553,6 +1917,9 @@ namespace SystemSharp.Meta
         int DependencyOrder { get; set; }
     }
 
+    /// <summary>
+    /// Base interface for component descriptors.
+    /// </summary>
     public interface IComponentDescriptor :
         IDescriptor,
         IPackageOrComponentDescriptor
@@ -1596,6 +1963,9 @@ namespace SystemSharp.Meta
         public string Library { get; set; }
     }
 
+    /// <summary>
+    /// Describes a package.
+    /// </summary>
     public class PackageDescriptor :
         DescriptorBase,
         IPackageOrComponentDescriptor,
@@ -1603,13 +1973,18 @@ namespace SystemSharp.Meta
     {
         private PackageOrComponentDescriptor _container = new PackageOrComponentDescriptor();
 
+        /// <summary>
+        /// Name of described package.
+        /// </summary>
         public string PackageName { get; private set; }
 
+        /// <summary>
+        /// Constructs a package descriptor instance.
+        /// </summary>
+        /// <param name="packageName">name of described package</param>
         public PackageDescriptor(string packageName)
         {
-            Contract.Requires(packageName != null && packageName != "");
-            if (packageName == null || packageName == "")
-                throw new ArgumentException("Need a name for the package");
+            Contract.Requires<ArgumentException>(packageName != null && packageName != "", "packageName");
 
             PackageName = packageName;
         }
@@ -1632,6 +2007,9 @@ namespace SystemSharp.Meta
             return PackageName;
         }
 
+        /// <summary>
+        /// Two packages are considered equal iff they have the same name.
+        /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is PackageDescriptor)
@@ -1650,6 +2028,9 @@ namespace SystemSharp.Meta
             return PackageName.GetHashCode();
         }
 
+        /// <summary>
+        /// Adds another package on which the described package depends.
+        /// </summary>
         public void AddDependency(PackageDescriptor pd)
         {
             if (pd == this)
@@ -1658,11 +2039,17 @@ namespace SystemSharp.Meta
             _container.AddDependency(pd);
         }
 
+        /// <summary>
+        /// Returns all packages on which the described package depends.
+        /// </summary>
         public IEnumerable<PackageDescriptor> Dependencies
         {
             get { return _container.Dependencies; }
         }
 
+        /// <summary>
+        /// Position at which the described package should be compiled with respect to other packages.
+        /// </summary>
         public int DependencyOrder { get; internal set; }
 
         int IDependencyOrdered.DependencyOrder
@@ -1671,6 +2058,11 @@ namespace SystemSharp.Meta
             set { DependencyOrder = value; }
         }
 
+        /// <summary>
+        /// Adds a descriptor to be logically contained inside the described package.
+        /// </summary>
+        /// <param name="desc">descriptor to be added</param>
+        /// <param name="name">name of the element inside this package</param>
         public override void AddChild(DescriptorBase desc, string name)
         {
             var tdesc = desc as TypeDescriptor;
@@ -1679,16 +2071,24 @@ namespace SystemSharp.Meta
             base.AddChild(desc, name);
         }
 
+        /// <summary>
+        /// Gets or sets the library name of this package.
+        /// </summary>
         public string Library { get; set; }
     }
 
+    /*
     [Flags]
     public enum EComponentCoverage
     {
         Interface,
         Implementation
     }
+    */
 
+    /// <summary>
+    /// Describes a component.
+    /// </summary>
     public class ComponentDescriptor :
         InstanceDescriptor,
         IInstanceDescriptor<Component>,
@@ -1698,25 +2098,44 @@ namespace SystemSharp.Meta
     {
         private PackageOrComponentDescriptor _container = new PackageOrComponentDescriptor();
 
+        /// <summary>
+        /// The package in which the described component resides.
+        /// </summary>
         public PackageDescriptor Package { get; internal set; }
 
+        /// <summary>
+        /// Constructs a component descriptor instance.
+        /// </summary>
+        /// <param name="instance">component instance</param>
         public ComponentDescriptor(Component instance) :
             base(instance)
         {
         }
 
+        /// <summary>
+        /// Gets or sets a flag which tells whether the component behavior is implemented outside the SysDOM scope.
+        /// </summary>
         internal bool HasForeignImplementation { get; set; }
 
+        /// <summary>
+        /// Returns the instance of the described component.
+        /// </summary>
         public new Component Instance
         {
             get { return (Component)base.Instance; }
         }
 
+        /// <summary>
+        /// Make the described component dependent on the given package.
+        /// </summary>
         public void AddDependency(PackageDescriptor pd)
         {
             _container.AddDependency(pd);
         }
 
+        /// <summary>
+        /// Returns all packages the described component depends on.
+        /// </summary>
         public IEnumerable<PackageDescriptor> Dependencies
         {
             get
@@ -1728,9 +2147,13 @@ namespace SystemSharp.Meta
             }
         }
 
-        public EComponentCoverage Coverage { get; internal set; }
-        public string ImplementationDomain { get; internal set; }
+        //public EComponentCoverage Coverage { get; internal set; }
+        //public string ImplementationDomain { get; internal set; }
 
+        /// <summary>
+        /// The position at which the component should be compiled with respect to the global dependencies between
+        /// packages and components.
+        /// </summary>
         public int DependencyOrder { get; internal set; }
 
         int IDependencyOrdered.DependencyOrder
@@ -1742,9 +2165,19 @@ namespace SystemSharp.Meta
         public string Library { get; set; }
     }
 
-    public class DesignDescriptor : DescriptorBase //, IComponentDescriptor
+    /// <summary>
+    /// Describes the overall design. This is the root component of the design hierarchy.
+    /// </summary>
+    public class DesignDescriptor : DescriptorBase
     {
+        /// <summary>
+        /// The associated design context.
+        /// </summary>
         public DesignContext Context { get; private set; }
+
+        /// <summary>
+        /// The type library of the design.
+        /// </summary>
         public TypeLibrary TypeLib { get; private set; }
 
         internal DesignDescriptor(DesignContext design)
@@ -1753,6 +2186,9 @@ namespace SystemSharp.Meta
             TypeLib = new TypeLibrary(this);
         }
 
+        /// <summary>
+        /// Constructs a design descriptor instance.
+        /// </summary>
         public DesignDescriptor()
         {
             TypeLib = new TypeLibrary(this);
@@ -1764,6 +2200,10 @@ namespace SystemSharp.Meta
         }
 
         private AssemblyBuilder _asmBuilder;
+
+        /// <summary>
+        /// Returns an assembly builder for dynamically-created behavior.
+        /// </summary>
         public AssemblyBuilder AsmBuilder
         {
             get
@@ -1779,6 +2219,10 @@ namespace SystemSharp.Meta
         }
 
         private ModuleBuilder _modBuilder;
+
+        /// <summary>
+        /// Returns a module builder for dynamically-created behavior.
+        /// </summary>
         private ModuleBuilder ModBuilder
         {
             get
@@ -1802,7 +2246,12 @@ namespace SystemSharp.Meta
             }
         }
 
-
+        /// <summary>
+        /// Creates an enumeration type for a given set of literals. If an enumeration with the specified literal names
+        /// already exists, the existing one is returned.
+        /// </summary>
+        /// <param name="name">desired name of the enumeration type</param>
+        /// <param name="fieldNames">enumeration literals</param>
         public TypeDescriptor CreateEnum(string name, IEnumerable<string> fieldNames)
         {
             var fieldSeq = new HashableSequence<string>(fieldNames);
@@ -1847,14 +2296,24 @@ namespace SystemSharp.Meta
             return td;
         }
 
+        /// <summary>
+        /// Creates a new component inside the design.
+        /// </summary>
+        /// <param name="name">component name</param>
         public ComponentBuilder CreateComponent(string name)
         {
             return new ComponentBuilder(name);
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods to work with descriptors.
+    /// </summary>
     public static class DescriptorExtensions
     {
+        /// <summary>
+        /// Returns all sub-components which are directly or indirectly part of the given component descriptor.
+        /// </summary>
         public static IEnumerable<IComponentDescriptor> GetAllAncestors(this IComponentDescriptor cd)
         {
             HashSet<IComponentDescriptor> result = new HashSet<IComponentDescriptor>();
@@ -1871,6 +2330,9 @@ namespace SystemSharp.Meta
             return result;
         }
 
+        /// <summary>
+        /// Returns the descriptor itself if it describes a signal, or the signal it is bound to if it describes a port.
+        /// </summary>
         public static ISignalOrPortDescriptor GetBoundSignal(this ISignalOrPortDescriptor sd)
         {
             var pd = sd as IPortDescriptor;
@@ -1883,6 +2345,12 @@ namespace SystemSharp.Meta
                 return sd;
         }
 
+        /// <summary>
+        /// Removes any index constraints from the described signal or port.
+        /// </summary>
+        /// <param name="sd">a possibly indexed signal or port descriptor</param>
+        /// <param name="accIndex">out parameter to receive the index constraints of <paramref name="sd"/></param>
+        /// <returns>the root signal or port descriptor, i.e. without any index</returns>
         public static ISignalOrPortDescriptor GetUnindexedContainer(this ISignalOrPortDescriptor sd, out IndexSpec accIndex)
         {
             var stk = new Stack<SignalDescriptor>();
@@ -1914,17 +2382,33 @@ namespace SystemSharp.Meta
             return sd;
         }
 
+        /// <summary>
+        /// Removes any index constraints from the described signal or port.
+        /// </summary>
+        /// <param name="sd">a possibly indexed signal or port descriptor</param>
+        /// <returns>the root signal or port descriptor, i.e. without any index</returns>
         public static ISignalOrPortDescriptor GetUnindexedContainer(this ISignalOrPortDescriptor sd)
         {
             IndexSpec dummy;
             return GetUnindexedContainer(sd, out dummy);
         }
 
+        /// <summary>
+        /// Represents the signal or port descriptor as signal reference.
+        /// </summary>
+        /// <param name="sd">signal or port descriptor</param>
+        /// <param name="prop">property to reference</param>
         public static SignalRef AsSignalRef(this ISignalOrPortDescriptor sd, SignalRef.EReferencedProperty prop)
         {
             return new SignalRef(sd, prop);
         }
 
+        /// <summary>
+        /// Converts a signal reference with respect to a surrounding component.
+        /// </summary>
+        /// <param name="sref">signal reference</param>
+        /// <param name="cd">surrounding component</param>
+        /// <returns>a signal reference which is suitable for the surrounding component</returns>
         public static SignalRef RelateToComponent(this SignalRef sref, IComponentDescriptor cd)
         {
             var srefNorm = sref.AssimilateIndices();
