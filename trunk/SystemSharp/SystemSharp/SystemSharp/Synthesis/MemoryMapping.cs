@@ -36,24 +36,62 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Synthesis
 {
+    /// <summary>
+    /// Service interface for serializing and deserializing objects to and from <c>StdLogicVector</c> instances.
+    /// </summary>
     public interface ISerializer
     {
+        /// <summary>
+        /// Serializes an object as <c>StdLogicVector</c>
+        /// </summary>
+        /// <param name="value">object to serialize</param>
+        /// <returns>object representation as <c>StdLogicVector</c></returns>
         StdLogicVector Serialize(object value);
+
+        /// <summary>
+        /// Deserializes an object from an <c>StdLogicVector</c> instance.
+        /// </summary>
+        /// <param name="slv">logic vector a deserialize</param>
+        /// <param name="targetType">target type for deserialization</param>
+        /// <returns>the deserialized instance of <paramref name="targetType"/></returns>
         object Deserialize(StdLogicVector slv, TypeDescriptor targetType);
     }
 
+    /// <summary>
+    /// Indicates that the tagged class or struct is capable of serializing and deserializing itself to and from
+    /// <c>StdLogicVector</c> instances.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true)]
     public class SLVSerializable : Attribute
     {
+        /// <summary>
+        /// Type of object to serialize/deserialize
+        /// </summary>
         public Type ObjectType { get; private set; }
+
+        /// <summary>
+        /// Type of serializer implementation
+        /// </summary>
         public Type SerializerType { get; private set; }
 
+        /// <summary>
+        /// Constructs the attribute.
+        /// </summary>
+        /// <param name="objectType">type of object to serialize/deserialize</param>
+        /// <param name="serializerType">Type of serializer implementation. The type must implement
+        /// <c>ISerializer</c> and provide a public default constructor.</param>
         public SLVSerializable(Type objectType, Type serializerType)
         {
             ObjectType = objectType;
             SerializerType = serializerType;
         }
 
+        /// <summary>
+        /// Tries to find a serializer for the specified type. To do so, it looks for the <c>SLVSerializable</c> attribute
+        /// in both the type attributes and <c>StdLogicVector</c> attributes.
+        /// </summary>
+        /// <param name="type">type of object to serialize/deserialize</param>
+        /// <returns>a suitable serializer instance, or <c>null</c> if noch such was found</returns>
         public static ISerializer TryGetSerializer(Type type)
         {
             object[] tattrs = type.GetCustomAttributes(typeof(SLVSerializable), false);
@@ -69,22 +107,22 @@ namespace SystemSharp.Synthesis
     public interface IMarshalInfo
     {
         /// <summary>
-        /// The target memory's word size (in bits)
+        /// The target memory's word size (in bits).
         /// </summary>
         uint WordSize { get; }
 
         /// <summary>
-        /// If true, multiple array elements may be packed into a single memory word
+        /// If true, multiple array elements may be packed into a single memory word.
         /// </summary>
         bool UseArraySubWordAlignment { get; }
 
         /// <summary>
-        /// If true, array dimensions are aligned to powers of two (simplifies indexing)
+        /// If true, array dimensions are aligned to powers of two (simplifies indexing).
         /// </summary>
         bool UseArrayDimPow2Alignment { get; }
 
         /// <summary>
-        /// If true, each data item is forced to a start address which is a multiple of the next power of 2 with respect to its size
+        /// If true, each data item is forced to a start address which is a multiple of the next power of 2 with respect to its size.
         /// </summary>
         bool UseStrongPow2Alignment { get; }
 
@@ -94,12 +132,34 @@ namespace SystemSharp.Synthesis
         uint Alignment { get; }
     }
 
+    /// <summary>
+    /// Default implementation of <c>IMarshalInfo</c>
+    /// </summary>
     public class DefaultMarshalInfo : IMarshalInfo
     {
+        /// <summary>
+        /// Gets or sets the word size. Pre-initialized value is 64.
+        /// </summary>
         public uint WordSize { get; set;  }
+
+        /// <summary>
+        /// Gets or sets the usage flag for array sub-word alignment. Pre-initialized value is <c>true</c>.
+        /// </summary>
         public bool UseArraySubWordAlignment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the usage flag for power-of-2 alignment of arrays. Pre-initialized value is <c>true</c>.
+        /// </summary>
         public bool UseArrayDimPow2Alignment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the usage flag for strong power-of-2 alignment. Pre-initialized value is <c>false</c>.
+        /// </summary>
         public bool UseStrongPow2Alignment { get; set;  }
+
+        /// <summary>
+        /// Gets or sets the word alignment. Pre-initialized value is 1.
+        /// </summary>
         public uint Alignment { get; set;  }
 
         public DefaultMarshalInfo()
@@ -112,28 +172,46 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// A default implementation of <c>IMarshalInfo</c> for <c>StdLogicVector</c> serialization.
+    /// </summary>
     public class HWMarshalInfo : IMarshalInfo
     {
+        /// <summary>
+        /// Always 1
+        /// </summary>
         public uint WordSize
         {
             get { return 1; }
         }
 
+        /// <summary>
+        /// Always <c>true</c>
+        /// </summary>
         public bool UseArraySubWordAlignment
         {
             get { return true; }
         }
 
+        /// <summary>
+        /// Always <c>false</c>
+        /// </summary>
         public bool UseArrayDimPow2Alignment
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Always <c>false</c>
+        /// </summary>
         public bool UseStrongPow2Alignment
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Always 1
+        /// </summary>
         public uint Alignment
         {
             get { return 1; }
@@ -143,15 +221,38 @@ namespace SystemSharp.Synthesis
         {
         }
 
+        /// <summary>
+        /// The one and only instance
+        /// </summary>
         public static readonly IMarshalInfo Instance = new HWMarshalInfo();
     }
 
+    /// <summary>
+    /// Represents the memory layout of a field instance.
+    /// </summary>
     public class FieldLocation
     {
+        /// <summary>
+        /// Layouted field
+        /// </summary>
         public FieldInfo Field { get; private set; }
+
+        /// <summary>
+        /// Memory layout of the field
+        /// </summary>
         public MemoryLayout FieldLayout { get; private set; }
+
+        /// <summary>
+        /// Start offset inside the superordinate layout
+        /// </summary>
         public ulong Offset { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="field">layouted field</param>
+        /// <param name="fieldLayout">memory layout of the field</param>
+        /// <param name="offset">start offset inside the superordinate layout</param>
         public FieldLocation(FieldInfo field, MemoryLayout fieldLayout, ulong offset)
         {
             Field = field;
@@ -160,11 +261,25 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Abstract base class for memory layouts
+    /// </summary>
     [ContractClass(typeof(MemoryLayoutContractClass))]
     public abstract class MemoryLayout
     {
+        /// <summary>
+        /// The layouted type descriptor.
+        /// </summary>
         public TypeDescriptor LayoutedType { get; private set; }
+
+        /// <summary>
+        /// Size of the layout in words, whereby word size is platform-dependent.
+        /// </summary>
         public ulong Size { get; internal set;  }
+
+        /// <summary>
+        /// Size of the layout in bits.
+        /// </summary>
         public ulong SizeInBits { get; internal set; }
 
         internal MemoryLayout(TypeDescriptor layoutedType)
@@ -172,6 +287,11 @@ namespace SystemSharp.Synthesis
             LayoutedType = layoutedType;
         }
 
+        /// <summary>
+        /// Serializes an instance of the layouted type.
+        /// </summary>
+        /// <param name="instance">object to serialize</param>
+        /// <returns>array of words, whereby each word is represented by an <c>StdLogicVector</c> instance</returns>
         public abstract StdLogicVector[] SerializeInstance(object instance);
     }
 
@@ -191,8 +311,14 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Memory layout for primitive types.
+    /// </summary>
     public class PrimMemoryLayout: MemoryLayout
     {
+        /// <summary>
+        /// Word size in bits.
+        /// </summary>
         public int WordSize { get; private set; }
 
         internal PrimMemoryLayout(TypeDescriptor layoutedType, int wordSize):
@@ -222,6 +348,9 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Memory layout for enumeration types.
+    /// </summary>
     public class EnumMemoryLayout : MemoryLayout
     {
         private uint _wordSize;
@@ -235,6 +364,9 @@ namespace SystemSharp.Synthesis
             Size = (SizeInBits + minfo.WordSize - 1) / minfo.WordSize;
         }
 
+        /// <summary>
+        /// Returns the number of bits which are required an instance of the layouted enum.
+        /// </summary>
         public int NumBits
         {
             get { return MathExt.CeilLog2(LayoutedType.CILType.GetEnumValues().Length); }
@@ -257,6 +389,9 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Memory layout for structs.
+    /// </summary>
     public class StructMemoryLayout: MemoryLayout
     {
         private Dictionary<FieldInfo, FieldLocation> _locations = new Dictionary<FieldInfo, FieldLocation>();
@@ -271,11 +406,21 @@ namespace SystemSharp.Synthesis
             _locations[loc.Field] = loc;
         }
 
+        /// <summary>
+        /// Returns the start offset of a particular field (must be member of the layouted struct).
+        /// </summary>
+        /// <param name="field">field to look for</param>
+        /// <returns>start offset of the field inside the memory layout</returns>
         public ulong GetFieldOffset(FieldInfo field)
         {
             return _locations[field].Offset;
         }
 
+        /// <summary>
+        /// Returns the memory layout of a particular field (must be member of the layouted struct).
+        /// </summary>
+        /// <param name="field">field to look for</param>
+        /// <returns>start offset of the field inside the memory layout</returns>
         public MemoryLayout GetFieldLayout(FieldInfo field)
         {
             return _locations[field].FieldLayout;
@@ -297,6 +442,9 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Dummy memory layout which does not consume any storage space.
+    /// </summary>
     public class EmptyMemoryLayout : MemoryLayout
     {
         internal EmptyMemoryLayout(TypeDescriptor layoutedType) :
@@ -310,13 +458,39 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Memory layout for arrays.
+    /// </summary>
     public class ArrayMemoryLayout : MemoryLayout
     {
+        /// <summary>
+        /// Platform-specific word size
+        /// </summary>
         public uint WordSize { get; private set; }
+
+        /// <summary>
+        /// For each dimension the amount of words to get from one index to the next.
+        /// </summary>
         public ulong[] Strides { get; private set; }
+
+        /// <summary>
+        /// In case of array sub-word packing: the amount of bits to get from one array element to the next.
+        /// </summary>
         public ulong SubStride { get; private set; }
+
+        /// <summary>
+        /// Number of array elements per word
+        /// </summary>
         public uint ElementsPerWord { get; private set; }
+
+        /// <summary>
+        /// Number of word per array element
+        /// </summary>
         public uint WordsPerElement { get; private set; }
+
+        /// <summary>
+        /// Memory layout of a single array element
+        /// </summary>
         public MemoryLayout ElementLayout { get; private set; }
 
         internal ArrayMemoryLayout(TypeDescriptor layoutedType, 
@@ -388,8 +562,17 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// This static class provides convenience methods for serialization/deserialization and memory layout.
+    /// </summary>
     public static class Marshal
     {
+        /// <summary>
+        /// Converts from measure "bits" to "words", depending on the platform-specific word size.
+        /// </summary>
+        /// <param name="numBits">number of bits</param>
+        /// <param name="info">marshalling information</param>
+        /// <returns>number of words</returns>
         private static ulong BitsToWords(long numBits, IMarshalInfo info)
         {
             return (ulong)((numBits + info.WordSize - 1) / info.WordSize);
@@ -405,6 +588,12 @@ namespace SystemSharp.Synthesis
             };
         }
 
+        /// <summary>
+        /// Computes a memory layout for a given type descriptor.
+        /// </summary>
+        /// <param name="td">type descriptor to layout</param>
+        /// <param name="info">marshalling information</param>
+        /// <returns>memory layout</returns>
         public static MemoryLayout Layout(TypeDescriptor td, IMarshalInfo info)
         {
             Type type = td.CILType;
@@ -503,12 +692,23 @@ namespace SystemSharp.Synthesis
             throw new InvalidOperationException("Unable to create data layout for type " + type.Name);
         }
 
+        /// <summary>
+        /// Computes a serialization of a value with respect to a specific marshaling information.
+        /// </summary>
+        /// <param name="value">value to serialize</param>
+        /// <param name="minfo">marshalling information</param>
+        /// <returns></returns>
         public static StdLogicVector[] Serialize(object value, IMarshalInfo minfo)
         {
             var layout = Layout(TypeDescriptor.GetTypeOf(value), minfo);
             return layout.SerializeInstance(value);
         }
 
+        /// <summary>
+        /// Computes a serialization of a value, assuming a word size of 1.
+        /// </summary>
+        /// <param name="value">value to serialize</param>
+        /// <returns>its serialization</returns>
         public static StdLogicVector SerializeForHW(object value)
         {
             // For pure optimization reasons: Shortcut for two most
@@ -523,13 +723,31 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// A memory region is part of a memory region hierarchy and contains memory mappings of constants and variables.
+    /// </summary>
     public class MemoryRegion
     {
+        /// <summary>
+        /// Marshalling information
+        /// </summary>
         public IMarshalInfo MarshalInfo { get; private set; }
+
+        /// <summary>
+        /// Parent region
+        /// </summary>
         public MemoryRegion Parent { get; private set; }
+
+        /// <summary>
+        /// Base address of this region
+        /// </summary>
         public ulong BaseAddress { get; private set; }
 
         private ulong _requiredSize;
+
+        /// <summary>
+        /// Gets or sets the required size of this region.
+        /// </summary>
         public ulong RequiredSize 
         {
             get { return _requiredSize; }
@@ -551,8 +769,14 @@ namespace SystemSharp.Synthesis
             Items = new ReadOnlyCollection<MemoryMappedStorage>(Items);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the region is sealed, i.e. it is not mutable anymore.
+        /// </summary>
         public bool IsSealed { get; private set; }
 
+        /// <summary>
+        /// The list of mapped items.
+        /// </summary>
         public IList<MemoryMappedStorage> Items { get; private set; }
 
         internal MemoryRegion(IMarshalInfo marshalInfo)
@@ -569,6 +793,11 @@ namespace SystemSharp.Synthesis
             BaseAddress = baseAddress;
         }
 
+        /// <summary>
+        /// Maps a variable to this region.
+        /// </summary>
+        /// <param name="v">variable to map</param>
+        /// <returns>storage mapping of the variable</returns>
         public MemoryMappedStorage Map(Variable v)
         {
             Contract.Requires(v != null);
@@ -577,6 +806,11 @@ namespace SystemSharp.Synthesis
             return result;
         }
 
+        /// <summary>
+        /// Maps a constant to this region.
+        /// </summary>
+        /// <param name="data">constant value to map</param>
+        /// <returns>storage mapping of the constant</returns>
         public MemoryMappedStorage Map(object data)
         {
             Contract.Requires(data != null);
@@ -585,6 +819,12 @@ namespace SystemSharp.Synthesis
             return result;
         }
 
+        /// <summary>
+        /// Maps a data item to this region.
+        /// </summary>
+        /// <param name="item">object which is used a key to identify the data item</param>
+        /// <param name="dataType">type of actual data</param>
+        /// <returns>sotrage mapping of the data item</returns>
         public MemoryMappedStorage Map(object item, TypeDescriptor dataType)
         {
             Contract.Requires(item != null);
@@ -594,6 +834,9 @@ namespace SystemSharp.Synthesis
             return result;
         }
 
+        /// <summary>
+        /// Returns the required address with for this region.
+        /// </summary>
         public int AddressWidth
         {
             get
@@ -611,8 +854,14 @@ namespace SystemSharp.Synthesis
         }
     }
 
+    /// <summary>
+    /// Represents a constant, variable or data item which is mapped to a memory region.
+    /// </summary>
     public class MemoryMappedStorage
     {
+        /// <summary>
+        /// Kind of mapping
+        /// </summary>
         public enum EKind
         {
             Variable,
@@ -620,13 +869,44 @@ namespace SystemSharp.Synthesis
             DataItem
         }
 
+        /// <summary>
+        /// The kind of mapping
+        /// </summary>
         public EKind Kind { get; private set; }
+
+        /// <summary>
+        /// Mapped variable (in case of a variable mapping)
+        /// </summary>
         public IStorable Variable { get; private set; }
+
+        /// <summary>
+        /// Mapped constant value (in case of a constant value mapping)
+        /// </summary>
         public object Data { get; private set; }
+
+        /// <summary>
+        /// Mapped data item (in case of a data item mapping)
+        /// </summary>
         public object DataItem { get; private set; }
+
+        /// <summary>
+        /// Type of item data (in case of data item mapping)
+        /// </summary>
         public TypeDescriptor DataItemType { get; private set; }
+
+        /// <summary>
+        /// Region to which this mapping refers
+        /// </summary>
         public MemoryRegion Region { get; private set; }
+
+        /// <summary>
+        /// Start offset of the mapping
+        /// </summary>
         public ulong Offset { get; set; }
+
+        /// <summary>
+        /// Memory layout of the mapped data
+        /// </summary>
         public MemoryLayout Layout { get; private set; }
 
         internal MemoryMappedStorage(IStorable variable, MemoryRegion region, MemoryLayout layout)
@@ -654,28 +934,59 @@ namespace SystemSharp.Synthesis
             Layout = layout;
         }
 
+        /// <summary>
+        /// Returns the size of the memory layout used for this mapping.
+        /// </summary>
         public ulong Size
         {
             get { return Layout.Size; }
         }
 
+        /// <summary>
+        /// Returns the base address of this mapping.
+        /// </summary>
         public Unsigned BaseAddress
         {
             get { return Unsigned.FromULong(Region.BaseAddress + Offset, Region.AddressWidth); }
         }
     }
 
+    /// <summary>
+    /// Common interface for memory layout algorithms.
+    /// </summary>
     public interface IMemoryLayoutAlgorithm
     {
+        /// <summary>
+        /// Computes a memory layout for a given region.
+        /// </summary>
+        /// <param name="region">region to layout</param>
         void Layout(MemoryRegion region);
     }
 
+    /// <summary>
+    /// Provides an entry point for memory mapping.
+    /// </summary>
     public class MemoryMapper
     {
+        /// <summary>
+        /// The root region for memory mapping.
+        /// </summary>
         public MemoryRegion DefaultRegion { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the marshalling information.
+        /// </summary>
         public IMarshalInfo MarshalInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the memory layout algorithm. Pre-initialized with an instance of
+        /// <c>DefaultMemoryLayoutAlgorithm</c>.
+        /// </summary>
         public IMemoryLayoutAlgorithm LayoutAlgorithm { get; set; }
 
+        /// <summary>
+        /// Constructs an instance of the memory mapper.
+        /// </summary>
         public MemoryMapper()
         {
             MarshalInfo = new DefaultMarshalInfo();
@@ -683,14 +994,25 @@ namespace SystemSharp.Synthesis
             DefaultRegion = new MemoryRegion(MarshalInfo);
         }
 
+        /// <summary>
+        /// Computes the overall memory layout.
+        /// </summary>
         public void DoLayout()
         {
             LayoutAlgorithm.Layout(DefaultRegion);
         }
     }
 
+    /// <summary>
+    /// This static class provides extension methods to work with marshalling information.
+    /// </summary>
     public static class MarshalInfoExtensions
     {
+        /// <summary>
+        /// Returns a type descriptor for describing a single word for the marshalling information.
+        /// </summary>
+        /// <param name="mi">marshalling information</param>
+        /// <returns>descriptor of a single word</returns>
         public static TypeDescriptor GetRawWordType(this IMarshalInfo mi)
         {
             return TypeDescriptor.GetTypeOf(
