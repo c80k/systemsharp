@@ -27,11 +27,26 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.Synthesis.VHDLGen
 {
+    /// <summary>
+    /// Models a VHDL concurrent statement.
+    /// </summary>
     public class ConcurrentStatement
     {
+        /// <summary>
+        /// Signal transfer target.
+        /// </summary>
         public SignalRef TargetSignal { get; private set; }
+
+        /// <summary>
+        /// Transfer expression.
+        /// </summary>
         public Expression SourceExpression { get; private set; }
 
+        /// <summary>
+        /// Constructs a concurrent statement.
+        /// </summary>
+        /// <param name="targetSignal">signal transfer target</param>
+        /// <param name="sourceExpression">transfer expression</param>
         public ConcurrentStatement(SignalRef targetSignal, Expression sourceExpression)
         {
             TargetSignal = targetSignal;
@@ -122,8 +137,18 @@ namespace SystemSharp.Synthesis.VHDLGen
         }
     }
 
+    /// <summary>
+    /// This static class provides an extension method for converting a SysDOM function to concurrent statements.
+    /// </summary>
     public static class ConcurrentStatementExtraction
     {
+        /// <summary>
+        /// Tries to convert the function to concurrent statements.
+        /// </summary>
+        /// <param name="func">function to convert</param>
+        /// <param name="statements">out parameter to receive a list of concurrent statements</param>
+        /// <returns><c>true</c> if conversion was successful, <c>false</c> if function does not match the concurrent
+        /// statements pattern.</returns>
         public static bool TryAsConcurrentStatements(this Function func, out List<ConcurrentStatement> statements)
         {
             statements = null;

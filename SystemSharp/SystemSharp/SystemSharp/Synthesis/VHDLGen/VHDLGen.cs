@@ -44,6 +44,9 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.Synthesis.VHDLGen
 {
+    /// <summary>
+    /// Implements a VHDL code generator.
+    /// </summary>
     public class VHDLGenerator: 
         ICodeGenerator,
         IOperatorNotation,

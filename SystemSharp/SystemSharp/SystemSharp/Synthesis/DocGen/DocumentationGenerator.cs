@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -28,6 +28,9 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.Synthesis.DocGen
 {
+    /// <summary>
+    /// Generates all documentation which is part of a design.
+    /// </summary>
     public class DocumentationGenerator:
         ICodeGenerator
     {

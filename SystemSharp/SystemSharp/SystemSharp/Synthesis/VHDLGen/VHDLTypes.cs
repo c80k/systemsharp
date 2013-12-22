@@ -33,28 +33,64 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Synthesis.VHDLGen
 {
+    /// <summary>
+    /// Provides information on a certain type which is necessary for VHDL code generation.
+    /// </summary>
     public class TypeInfo
     {
+        /// <summary>
+        /// Type classification
+        /// </summary>
         public enum ERangeSpec
         {
+            /// <summary>
+            /// The described type has a value range which is specified using the VHDL "range" keyword.
+            /// </summary>
             ByRange,
+
+            /// <summary>
+            /// The described type is a single- or multi-dimensional array.
+            /// </summary>
             BySize
         }
 
+        /// <summary>
+        /// VHDL name of the type.
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Type classification.
+        /// </summary>
         public ERangeSpec RangeSpec { get; private set; }
+
+        /// <summary>
+        /// Default value range of the type.
+        /// </summary>
         public Range DefaultRange { get; private set; }
+
+        /// <summary>
+        /// Whether the default range should be rendered during code generation.
+        /// </summary>
         public bool ShowDefaultRange { get; private set; }
+
+        /// <summary>
+        /// All libraries which are required for this type.
+        /// </summary>
         public string[] Libraries { get; private set; }
+
+        /// <summary>
+        /// Whether the type of not synthesizable.
+        /// </summary>
         public bool IsNotSynthesizable { get; private set; }
 
-        public TypeInfo(string name)
+        private TypeInfo(string name)
         {
             Name = name;
             RangeSpec = ERangeSpec.BySize;
         }
 
-        public TypeInfo(string name, Range defaultRange)
+        private TypeInfo(string name, Range defaultRange)
         {
             Name = name;
             RangeSpec = ERangeSpec.ByRange;
@@ -62,20 +98,20 @@ namespace SystemSharp.Synthesis.VHDLGen
             ShowDefaultRange = true;
         }
 
-        public TypeInfo(string name, ERangeSpec rangeSpec)
+        private TypeInfo(string name, ERangeSpec rangeSpec)
         {
             Name = name;
             RangeSpec = rangeSpec;
         }
 
-        public TypeInfo(string name, params string[] libs)
+        private TypeInfo(string name, params string[] libs)
         {
             Name = name;
             RangeSpec = ERangeSpec.BySize;
             Libraries = libs;
         }
 
-        public TypeInfo(string name, bool isNotSynthesizable, params string[] libs)
+        private TypeInfo(string name, bool isNotSynthesizable, params string[] libs)
         {
             Name = name;
             RangeSpec = ERangeSpec.BySize;
@@ -83,7 +119,7 @@ namespace SystemSharp.Synthesis.VHDLGen
             Libraries = libs;
         }
 
-        public TypeInfo(string name, bool isNotSynthesizable, ERangeSpec rangeSpec, Range defaultRange, params string[] libs)
+        private TypeInfo(string name, bool isNotSynthesizable, ERangeSpec rangeSpec, Range defaultRange, params string[] libs)
         {
             Name = name;
             RangeSpec = rangeSpec;
@@ -93,7 +129,7 @@ namespace SystemSharp.Synthesis.VHDLGen
             Libraries = libs;
         }
 
-        public TypeInfo(string name, Range defaultRange, params string[] libs)
+        private TypeInfo(string name, Range defaultRange, params string[] libs)
         {
             Name = name;
             RangeSpec = ERangeSpec.ByRange;
@@ -103,14 +139,14 @@ namespace SystemSharp.Synthesis.VHDLGen
             Libraries = libs;
         }
 
-        public TypeInfo(string name, ERangeSpec rangeSpec, params string[] libs)
+        private TypeInfo(string name, ERangeSpec rangeSpec, params string[] libs)
         {
             Name = name;
             RangeSpec = rangeSpec;
             Libraries = libs;
         }
 
-        public TypeInfo(string name, ERangeSpec rangeSpec, bool isNotSynthesizable, params string[] libs)
+        private TypeInfo(string name, ERangeSpec rangeSpec, bool isNotSynthesizable, params string[] libs)
         {
             Name = name;
             RangeSpec = rangeSpec;
@@ -131,6 +167,12 @@ namespace SystemSharp.Synthesis.VHDLGen
             return result;
         }
 
+        /// <summary>
+        /// Creates a VHDL type specification for a complete type, i.e. including all indices.
+        /// </summary>
+        /// <param name="td">Type descriptor to declare. It is assumed that the described type matched the
+        /// type which is described by this instance.</param>
+        /// <returns>VHDL fragment for type declaration</returns>
         public virtual string DeclareCompletedType(TypeDescriptor td)
         {
             StringBuilder sb = new StringBuilder();
@@ -149,52 +191,112 @@ namespace SystemSharp.Synthesis.VHDLGen
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Creates a type information instance for a single- or multi-dimensional type.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateSizedType(string name)
         {
             return new TypeInfo(name);
         }
 
+        /// <summary>
+        /// Creates a type information instance for a single- or multi-dimensional type.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="libs">all libraries which are necessary to work with the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateSizedType(string name, params string[] libs)
         {
             return new TypeInfo(name, libs);
         }
 
+        /// <summary>
+        /// Creates a type information instance for a single- or multi-dimensional type.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="isNotSynthesizable">whether the type is not synthesizable</param>
+        /// <param name="libs">all libraries which are necessary to work with the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateSizedType(string name, bool isNotSynthesizable, params string[] libs)
         {
             return new TypeInfo(name, isNotSynthesizable, libs);
         }
 
+        /// <summary>
+        /// Creates a type information instance for a single- or multi-dimensional type.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="isNotSynthesizable">whether the type is not synthesizable</param>
+        /// <param name="defaultRange">default index range of the type</param>
+        /// <param name="libs">all libraries which are necessary to work with the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateSizedType(string name, bool isNotSynthesizable, Range defaultRange, params string[] libs)
         {
             return new TypeInfo(name, isNotSynthesizable, ERangeSpec.BySize, defaultRange, libs);
         }
 
+        /// <summary>
+        /// Creates a type information for a type with specifiable value range.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateRangedType(string name)
         {
             return new TypeInfo(name, ERangeSpec.ByRange);
         }
 
+        /// <summary>
+        /// Creates a type information for a type with specifiable value range.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="libs">all libraries which are necessary to work with the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateRangedType(string name, params string[] libs)
         {
             return new TypeInfo(name, ERangeSpec.ByRange, libs);
         }
 
+        /// <summary>
+        /// Creates a type information for a type with specifiable value range.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="isNotSynthesizable">whether the type is not synthesizable</param>
+        /// <param name="libs">all libraries which are necessary to work with the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateRangedType(string name, bool isNotSynthesizable, params string[] libs)
         {
             return new TypeInfo(name, ERangeSpec.ByRange, isNotSynthesizable, libs);
         }
 
+        /// <summary>
+        /// Creates a type information for a type with specifiable value range.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="defaultRange">default value range of the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateRangedType(string name, Range defaultRange)
         {
             return new TypeInfo(name, defaultRange);
         }
 
+        /// <summary>
+        /// Creates a type information for a type with specifiable value range.
+        /// </summary>
+        /// <param name="name">VHDL name of the type</param>
+        /// <param name="defaultRange">default value range of the type</param>
+        /// <param name="libs">all libraries which are necessary to work with the type</param>
+        /// <returns>the newly created type information</returns>
         public static TypeInfo CreateRangedType(string name, Range defaultRange, params string[] libs)
         {
             return new TypeInfo(name, defaultRange, libs);
         }
     }
 
+    /// <summary>
+    /// Provides information on the mapping from System# types to VHDL types and conversions between those types.
+    /// </summary>
     public class VHDLTypes
     {
         class Conversion : Attribute
@@ -1261,7 +1363,15 @@ namespace SystemSharp.Synthesis.VHDLGen
             visited.Pop();
             return full;
         }
-
+        
+        /// <summary>
+        /// Computes VHDL code to convert from a source type to a destination type.
+        /// </summary>
+        /// <param name="SType">source type</param>
+        /// <param name="TTypeD">destination type descriptor</param>
+        /// <param name="interTypes">list to gather possible intermediate conversions</param>
+        /// <param name="args">conversion arguments</param>
+        /// <returns>>VHDL code to convert from the source type to the destination type</returns>
         public static string Convert(Type SType, TypeDescriptor TTypeD, IList<Type> interTypes, params string[] args)
         {
             var TType = TTypeD.CILType;
@@ -1312,6 +1422,13 @@ namespace SystemSharp.Synthesis.VHDLGen
             return curArgs[0];
         }
 
+        /// <summary>
+        /// Returns the VHDL representation of a constant of a certain type.
+        /// </summary>
+        /// <param name="value">constant to be represented in VHDL</param>
+        /// <param name="svalue">out parameter to receive the VHDL representation</param>
+        /// <returns><c>true</c> if a textual representation of the specified value could be found,
+        /// <c>false</c> if not.</returns>
         public static bool GetValueOf(object value, out string svalue)
         {
             Type vtype = value.GetType();
@@ -1323,6 +1440,12 @@ namespace SystemSharp.Synthesis.VHDLGen
             return true;
         }
 
+        /// <summary>
+        /// Looks for a certain type.
+        /// </summary>
+        /// <param name="type">type to lookup</param>
+        /// <param name="ti">out parameter to receive the found type information</param>
+        /// <returns><c>true</c> if type information could be found, <c>false</c> if not</returns>
         public static bool LookupType(Type type, out TypeInfo ti)
         {
             return _typeInfos.TryGetValue(type, out ti);
