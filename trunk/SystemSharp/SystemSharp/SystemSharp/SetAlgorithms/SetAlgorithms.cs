@@ -27,11 +27,22 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.SetAlgorithms
 {
+    /// <summary>
+    /// Adapter interface for set algorithms.
+    /// </summary>
+    /// <typeparam name="T">type of a set element</typeparam>
     public interface ISetAdapter<T>
     {
+        /// <summary>
+        /// Returns a property map which maps any element to a unique 0-based index.
+        /// </summary>
         IPropMap<T, int> Index { get; }
     }
 
+    /// <summary>
+    /// An implementation of the union-find data structure.
+    /// </summary>
+    /// <typeparam name="T">type of set element</typeparam>
     public class UnionFind<T>
     {
         private IPropMap<T, int> _index;
@@ -40,6 +51,12 @@ namespace SystemSharp.SetAlgorithms
         private int[] _repShuffle; // Used to pick the "right" representant for 
                                    // Havlak's loop analysis
 
+        /// <summary>
+        /// Constructs an instance of the union-find data structure.
+        /// </summary>
+        /// <param name="a">set adapter</param>
+        /// <param name="elems">The list set elements. It is assumed that the list index of each set element
+        /// matched the index returned by the set adapter.</param>
         public UnionFind(ISetAdapter<T> a, IList<T> elems)
         {
             _index = a.Index;
@@ -53,18 +70,31 @@ namespace SystemSharp.SetAlgorithms
             _impl = new DisjointSets(elems.Count);
         }
 
+        /// <summary>
+        /// Finds the representant of a set element.
+        /// </summary>
+        /// <param name="elem">set element</param>
+        /// <returns>representant</returns>
         public T Find(T elem)
         {
             int fidx = _impl.FindSet(_index[elem]);
             return _elems[_repShuffle[fidx]];
         }
 
+        /// <summary>
+        /// Unifies two set elements.
+        /// </summary>
+        /// <param name="e1">a set element</param>
+        /// <param name="e2">another set element</param>
         public void Union(T e1, T e2)
         {
             _impl.Union(_impl.FindSet(_index[e1]), _impl.FindSet(_index[e2]));
             _repShuffle[_impl.FindSet(_index[e2])] = _index[e2];
         }
 
+        /// <summary>
+        /// Represents this data structure as a lookup, providing the representant of each element.
+        /// </summary>
         public ILookup<T, T> ToLookup()
         {
             return _elems.ToLookup(e => Find(e));
@@ -73,6 +103,13 @@ namespace SystemSharp.SetAlgorithms
 
     public static class SetOperations
     {
+        /// <summary>
+        /// Creates a union-find data structure.
+        /// </summary>
+        /// <typeparam name="T">type of a set element</typeparam>
+        /// <param name="a">set adapter</param>
+        /// <param name="elems">The list of set elements. It is assumed that the list index of each set element
+        /// matched the index returned by the set adapter.</param>
         public static UnionFind<T> CreateUnionFind<T>(this ISetAdapter<T> a, IList<T> elems)
         {
             return new UnionFind<T>(a, elems);

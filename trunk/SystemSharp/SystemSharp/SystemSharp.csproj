@@ -316,7 +316,6 @@
     <Compile Include="SystemSharp\HLS\SchedulingAlgorithms\ForceDirectedScheduling.cs" />
     <Compile Include="SystemSharp\HLS\InterconnectAlgorithms\SlimMux.cs" />
     <Compile Include="SystemSharp\SetAlgorithms\SetAlgorithms.cs" />
-    <Compile Include="SystemSharp\Synthesis\CSharp\SourceGenerator.cs" />
     <Compile Include="SystemSharp\Synthesis\DefaultMemoryLayoutAlgorithm.cs" />
     <Compile Include="SystemSharp\Synthesis\DocGen\DocumentationGenerator.cs" />
     <Compile Include="SystemSharp\Synthesis\DocGen\DocumentationProject.cs" />

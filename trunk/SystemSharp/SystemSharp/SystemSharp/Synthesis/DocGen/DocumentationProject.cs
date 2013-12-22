@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,10 +25,17 @@ using System.Text;
 
 namespace SystemSharp.Synthesis.DocGen
 {
+    /// <summary>
+    /// A documentation project gathers a collection of documentation files.
+    /// </summary>
     public class DocumentationProject: IProject
     {
         public string RootPath { get; private set; }
 
+        /// <summary>
+        /// Constructs a documentation project.
+        /// </summary>
+        /// <param name="rootPath">path to project root directory</param>
         public DocumentationProject(string rootPath)
         {
             RootPath = rootPath;
