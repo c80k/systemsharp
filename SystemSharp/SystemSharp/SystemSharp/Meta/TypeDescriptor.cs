@@ -31,27 +31,73 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Meta
 {
+    /// <summary>
+    /// Provides options for creating a value instance from a type descriptor.
+    /// </summary>
     [Flags]
     public enum ETypeCreationOptions
     {
+        /// <summary>
+        /// Default option: Return any instance that suits the type descriptor.
+        /// </summary>
         AnyObject = 0,
+
+        /// <summary>
+        /// Return an instance that behaves neutrally under addition (i.e. 0 of whatever type).
+        /// </summary>
         AdditiveNeutral = 1,
+
+        /// <summary>
+        /// Return an instance that behaves neutrally under multiplication (i.e. 1 of whatever type).
+        /// </summary>
         MultiplicativeNeutral = 2,
+
+        /// <summary>
+        /// Always create an instance, even if type information is incomplete, such that the type is ambiguous.
+        /// </summary>
         ForceCreation = 4,
+
+        /// <summary>
+        /// Return <c>null</c> if type information is incomplete (instead of throwing an exception).
+        /// </summary>
         ReturnNullIfUnavailable = 8,
+
+        /// <summary>
+        /// Return an instance which is different from 0 in an algebraic sense, i.e. the opposite of <c>AdditiveNeutral</c>.
+        /// </summary>
         NonZero = 16
     }
 
+    /// <summary>
+    /// Factory interface for algebraic types, i.e. types which support basic arithmetics, including 
+    /// additive neutral and multiplicative neutral elements.
+    /// </summary>
     public interface IAlgebraicTypeFactory
     {
+        /// <summary>
+        /// Creates a value.
+        /// </summary>
+        /// <param name="options">creation options</param>
+        /// <param name="template">exemplary value of another instance</param>
+        /// <returns>a value according to the creation options</returns>
         object CreateInstance(ETypeCreationOptions options, object template);
     }
 
+    /// <summary>
+    /// Abstract attribute base class to be attached to any algebraic data type, i.e. a type which support basic arithmetics, 
+    /// including additive neutral and multiplicative neutral elements.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Struct, Inherited = true)]
     public abstract class AlgebraicTypeAttribute :
         Attribute,
         IAlgebraicTypeFactory
     {
+        /// <summary>
+        /// Creates a value.
+        /// </summary>
+        /// <param name="options">creation options</param>
+        /// <param name="template">exemplary value of another instance</param>
+        /// <returns>a value according to the creation options</returns>
         public abstract object CreateInstance(ETypeCreationOptions options, object template);
     }
 
@@ -61,20 +107,72 @@ namespace SystemSharp.Meta
         public static readonly RootTypeLibrary Instance = new RootTypeLibrary();
     }
 
+    /// <summary>
+    /// Describes a type.
+    /// </summary>
+    /// <remarks>
+    /// In .NET/CLI, a type is completely described by an instance of <c>System.Reflection.Type</c>. However, for System#
+    /// this information is not sufficient. E.g. we consider a <c>Signed</c> value of 12 bits length to have a different type
+    /// than a <c>Signed</c> value of 16 bits length. This is solved by so-called type parameters. A type parameter is a property
+    /// of a type whose per-instance value is considered to contribute to its type. Thus, type descriptors provide a more
+    /// detailed type system which was specifically designed for hardware/embedded modelling.
+    /// </remarks>
     public class TypeDescriptor :
         DescriptorBase
     {
+        /// <summary>
+        /// Type descriptor of <c>typeof(void)</c>.
+        /// </summary>
         public static readonly TypeDescriptor VoidType = new TypeDescriptor(typeof(void));
+
+        /// <summary>
+        /// Type descriptor of <c>typeof(object)</c>.
+        /// </summary>
         public static readonly TypeDescriptor NullType = new TypeDescriptor(typeof(object));
 
+        /// <summary>
+        /// The underlying CLI type information.
+        /// </summary>
         public Type CILType { get; private set; }
+
+        /// <summary>
+        /// Whether the descriptor describes a System#-intrinsic type.
+        /// </summary>
         public bool HasIntrinsicTypeOverride { get; private set; }
+
+        /// <summary>
+        /// The System#-intrinsic type symbol.
+        /// </summary>
         public EIntrinsicTypes IntrinsicTypeOverride { get; private set; }
+
+        /// <summary>
+        /// The package in which this type descriptor is logically contained.
+        /// </summary>
         public PackageDescriptor Package { get; internal set; }
+
+        /// <summary>
+        /// All type parameters.
+        /// </summary>
         public object[] TypeParams { get; private set; }
+
+        /// <summary>
+        /// All type parameters converted to range constraints.
+        /// </summary>
         public Range[] Constraints { get; private set; }
+
+        /// <summary>
+        /// Whether this type descriptor was artificially constructed during analysis of an array.
+        /// </summary>
         public bool IsArtificial { get; private set; }
+
+        /// <summary>
+        /// Whether the described type does not have any type parameters.
+        /// </summary>
         public bool IsUnconstrained { get; private set; }
+
+        /// <summary>
+        /// The type of an array element if this descriptor describes an array.
+        /// </summary>
         public TypeDescriptor Element0Type { get; private set; }
         private object _sample;
         private Dictionary<MemberInfo, TypeDescriptor> _memberTypes = new Dictionary<MemberInfo, TypeDescriptor>();
@@ -88,6 +186,12 @@ namespace SystemSharp.Meta
         {
         }
 
+        /// <summary>
+        /// Constructs a type descriptor.
+        /// </summary>
+        /// <param name="sample">sample value from which to extract the type information</param>
+        /// <param name="asPointer">whether to construct a pointer type</param>
+        /// <param name="asReference">whether to construct a reference type</param>
         public TypeDescriptor(object sample, bool asPointer = false, bool asReference = false)
         {
             _sample = sample;
@@ -102,6 +206,12 @@ namespace SystemSharp.Meta
             Owner = RootTypeLibrary.Instance;
         }
 
+        /// <summary>
+        /// Constructs a type descriptor.
+        /// </summary>
+        /// <param name="cilType">CLI type</param>
+        /// <param name="asPointer">whether to construct a pointer type</param>
+        /// <param name="asReference">whether to construct a reference type</param>
         public TypeDescriptor(Type cilType, bool asPointer = false, bool asReference = false)
         {
             CILType = cilType;
@@ -206,26 +316,41 @@ namespace SystemSharp.Meta
             Element0Type = GetElement0Type();
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if all necessary information to fully describe the type is complete.
+        /// </summary>
         public bool IsComplete
         {
             get { return _sample != null || TypeParams.Length == 0 || IsUnconstrained; }
         }
 
+        /// <summary>
+        /// Returns the rank of the described array, or 0 if the type is not an array.
+        /// </summary>
         public int Rank
         {
             get { return TypeParams.Length; }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if this descriptor describes an array and has type parameters.
+        /// </summary>
         public bool IsConstrained
         {
             get { return Rank > 0 && !IsUnconstrained; }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if this descriptor describes a type reference.
+        /// </summary>
         public bool IsByRef
         {
             get { return CILType.IsByRef; }
         }
 
+        /// <summary>
+        /// Represents the described multi-dimensional array as array of arrays. Only applicable to array types.
+        /// </summary>
         public TypeDescriptor[] MakeRank1Types()
         {
             if (Rank == 0)
@@ -259,6 +384,9 @@ namespace SystemSharp.Meta
             return result;
         }
 
+        /// <summary>
+        /// Clones this type and clears the constraints of the first dimension. Only applicable to constrained array types.
+        /// </summary>
         public TypeDescriptor MakeUnconstrainedType()
         {
             if (Rank == 0)
@@ -337,6 +465,10 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Returns the type descriptors of all elements of the described type.
+        /// </summary>
+        /// <returns></returns>
         public TypeDescriptor[] GetDependentTypes()
         {
             if (CILType.IsArray)
@@ -384,7 +516,7 @@ namespace SystemSharp.Meta
             }
         }
 
-        public string CheckStatic()
+        private string CheckStatic()
         {
             if (HasIntrinsicTypeOverride)
                 return null;
@@ -441,11 +573,18 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the described type complies with the static System# type system.
+        /// </summary>
         public bool IsStatic
         {
             get { return CheckStatic() == null; }
         }
 
+        /// <summary>
+        /// Checks whether the described type complies with the static System# type system and throws an exception
+        /// if it is not.
+        /// </summary>
         public void AssertStatic()
         {
             string msg = CheckStatic();
@@ -453,6 +592,9 @@ namespace SystemSharp.Meta
                 throw new InvalidOperationException("Type " + CILType.Name + ", sample instance " + _sample + ": " + msg);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the described type is not able to carry any information because it has a 0-sized constraint.
+        /// </summary>
         public bool IsEmptyType
         {
             get
@@ -552,6 +694,9 @@ namespace SystemSharp.Meta
             return hash;
         }
 
+        /// <summary>
+        /// Returns the dimensional specification of the described type.
+        /// </summary>
         public IndexSpec Index
         {
             get
@@ -563,6 +708,9 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Creates a type descriptor from a CLI type.
+        /// </summary>
         [Pure]
         public static TypeDescriptor MakeType(Type type)
         {
@@ -570,6 +718,9 @@ namespace SystemSharp.Meta
             return new TypeDescriptor(type);
         }
 
+        /// <summary>
+        /// Creates a type descriptor from an instance.
+        /// </summary>
         [Pure]
         public static TypeDescriptor GetTypeOf(object instance)
         {
@@ -577,6 +728,9 @@ namespace SystemSharp.Meta
             return new TypeDescriptor(instance);
         }
 
+        /// <summary>
+        /// Creates a type descriptor from a type and an optional instance.
+        /// </summary>
         [Pure]
         public static TypeDescriptor MakeType(object instance, Type type)
         {
@@ -589,6 +743,9 @@ namespace SystemSharp.Meta
                 return GetTypeOf(instance);
         }
 
+        /// <summary>
+        /// Represents the described type as reference type.
+        /// </summary>
         public TypeDescriptor AsByRefType()
         {
             if (_sample != null)
@@ -597,6 +754,9 @@ namespace SystemSharp.Meta
                 return new TypeDescriptor(CILType, false, true);
         }
 
+        /// <summary>
+        /// Represents the describes type as pointer type.
+        /// </summary>
         public TypeDescriptor AsPointerType()
         {
             if (_sample != null)
@@ -605,11 +765,18 @@ namespace SystemSharp.Meta
                 return new TypeDescriptor(CILType, true, false);
         }
 
+        /// <summary>
+        /// Implicitly converts the CLI type to a type descriptor.
+        /// </summary>
         public static implicit operator TypeDescriptor(Type type)
         {
             return MakeType(type);
         }
 
+        /// <summary>
+        /// Creates a sample instance of the described type.
+        /// </summary>
+        /// <param name="options">creation options</param>
         public object GetSampleInstance(ETypeCreationOptions options = ETypeCreationOptions.AnyObject)
         {
             Contract.Requires(
@@ -641,6 +808,11 @@ namespace SystemSharp.Meta
             return inst;
         }
 
+        /// <summary>
+        /// Returns a type descriptor for a field of the described type.
+        /// </summary>
+        /// <param name="field">field of the described type</param>
+        /// <returns>descriptor for specified field</returns>
         public TypeDescriptor GetFieldType(FieldInfo field)
         {
             TypeDescriptor result;

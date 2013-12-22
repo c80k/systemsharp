@@ -32,6 +32,17 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
+    /// <summary>
+    /// Provides services for late injection of attributes to CLI objects.
+    /// </summary>
+    /// <remarks>
+    /// We know CLI attributes as a means of associating elements, such as types, methods or fields, with meta information.
+    /// The respective element needs to be associated with the attribute at compile time. So once the code is compiled, there
+    /// is no chance to associate it with any new attribute. This class provides a concept of associating CLI objects with 
+    /// attributes during runtime. It does so by internally retaining weak hash maps of the augmented objects. Please note:
+    /// In order to query a lately injected attribute, you cannot go by the CLI reflection API any more, because that API
+    /// does not know about the existence of this class. Instead, you the methods of this class.
+    /// </remarks>
     public static class AttributeInjector
     {
         private static ConditionalWeakTable<Type, List<Attribute>> _typeAttrs =
@@ -51,6 +62,13 @@ namespace SystemSharp.Components
 
         private static List<object> _retainRefList = new List<object>();
 
+        /// <summary>
+        /// Attaches an attribute to a type.
+        /// </summary>
+        /// <param name="type">type to be associated with an attribute</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void Inject(Type type, Attribute attribute, bool retainRef = false)
         {
             var list = _typeAttrs.GetOrCreateValue(type);
@@ -60,6 +78,13 @@ namespace SystemSharp.Components
                 _retainRefList.Add(type);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a method.
+        /// </summary>
+        /// <param name="method">method to be associated with an attribute</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void Inject(MethodBase method, Attribute attribute, bool retainRef = false)
         {
             var list = _methodAttrs.GetOrCreateValue(method);
@@ -68,6 +93,13 @@ namespace SystemSharp.Components
                 _retainRefList.Add(method);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a field.
+        /// </summary>
+        /// <param name="field">field to be associated with an attribute</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void Inject(FieldInfo field, Attribute attribute, bool retainRef = false)
         {
             var list = _fieldAttrs.GetOrCreateValue(field);
@@ -76,6 +108,13 @@ namespace SystemSharp.Components
                 _retainRefList.Add(field);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a method, but only if the method is not yet associated with an equal instance of the attribute.
+        /// </summary>
+        /// <param name="method">type to be associated with an attribute</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void InjectOnce(MethodBase method, Attribute attribute, bool retainRef = false)
         {
             var list = _methodAttrs.GetOrCreateValue(method);
@@ -85,6 +124,14 @@ namespace SystemSharp.Components
                 _retainRefList.Add(method);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a method, specified by declaring type and method name.
+        /// </summary>
+        /// <param name="type">declaring type of the method</param>
+        /// <param name="methodName">name of the method</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void InjectMethodByNameAttr(Type type, string methodName, Attribute attribute, bool retainRef = false)
         {
             var dic = _methodByNameAttrs.GetOrCreateValue(type);
@@ -94,6 +141,13 @@ namespace SystemSharp.Components
                 _retainRefList.Add(type);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a method of a certain instance, 
+        /// but only if the method is not yet associated with an equal instance of the attribute.
+        /// </summary>
+        /// <param name="method">type to be associated with an attribute</param>
+        /// <param name="instance">instance on which the method is called</param>
+        /// <param name="attribute">attribute to attach</param>
         public static void InjectOnce(MethodBase method, object instance, Attribute attribute)
         {
             var dic = _methodInstAttrs.GetOrCreateValue(instance);
@@ -102,6 +156,14 @@ namespace SystemSharp.Components
                 list.Add(attribute);
         }
 
+        /// <summary>
+        /// Attaches an attribute to each method with a particular name.
+        /// </summary>
+        /// <param name="type">declaring type of the methods</param>
+        /// <param name="methodName">name of the method(s)</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void InjectEach(Type type, string methodName, Attribute attribute, bool retainRef = false)
         {
             foreach (MethodBase method in type.GetMethods().Where(x => x.Name == methodName))
@@ -110,6 +172,13 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Attaches an attribute to each constructor of a certain type.
+        /// </summary>
+        /// <param name="type">type whose constructors are to be equipped with the attribute</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void InjectEachCtor(Type type, Attribute attribute, bool retainRef = false)
         {
             foreach (MethodBase method in type.GetConstructors())
@@ -118,6 +187,14 @@ namespace SystemSharp.Components
             }
         }
 
+        /// <summary>
+        /// Attaches an attribute to a property with a certain name.
+        /// </summary>
+        /// <param name="type">declaring type of the property</param>
+        /// <param name="propName">name of the property</param>
+        /// <param name="attribute">attribute to attach</param>
+        /// <param name="retainRef"><c>true</c> if the attribute should be retained even if the type information 
+        /// is garbage-collected</param>
         public static void InjectToProperty(Type type, string propName, Attribute attribute, bool retainRef = false)
         {
             Contract.Requires(propName != null);
@@ -131,6 +208,11 @@ namespace SystemSharp.Components
                 _retainRefList.Add(pi);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a method parameter.
+        /// </summary>
+        /// <param name="pi">method parameter</param>
+        /// <param name="attribute">attribute to attach</param>
         public static void Inject(ParameterInfo pi, Attribute attribute)
         {
             Contract.Requires(pi != null);
@@ -141,6 +223,11 @@ namespace SystemSharp.Components
                 list.Add(attribute);
         }
 
+        /// <summary>
+        /// Attaches an attribute to a field
+        /// </summary>
+        /// <param name="fi">field</param>
+        /// <param name="attribute">attribute to attach</param>
         public static void Inject(FieldInfo fi, Attribute attribute)
         {
             Contract.Requires(fi != null);
@@ -149,6 +236,12 @@ namespace SystemSharp.Components
             _fieldAttrs.GetOrCreateValue(fi).Add(attribute);
         }
 
+        /// <summary>
+        /// Selects all attributes which are compatible with a certain type from an object enumeration.
+        /// </summary>
+        /// <param name="attrs">object enumeration</param>
+        /// <param name="type">type of requested attribute</param>
+        /// <returns>sub-sequence of attributes with desired type</returns>
         public static IEnumerable<Attribute> SelectAttributes(IEnumerable<object> attrs, Type type)
         {
             return attrs
@@ -156,6 +249,12 @@ namespace SystemSharp.Components
                 .Cast<Attribute>();
         }
 
+        /// <summary>
+        /// Returns all attributes which were attached to a type by attribute injection.
+        /// </summary>
+        /// <param name="thisType">type of query</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>injected attributes</returns>
         public static Attribute[] GetInjectedAttributes(this Type thisType, Type type)
         {
             var r1 = SelectAttributes(thisType.GetBaseTypeChain()
@@ -170,6 +269,12 @@ namespace SystemSharp.Components
             return r1.Concat(r2).ToArray();
         }
 
+        /// <summary>
+        /// Returns all attributes which were attached to a method or constructor by attribute injection.
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>injected attributes</returns>
         public static Attribute[] GetInjectedAttributes(this MethodBase method, Type type)
         {
             var r1 = _methodAttrs.GetOrCreateValue(method);
@@ -214,12 +319,26 @@ namespace SystemSharp.Components
             return SelectAttributes(r1.Concat(r2).Concat(r3).Concat(r4), type).ToArray();
         }
 
+        /// <summary>
+        /// Returns all attributes which were attached to a certain method or 
+        /// constructor for a specific instance by attribute injection.
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <param name="instance">instance on which method or constructor is called</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>injected attributes</returns>
         public static Attribute[] GetInjectedAttributes(this MethodBase method, object instance, Type type)
         {
             List<Attribute> result = _methodInstAttrs.GetOrCreateValue(instance).Get(method.MethodHandle);
             return SelectAttributes(result, type).ToArray();
         }
 
+        /// <summary>
+        /// Returns all attributes which were attached to a certain property.
+        /// </summary>
+        /// <param name="pi">property</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>injected attributes</returns>
         public static Attribute[] GetInjectedAttributes(this PropertyInfo pi, Type type)
         {
             var r1 = SelectAttributes(_propAttrs.GetOrCreateValue(pi), type);
@@ -236,12 +355,24 @@ namespace SystemSharp.Components
             return r1.Concat(r2).ToArray();
         }
 
+        /// <summary>
+        /// Returns all attributes which were attached to a certain method parameter by attribute injection.
+        /// </summary>
+        /// <param name="pi">method parameter</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>all injected attributed</returns>
         public static Attribute[] GetInjectedAttributes(this ParameterInfo pi, Type type)
         {
             var result = _paramAttrs.GetOrCreateValue(pi);
             return SelectAttributes(result, type).ToArray();
         }
 
+        /// <summary>
+        /// Returns all pre-compiled and injected attributes of a certain type.
+        /// </summary>
+        /// <param name="thisType">type to query for attributes</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled and injected attributes</returns>
         public static Attribute[] GetCustomAndInjectedAttributes(this Type thisType,
             Type type)
         {
@@ -250,16 +381,34 @@ namespace SystemSharp.Components
             return result1.Union(result2).ToArray();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <param name="thisType">type to query for attribute</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static Attribute GetCustomOrInjectedAttribute(this Type thisType, Type type)
         {
             return GetCustomAndInjectedAttributes(thisType, type).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="thisType">type to query for attribute</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static T GetCustomOrInjectedAttribute<T>(this Type thisType)
         {
             return (T)(object)GetCustomOrInjectedAttribute(thisType, typeof(T));
         }
 
+        /// <summary>
+        /// Returns all pre-compiled or injected attributes of a certain method or constructor.
+        /// </summary>
+        /// <param name="method">method or constructor to query</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attributes</returns>
         public static Attribute[] GetCustomAndInjectedAttributes(this MethodBase method,
             Type type)
         {
@@ -268,11 +417,25 @@ namespace SystemSharp.Components
             return result1.Union(result2).ToArray();
         }
 
+        /// <summary>
+        /// Returns all pre-compiled or injected attributes of a certain method or constructor.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="method">method or constructor to query</param>
+        /// <returns>pre-commpiled or injected attributes</returns>
         public static T[] GetCustomAndInjectedAttributes<T>(this MethodBase method)
         {
             return GetCustomAndInjectedAttributes(method, typeof(T)).Cast<T>().ToArray();
         }
 
+        /// <summary>
+        /// Returns all pre-compiled or injected attributes of a certain method or constructor
+        /// on a specific instance.
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <param name="instance">instance on which method or constructor is called</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attributes</returns>
         public static Attribute[] GetCustomAndInjectedAttributes(this MethodBase method,
             object instance, Type type)
         {
@@ -282,6 +445,12 @@ namespace SystemSharp.Components
             return result1.Union(result2).Union(result3).ToArray();
         }
 
+        /// <summary>
+        /// Returns all pre-compiled or injected attributes of a certain field.
+        /// </summary>
+        /// <param name="field">field</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attributes</returns>
         public static Attribute[] GetCustomAndInjectedAttributes(this FieldInfo field, Type type)
         {
             IEnumerable<Attribute> result1 = SelectAttributes(Attribute.GetCustomAttributes(field, true), type);
@@ -289,61 +458,129 @@ namespace SystemSharp.Components
             return result1.Union(result2).ToArray();
         }
 
+        /// <summary>
+        /// Returns all pre-compiled or injected attributes of a certain field.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="field">field</param>
+        /// <returns>pre-compiled or injected attributes</returns>
         public static T[] GetCustomAndInjectedAttributes<T>(this FieldInfo field)
         {
             return GetCustomAndInjectedAttributes(field, typeof(T)).Cast<T>().ToArray();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain method or constructor.
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static Attribute GetCustomOrInjectedAttribute(this MethodBase method, Type type)
         {
             Attribute[] attrs = GetCustomAndInjectedAttributes(method, type);
             return attrs.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain method or constructor.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="method">method or constructor</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static T GetCustomOrInjectedAttribute<T>(this MethodBase method) where T : Attribute
         {
             Attribute[] attrs = GetCustomAndInjectedAttributes(method, typeof(T));
             return (T)attrs.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain method or constructor 
+        /// on a specific instance.
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <param name="instance">instance on which method or constructor is called</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static Attribute GetCustomOrInjectedAttribute(this MethodBase method, object instance, Type type)
         {
             Attribute[] attrs = GetCustomAndInjectedAttributes(method, instance, type);
             return attrs.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain field.
+        /// </summary>
+        /// <param name="field">field</param>
+        /// <param name="type">type of attibute to query</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static Attribute GetCustomOrInjectedAttribute(this FieldInfo field, Type type)
         {
             Attribute[] attrs = GetCustomAndInjectedAttributes(field, type);
             return attrs.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain field.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="field">field</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static T GetCustomOrInjectedAttribute<T>(this FieldInfo field) where T : Attribute
         {
             Attribute[] attrs = GetCustomAndInjectedAttributes(field, typeof(T));
             return (T)attrs.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the method or constructor has a pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <param name="method">method or constructor</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns><c>true</c> if there is such an attribute, <c>false</c> if not</returns>
         public static bool HasCustomOrInjectedAttribute(this MethodBase method, Type type)
         {
             return GetCustomOrInjectedAttribute(method, type) != null;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the method or constructor has a pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="method">method or constructor</param>
+        /// <returns><c>true</c> if there is such an attribute, <c>false</c> if not</returns>
         public static bool HasCustomOrInjectedAttribute<T>(this MethodBase method)
         {
             return HasCustomOrInjectedAttribute(method, typeof(T));
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the field has a pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <param name="field">field</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns><c>true</c> if there is such an attribute, <c>false</c> if not</returns>
         public static bool HasCustomOrInjectedAttribute(this FieldInfo field, Type type)
         {
             return GetCustomOrInjectedAttribute(field, type) != null;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the field has a pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="field">field</param>
+        /// <returns><c>true</c> if there is such an attribute, <c>false</c> if not</returns>
         public static bool HasCustomOrInjectedAttribute<T>(this FieldInfo field)
         {
             return HasCustomOrInjectedAttribute(field, typeof(T));
         }
 
+        /// <summary>
+        /// Returns all pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <param name="pi">property to query</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attributes</returns>
         public static Attribute[] GetCustomAndInjectedAttributes(this PropertyInfo pi, Type type)
         {
             IEnumerable<Attribute> result1 = SelectAttributes(Attribute.GetCustomAttributes(pi, true), type);
@@ -351,21 +588,45 @@ namespace SystemSharp.Components
             return result1.Union(result2).ToArray();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <param name="pi">property to query</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled to injected attribute of specified type, or <c>null</c> if no such exists</returns>
         public static Attribute GetCustomOrInjectedAttribute(this PropertyInfo pi, Type type)
         {
             return GetCustomAndInjectedAttributes(pi, type).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="pi">property to query</param>
+        /// <returns>pre-compiled to injected attribute of specified type, or <c>null</c> if no such exists</returns>
         public static T GetCustomOrInjectedAttribute<T>(this PropertyInfo pi) where T : Attribute
         {
             return (T)GetCustomOrInjectedAttribute(pi, typeof(T));
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the property has a pre-compiled or injected attribute of a certain type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="pi">property</param>
+        /// <returns><c>true</c> if the property has an attribute of specified type, <c>false</c> if not</returns>
         public static bool HasCustomOrInjectedAttribute<T>(this PropertyInfo pi) where T : Attribute
         {
             return pi.GetCustomOrInjectedAttribute<T>() != null;
         }
 
+        /// <summary>
+        /// Returns all pre-compiled and injected attributes of the method parameter.
+        /// </summary>
+        /// <param name="pi">method parameter</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attributes</returns>
         public static Attribute[] GetCustomAndInjectedAttributes(this ParameterInfo pi,
             Type type)
         {
@@ -374,16 +635,34 @@ namespace SystemSharp.Components
             return result1.Union(result2).ToArray();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of the method parameter.
+        /// </summary>
+        /// <param name="pi">method parameter</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static Attribute GetCustomOrInjectedAttribute(this ParameterInfo pi, Type type)
         {
             return GetCustomAndInjectedAttributes(pi, type).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Returns a single pre-compiled or injected attribute of the method parameter.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="pi">method parameter</param>
+        /// <returns>pre-compiled or injected attribute, <c>null</c> if no such exists</returns>
         public static T GetCustomOrInjectedAttribute<T>(this ParameterInfo pi)
         {
             return (T)(object)GetCustomOrInjectedAttribute(pi, typeof(T));
         }
 
+        /// <summary>
+        /// Returns all attributes which were attached to the field by attribute injection.
+        /// </summary>
+        /// <param name="fi">field</param>
+        /// <param name="type">type of attribute to query</param>
+        /// <returns>all injected attributes of specified type</returns>
         public static Attribute[] GetInjectedAttributes(this FieldInfo fi, Type type)
         {
             var r1 = SelectAttributes(_fieldAttrs.GetOrCreateValue(fi), type);
@@ -400,6 +679,12 @@ namespace SystemSharp.Components
             return r1.Concat(r2).ToArray();
         }
 
+        /// <summary>
+        /// Returns all attributes with specified type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="obj">attribute container</param>
+        /// <returns>all attributes of desired type</returns>
         public static T[] GetAttributes<T>(this IHasAttributes obj) where T : Attribute
         {
             return obj.GetAttributes()
@@ -408,14 +693,26 @@ namespace SystemSharp.Components
                 .ToArray();
         }
 
+        /// <summary>
+        /// Returns a single attribute with specified type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="obj">attribute container</param>
+        /// <returns>attribute of desired type, or <c>null</c> if no such exists</returns>
         public static T GetAttribute<T>(this IHasAttributes obj) where T : Attribute
         {
             return GetAttributes<T>(obj).SingleOrDefault();
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the attribute container has an attribute with specified type.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to query</typeparam>
+        /// <param name="obj">attribute container</param>
+        /// <returns><c>true</c> if the container has an attribute of specified type, <c>false</c> if not</returns>
         public static bool HasAttribute<T>(this IHasAttributes obj) where T : Attribute
         {
-            return GetAttribute<T>(obj) != default(T);
+            return GetAttribute<T>(obj) != null;
         }
 
         static AttributeInjector()
@@ -616,8 +913,14 @@ namespace SystemSharp.Components
         }
     }
 
+    /// <summary>
+    /// An attribute container, i.e. an object which provides per-instance attributes.
+    /// </summary>
     public interface IHasAttributes
     {
+        /// <summary>
+        /// Returns all attributes of this container.
+        /// </summary>
         Attribute[] GetAttributes();
     }
 }

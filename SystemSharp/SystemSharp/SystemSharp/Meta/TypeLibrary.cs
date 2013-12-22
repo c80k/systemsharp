@@ -25,6 +25,9 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Meta
 {
+    /// <summary>
+    /// A type library hosts type descriptors.
+    /// </summary>
     public class TypeLibrary
     {
         private Dictionary<string, PackageDescriptor> _pkgMap =
@@ -33,11 +36,20 @@ namespace SystemSharp.Meta
             new Dictionary<TypeDescriptor, TypeDescriptor>();
         private DesignDescriptor _design;
 
+        /// <summary>
+        /// Constructs a type library.
+        /// </summary>
+        /// <param name="design">associated design</param>
         public TypeLibrary(DesignDescriptor design)
         {
             _design = design;
         }
 
+        /// <summary>
+        /// Retrieves a suitable package to put a certain type into.
+        /// </summary>
+        /// <param name="type">type for which a suitable package is desired</param>
+        /// <returns>suitable package</returns>
         public PackageDescriptor GetPackage(Type type)
         {
             string pkgName = type.Namespace;
@@ -53,6 +65,11 @@ namespace SystemSharp.Meta
             return pd;
         }
 
+        /// <summary>
+        /// Internalizes a type descriptor.
+        /// </summary>
+        /// <param name="td">a type descriptor</param>
+        /// <returns>equivalent type descriptor which is contained inside the library</returns>
         public TypeDescriptor Canonicalize(TypeDescriptor td)
         {
             TypeDescriptor tdOut;
@@ -74,6 +91,11 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Adds a type to the type library.
+        /// </summary>
+        /// <param name="td">type to add</param>
+        /// <returns>equivalent type descriptor which is contained inside the library</returns>
         public TypeDescriptor AddType(TypeDescriptor td)
         {
             if (td.HasIntrinsicTypeOverride ||
@@ -105,6 +127,9 @@ namespace SystemSharp.Meta
             return Canonicalize(td);
         }
 
+        /// <summary>
+        /// Returns all types which are not arrays or not complete.
+        /// </summary>
         public IEnumerable<TypeDescriptor> AllRank0OrIncompleteTypes
         {
             get
@@ -113,6 +138,9 @@ namespace SystemSharp.Meta
             }
         }
 
+        /// <summary>
+        /// Returns all packages which are hosted by the type library.
+        /// </summary>
         public IEnumerable<PackageDescriptor> Packages
         {
             get
