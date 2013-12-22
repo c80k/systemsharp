@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,10 +25,16 @@ using SystemSharp.Common;
 
 namespace SystemSharp.Synthesis
 {
+    /// <summary>
+    /// Indicates that an attempt to synthesize a memory layout failed.
+    /// </summary>
     public class MemoryLayoutFailedException : Exception
     {
     }
 
+    /// <summary>
+    /// Default implementation of a memory layout algorithm.
+    /// </summary>
     public class DefaultMemoryLayoutAlgorithm: IMemoryLayoutAlgorithm
     {
         private class MemRgn : IComparable<MemRgn>
