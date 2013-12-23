@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -270,6 +270,9 @@ namespace SystemSharp.SysDOM.Analysis
         }
     }
 
+    /// <summary>
+    /// Analyzes a SysDOM function for control variables inside loops and tries to infer their value range.
+    /// </summary>
     public class InductionVariableAnalyzer
     {
         class StatementVisitor : IStatementVisitor
@@ -462,21 +465,38 @@ namespace SystemSharp.SysDOM.Analysis
             stmt.Accept(new StatementVisitor(this));
         }
 
+        /// <summary>
+        /// Queries for a certain variable whether a value range contraint could be inferred.
+        /// </summary>
+        /// <param name="v">variable to query</param>
+        /// <returns><c>true</c> iff there is a value range constraint for the queried variable</returns>
         public bool IsConstrained(Variable v)
         {
             return !_unconstrainedVars.Contains(v) &&
                 _inductionVars.ContainsKey(v);
         }
 
+        /// <summary>
+        /// Retrieves the value range constraint for a specific variable.
+        /// </summary>
+        /// <param name="v">variable to query</param>
+        /// <param name="minValue">minimum value</param>
+        /// <param name="maxValue">maximum value</param>
+        /// <exception cref="ArgumentException">if no value range constraint exists for the specified variable</exception>
         public void GetRange(Variable v, out long minValue, out long maxValue)
         {
             if (!IsConstrained(v))
-                throw new InvalidOperationException();
+                throw new ArgumentException("no value range constraint found", "v");
             IVRange range = _ivLoopRange[v];
             minValue = range.MinValue;
             maxValue = range.MaxValue;
         }
 
+        /// <summary>
+        /// Runs induction variable analysis on a particular statement, usually a function body.
+        /// </summary>
+        /// <param name="stmt">statement to analyse</param>
+        /// <returns>analysis results as an instance of this class</returns>
         public static InductionVariableAnalyzer Run(Statement stmt)
         {
             Statement clone = stmt.Clone;

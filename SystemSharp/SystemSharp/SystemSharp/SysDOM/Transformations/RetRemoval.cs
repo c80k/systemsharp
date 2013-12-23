@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -214,8 +214,24 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
+    /// <summary>
+    /// This static class provides a service for replacing all inner "return" statements of a given statement with 
+    /// "goto" statements to the function exit point.
+    /// </summary>
+    /// <remarks>
+    /// The motivation for this transformation is that "return" statements might be illegal under some circumstances,
+    /// depending on the target language. E.g. VHDL does not allow "return" statements inside a process.
+    /// </remarks>
     public static class RetRemoval
     {
+        /// <summary>
+        /// Replaces all inner "return" statements of the given statement with "goto" statements to the function
+        /// exit point.
+        /// </summary>
+        /// <param name="stmt">top-level statement</param>
+        /// <param name="returnVariable">out parameter to receive a newly created local variable for the function
+        /// return value (if applicable)</param>
+        /// <returns>re-written statement with removed "return" statements</returns>
         public static Statement RemoveRets(this Statement stmt, out Variable returnVariable)
         {
             Statement work = stmt.Clone;

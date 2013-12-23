@@ -30,6 +30,7 @@ using SystemSharp.Analysis;
 
 namespace SystemSharp.SysDOM.Eval
 {
+    [Obsolete("This class is subject to re-design and has not been maintained for a long time.")]
     public class StatementInterpreter: IStatementVisitor
     {
         private static Dictionary<MethodBase, Function> _funMap = new Dictionary<MethodBase, Function>();

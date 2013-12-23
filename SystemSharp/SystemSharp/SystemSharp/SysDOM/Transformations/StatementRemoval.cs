@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -103,7 +103,7 @@ namespace SystemSharp.SysDOM.Transformations
         #endregion
     }
 
-    public static class StatementRemoval
+    static class StatementRemoval
     {
         public static void RemoveAll(this Statement stmt, Statement toRemove)
         {

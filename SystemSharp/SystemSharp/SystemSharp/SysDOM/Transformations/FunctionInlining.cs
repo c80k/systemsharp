@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -308,8 +308,16 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
+    /// <summary>
+    /// This static class provides a service for inlining function calls.
+    /// </summary>
     public static class FunctionInlining
     {
+        /// <summary>
+        /// Recursively inlines all function calls, i.e. replaces each function call with the content of the called function.
+        /// </summary>
+        /// <param name="fun">function whose calls shall be inlined</param>
+        /// <returns>the modified function</returns>
         public static Function InlineCalls(this Function fun)
         {
             FunctionInliner fi = new FunctionInliner(fun);
@@ -317,6 +325,12 @@ namespace SystemSharp.SysDOM.Transformations
             return result;
         }
 
+        /// <summary>
+        /// Recursively inlines all function calls, i.e. replaces each function call with the content of the called function.
+        /// </summary>
+        /// <param name="fun">function whose calls shall be inlined</param>
+        /// <param name="inlinedFunctions">out parameter to receive an enumeration of all functions which were inlined</param>
+        /// <returns>the modified function</returns>
         public static Function InlineCalls(this Function fun, out IEnumerable<Function> inlinedFunctions)
         {
             InlineVerifier.CheckAllLocalsDeclared(fun);

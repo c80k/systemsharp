@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -250,8 +250,21 @@ namespace SystemSharp.SysDOM.Transformations
 
     }
 
+    /// <summary>
+    /// The static class provides a service for beautifying/simplifying "if" statements.
+    /// </summary>
     public static class IfStatementBeautification
     {
+        /// <summary>
+        /// Tries to beautify all "if" statements inside the given statement.
+        /// </summary>
+        /// <remarks>
+        /// The beautification process considers two cases. First, it locates empty bodies of if-then-else statements
+        /// in order to replace them by simpler if-then statements. Second, it detects negated conditions of if-then-else
+        /// statements. In those cases, the negation is removed, and the two statement bodies are swapped.
+        /// </remarks>
+        /// <param name="stmt">statement to beautify</param>
+        /// <returns>the beautified statement</returns>
         public static Statement BeautifyIfStatements(this Statement stmt)
         {
             IfStatementBeautifier isb = new IfStatementBeautifier(stmt);

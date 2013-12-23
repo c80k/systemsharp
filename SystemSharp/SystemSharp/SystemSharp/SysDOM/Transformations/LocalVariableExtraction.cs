@@ -56,8 +56,18 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
+    /// <summary>
+    /// This static class provides a service for re-enumerating all local variables which are accessed inside
+    /// a statement.
+    /// </summary>
     public static class LocalVariableExtraction
     {
+        /// <summary>
+        /// Re-assigns the indices of all local variables which are accessed inside the statement, such that they
+        /// build a 0-based continuous sequence.
+        /// </summary>
+        /// <param name="body">a statement</param>
+        /// <returns>an enumeration of all local variables which are accessed inside the statement</returns>
         public static IEnumerable<Variable> RenumerateLocalVariables(this Statement body)
         {
             var ext = new LocalVariableExtractor(body);
