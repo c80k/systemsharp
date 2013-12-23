@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -28,6 +28,9 @@ using SystemSharp.Meta;
 
 namespace SystemSharp.SysDOM.Transformations
 {
+    /// <summary>
+    /// Indicates that the tagged field should be converted to a local variable.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     public class LocalizeField : Attribute
     {
@@ -113,8 +116,18 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
+    /// <summary>
+    /// Provides a service for converting field accesses inside a function to local variables.
+    /// </summary>
     public static class FieldLocalization
     {
+        /// <summary>
+        /// Converts all field accesses of the function to local variable accesses, creating a new variable
+        /// for each accesses field.
+        /// </summary>
+        /// <param name="fun">function</param>
+        /// <param name="locals">out parameter to receive the newly created local variables</param>
+        /// <returns>the modified function</returns>
         public static Function ConvertFieldsToLocals(this Function fun, out Variable[] locals)
         {
             FieldLocalizer fl = new FieldLocalizer(fun);

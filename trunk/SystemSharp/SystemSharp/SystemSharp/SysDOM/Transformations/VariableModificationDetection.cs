@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -109,8 +109,19 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
+    /// <summary>
+    /// This static class provides a service to detect whether a statement modifies a certain variable.
+    /// </summary>
     public static class VariableModificationDetection
     {
+        /// <summary>
+        /// Returns <c>true</c> if the given statement modifies the given variable.
+        /// </summary>
+        /// <remarks>
+        /// The current implementation is not capable of detecting modifications of variables which are referenced as "out" arguments of some method.
+        /// </remarks>
+        /// <param name="stmt">statement</param>
+        /// <param name="variable">variable</param>
         public static bool Modifies(this Statement stmt, IStorable variable)
         {
             VariableModificationDetector vmd = new VariableModificationDetector(variable);

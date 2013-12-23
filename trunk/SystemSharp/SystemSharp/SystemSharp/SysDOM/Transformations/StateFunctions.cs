@@ -55,7 +55,7 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
-    public static class StateFunctions
+    static class StateFunctions
     {
         public static Function Streamline(this StateFunction sfun)
         {

@@ -31,6 +31,9 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.SysDOM
 {
+    /// <summary>
+    /// Visitor pattern interface for statements.
+    /// </summary>
     public interface IStatementVisitor
     {
         void AcceptCompoundStatement(CompoundStatement stmt);
@@ -50,6 +53,9 @@ namespace SystemSharp.SysDOM
         void AcceptCall(CallStatement stmt);
     }
 
+    /// <summary>
+    /// Abstract base class for a SysDOM statement.
+    /// </summary>
     public abstract class Statement: AttributedObject
     {
         internal class CloneContext
@@ -78,29 +84,67 @@ namespace SystemSharp.SysDOM
 
         public delegate bool EliminationPredicateFunc();
 
-        public abstract void Accept(IStatementVisitor visitor);        
+        /// <summary>
+        /// Accepts a statement visitor.
+        /// </summary>
+        /// <param name="visitor">visitor to accept</param>
+        public abstract void Accept(IStatementVisitor visitor);
+
+        /// <summary>
+        /// The following statement.
+        /// </summary>
         public Statement Successor { get; internal set; }
+
+        /// <summary>
+        /// The CIL bytecode offset of the statement.
+        /// </summary>
         public int ProgramCounter { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets a label which is used for branching instructions.
+        /// </summary>
         public string Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets an elimination predicate, i.e. a function delegate which returns <c>true</c>
+        /// if the statement should be eliminated from the output.
+        /// </summary>
         public EliminationPredicateFunc EliminationPredicate { get; set; }
+
+        /// <summary>
+        /// Comment on the statement.
+        /// </summary>
         public string Comment { get; internal set; }
 
+        /// <summary>
+        /// Accepts a visitor, but only if the statement is not subject to elimination.
+        /// </summary>
+        /// <param name="visitor">visitor to accept</param>
         public void AcceptIfEnabled(IStatementVisitor visitor)
         {
             if (!IsEliminated)
                 Accept(visitor);
         }
 
+        /// <summary>
+        /// Evaluates <c>EliminationPredicate</c> and returns the outcome.
+        /// </summary>
         public bool IsEliminated
         {
             get { return EliminationPredicate(); }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public Statement()
         {
             EliminationPredicate = () => false;
         }
 
+        /// <summary>
+        /// Returns a clone of this statement.
+        /// </summary>
         public Statement Clone
         {
             get
@@ -131,12 +175,21 @@ namespace SystemSharp.SysDOM
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Computes a user-readable textual representation of this statement.
+        /// </summary>
+        /// <param name="indent">indentation level</param>
+        /// <param name="sb">string builder to render output to</param>
         public virtual void ToString(int indent, StringBuilder sb)
         {
             if (Label != null)
                 sb.AppendLine(Label + ":");
         }
 
+        /// <summary>
+        /// Appends a user-readable textual representation of all attributes.
+        /// </summary>
+        /// <param name="sb">string builder to render output to</param>
         protected void AppendAttributes(StringBuilder sb)
         {
             if (Attributes.Any())
@@ -147,17 +200,30 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Appends whitespaces to the output, reflecting the given indentation level.
+        /// </summary>
+        /// <param name="n">indentation level</param>
+        /// <param name="sb">string builder to render output to</param>
         protected void Indent(int n, StringBuilder sb)
         {
             for (int i = 0; i < n; i++)
                 sb.Append("  ");
         }
 
+        /// <summary>
+        /// Performs a consistency check on the statement.
+        /// </summary>
         public void CheckConsistency()
         {
             Accept(new StatementConsistencyChecker());
         }
 
+        /// <summary>
+        /// Replaces all expressions that match a certain predicate.
+        /// </summary>
+        /// <param name="matchFn">match predicate</param>
+        /// <param name="exprGen">expression generator</param>
         public void ReplaceExpressions(
             Expression.MatchFunction matchFn,
             ExpressionGenerator exprGen)
@@ -170,6 +236,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Abstract base class for statements which have their own scope for local variables.
+    /// </summary>
     public abstract class ScopedStatement: Statement
     {
         public ScopedStatement()
@@ -180,17 +249,27 @@ namespace SystemSharp.SysDOM
         public List<IStorableLiteral> Locals { get; private set; }
     }
 
+    [Obsolete("part of an out-dated concept")]
     public abstract class MetaStatement : Statement
     {
     }
 
+    /// <summary>
+    /// A composition of other statements with sequential execution semantics.
+    /// </summary>
     public class CompoundStatement : ScopedStatement
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public CompoundStatement()
         {
             Statements = new List<Statement>();
         }
 
+        /// <summary>
+        /// Returns a list of all statements which are part of this statement.
+        /// </summary>
         public List<Statement> Statements { get; private set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -228,7 +307,7 @@ namespace SystemSharp.SysDOM
     }
 
     /// <summary>
-    /// The LoopBlock models a loop.
+    /// Represents a loop.
     /// </summary>
     /// <remarks>
     /// The same class is used to model simple loops as well as while-, for- and do-loops.
@@ -380,19 +459,34 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A simple statement does never have any inner statement(s).
+    /// </summary>
     public abstract class SimpleStatement : Statement
     {
     }
 
+    /// <summary>
+    /// A branch statement hands the program flow over to some different program location.
+    /// </summary>
     public abstract class BranchStatement : SimpleStatement
     {
     }
 
+    /// <summary>
+    /// Abstract base class for "break loop" and "continue loop".
+    /// </summary>
     public abstract class LoopControlStatement : BranchStatement
     {
+        /// <summary>
+        /// The loop this statement refers to.
+        /// </summary>
         public LoopBlock Loop { get; set; }
     }
 
+    /// <summary>
+    /// Models a "break loop" statement.
+    /// </summary>
     public class BreakLoopStatement : LoopControlStatement
     {
         public override void Accept(IStatementVisitor visitor)
@@ -430,10 +524,15 @@ namespace SystemSharp.SysDOM
                 return other.Loop == Loop;
             }
             else
+            {
                 return false;
+            }
         }
     }
 
+    /// <summary>
+    /// Models a "continue loop" statement.
+    /// </summary>
     public class ContinueLoopStatement : LoopControlStatement
     {
         public override void Accept(IStatementVisitor visitor)
@@ -471,12 +570,20 @@ namespace SystemSharp.SysDOM
                 return other.Loop == Loop;
             }
             else
+            {
                 return false;
+            }
         }
     }
 
+    /// <summary>
+    /// Models a "break case" statement.
+    /// </summary>
     public class BreakCaseStatement : BranchStatement
     {
+        /// <summary>
+        /// The case block this statement refers to.
+        /// </summary>
         public CaseStatement CaseStmt { get; set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -502,9 +609,19 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models to "goto case" statement.
+    /// </summary>
     public class GotoCaseStatement : BranchStatement
     {
+        /// <summary>
+        /// The case block this statement refers to.
+        /// </summary>
         public CaseStatement CaseStmt { get; set; }
+
+        /// <summary>
+        /// The target case branch index. First branch has index 0, second has index 1, and so on.
+        /// </summary>
         public int TargetIndex { get; set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -534,8 +651,14 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a "goto" statement.
+    /// </summary>
     public class GotoStatement : BranchStatement
     {
+        /// <summary>
+        /// The "goto" target.
+        /// </summary>
         public Statement Target { get; set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -564,8 +687,14 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a "return from procedure/function" statement.
+    /// </summary>
     public class ReturnStatement: BranchStatement
     {
+        /// <summary>
+        /// The return value expression, if any.
+        /// </summary>
         public Expression ReturnValue { get; set; }
 
         public override void ToString(int indent, StringBuilder sb)
@@ -590,8 +719,14 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a "throw exception" statement.
+    /// </summary>
     public class ThrowStatement : BranchStatement
     {
+        /// <summary>
+        /// The thrown expression.
+        /// </summary>
         public Expression ThrowExpr { get; set; }
 
         public override void ToString(int indent, StringBuilder sb)
@@ -617,9 +752,19 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a function/procedure call statement.
+    /// </summary>
     public class CallStatement : SimpleStatement
     {
+        /// <summary>
+        /// The called function/procedure.
+        /// </summary>
         public ICallable Callee { get; set; }
+
+        /// <summary>
+        /// The call arguments.
+        /// </summary>
         public Expression[] Arguments { get; set; }
 
         public override void ToString(int indent, StringBuilder sb)
@@ -653,15 +798,32 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models an "if-then-elsif-...-else" statement.
+    /// </summary>
     public class IfStatement : Statement
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public IfStatement()
         {
             Conditions = new List<Expression>();
             Branches = new List<Statement>();
         }
 
+        /// <summary>
+        /// The list of if/elsif conditions.
+        /// </summary>
         public List<Expression> Conditions { get; private set; }
+
+        /// <summary>
+        /// The list of then/elsif/else branches.
+        /// </summary>
+        /// <remarks>
+        /// For the statement to be valid, it must hold that the count of branches is equal to or one more than 
+        /// the count of conditions. If the counts are equal, this means that the "else" branch is omitted.
+        /// </remarks>
         public List<Statement> Branches { get; private set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -706,16 +868,38 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a "case select" statement.
+    /// </summary>
     public class CaseStatement : Statement
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public CaseStatement()
         {
             Cases = new List<Expression>();
             Branches = new List<Statement>();
         }
 
+        /// <summary>
+        /// The selector expression.
+        /// </summary>
         public Expression Selector { get; set; }
+
+        /// <summary>
+        /// The list of case conditions.
+        /// </summary>
         public List<Expression> Cases { get; private set; }
+
+        /// <summary>
+        /// The list of case actions.
+        /// </summary>
+        /// <remarks>
+        /// For the statement to be valid, it must hold that the count of branches is equal to or one more than 
+        /// the count of case conditions. If there is one more branch than conditions, the last branch is interpreted
+        /// as default action.
+        /// </remarks>
         public List<Statement> Branches { get; private set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -765,6 +949,10 @@ namespace SystemSharp.SysDOM
             return clone;
         }
 
+        /// <summary>
+        /// Converts this statement to if-then-else form.
+        /// </summary>
+        /// <returns>semantically equivalent if-then-else form</returns>
         public IfStatement ConvertToIfStatement()
         {
             List<Expression> conds = new List<Expression>();
@@ -780,6 +968,7 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    [Obsolete("part of an out-dated concept")]
     public class SolveStatement : MetaStatement
     {
         public EquationSystem EqSys { get; set; }
@@ -823,9 +1012,19 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a field/variable assignment or a signal transfer.
+    /// </summary>
     public class StoreStatement: SimpleStatement
     {
+        /// <summary>
+        /// The left-hand side: assignment target.
+        /// </summary>
         public IStorableLiteral Container { get; set; }
+
+        /// <summary>
+        /// The right-hand side expression of assignment.
+        /// </summary>
         public Expression Value { get; set; }
 
         public override void Accept(IStatementVisitor visitor)
@@ -853,6 +1052,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Models a "do nothing" statement.
+    /// </summary>
     public class NopStatement : SimpleStatement
     {
         public override void Accept(IStatementVisitor visitor)
@@ -875,7 +1077,10 @@ namespace SystemSharp.SysDOM
         }
     }
 
-    public class StatementLinker
+    /// <summary>
+    /// Analyzes the statement tree and determines the <c>Successor</c> property of each statement.
+    /// </summary>
+    public static class StatementLinker
     {
         class Visitor : IStatementVisitor
         {
@@ -977,16 +1182,29 @@ namespace SystemSharp.SysDOM
             #endregion
         }
 
+        /// <summary>
+        /// Analyzes the statement tree and determines the <c>Successor</c> property of each statement.
+        /// </summary>
+        /// <param name="stmt">statement to complete</param>
         public static void Link(Statement stmt)
         {
             stmt.Accept(new Visitor());
         }
     }
 
+    /// <summary>
+    /// This statement visitor is capable of replacing each occurence of a certain literal
+    /// with a different one.
+    /// </summary>
     public class StmtVariableReplacer : IStatementVisitor
     {
         private Dictionary<Literal, Literal> _rplMap = new Dictionary<Literal, Literal>();
 
+        /// <summary>
+        /// Adds a replacement rule.
+        /// </summary>
+        /// <param name="v">literal to replace</param>
+        /// <param name="v_">replacement</param>
         public void AddReplacement(Literal v, Literal v_)
         {
             _rplMap[v] = v_;
@@ -1211,7 +1429,7 @@ namespace SystemSharp.SysDOM
         }
     }
 
-    public class StatementConsistencyChecker : IStatementVisitor
+    class StatementConsistencyChecker : IStatementVisitor
     {
         public void AcceptCompoundStatement(CompoundStatement stmt)
         {
@@ -1292,14 +1510,39 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Abstract base class for a SysDOM function.
+    /// </summary>
     public abstract class FunctionBase : AttributedObject
     {
+        /// <summary>
+        /// Gets or sets the function name.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the variable which is semantically equivalent to "this".
+        /// </summary>
         public Variable ThisVariable { get; set; }
+
+        /// <summary>
+        /// The list of function input variables.
+        /// </summary>
         public List<IStorableLiteral> InputVariables { get; private set; }
+
+        /// <summary>
+        /// The list of function output variables.
+        /// </summary>
         public List<IStorableLiteral> OutputVariables { get; private set; }
+
+        /// <summary>
+        /// The list of local variables.
+        /// </summary>
         public List<IStorableLiteral> LocalVariables { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public FunctionBase()
         {
             InputVariables = new List<IStorableLiteral>();
@@ -1307,13 +1550,25 @@ namespace SystemSharp.SysDOM
             LocalVariables = new List<IStorableLiteral>();
         }
 
+        /// <summary>
+        /// Performs a consistency check.
+        /// </summary>
         public abstract void CheckConsistency();
     }
 
+    /// <summary>
+    /// Models a SysDOM function.
+    /// </summary>
     public class Function : FunctionBase
     {
+        /// <summary>
+        /// The function body.
+        /// </summary>
         public Statement Body { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public Function()
         {
         }
@@ -1333,10 +1588,20 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A state function has multiple entry points, whereby an internal state
+    /// determines which of them to take upon function entry.
+    /// </summary>
     public class StateFunction : FunctionBase
     {
+        /// <summary>
+        /// Gets or sets the state bodies.
+        /// </summary>
         public Statement[] States { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public StateFunction()
         {
         }
@@ -1362,43 +1627,191 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Algorithm builder interface for meta-programming.
+    /// </summary>
     [ContractClass(typeof(AlgorithmBuilderContractClass))]
     public interface IAlgorithmBuilder
     {
+        /// <summary>
+        /// Declares a local variable.
+        /// </summary>
+        /// <param name="v">literal to take as local variable</param>
         void DeclareLocal(IStorableLiteral v);
+
+        /// <summary>
+        /// Emits an assignment.
+        /// </summary>
+        /// <param name="var">left-hand side</param>
+        /// <param name="val">right-hand side</param>
         void Store(IStorableLiteral var, Expression val);
+
+        /// <summary>
+        /// Begins an "if-then(-else-if)(-else)" statement.
+        /// </summary>
+        /// <param name="cond">condition</param>
+        /// <returns>the newly created "if-then(-else)" statement</returns>
         IfStatement If(Expression cond);
+
+        /// <summary>
+        /// Adds an "else-if" branch to the current "if-then(-elsif)(-else)" statement.
+        /// </summary>
+        /// <param name="cond">condition</param>
         void ElseIf(Expression cond);
+
+        /// <summary>
+        /// Adds an "else" branch to the current "if-then(-elsif)(-else)" statement.
+        /// </summary>
         void Else();
+
+        /// <summary>
+        /// Ends the current "if-then(-elsif)(-else)" statement.
+        /// </summary>
         void EndIf();
+
+        /// <summary>
+        /// Begins a loop statement.
+        /// </summary>
+        /// <returns>the newly created loop statement</returns>
         LoopBlock Loop();
         void Break(LoopBlock loop);
+
+        /// <summary>
+        /// Emits a "continue loop" statement.
+        /// </summary>
+        /// <param name="loop">the loop to continue</param>
         void Continue(LoopBlock loop);
+
+        /// <summary>
+        /// Ends the current loop statement.
+        /// </summary>
         void EndLoop();
+
+        [Obsolete("part of an out-dated concept.")]
         void Solve(EquationSystem eqsys);
+
+        /// <summary>
+        /// Inlines a function call.
+        /// </summary>
+        /// <param name="fn">function to call</param>
+        /// <param name="inArgs">input arguments</param>
+        /// <param name="outArgs">output arguments</param>
+        /// <param name="shareLocals">whether the inlined function may share and access the present local variables</param>
         void InlineCall(Function fn, Expression[] inArgs, Variable[] outArgs, bool shareLocals = false);
+
+        /// <summary>
+        /// Begins a "switch-case" statement.
+        /// </summary>
+        /// <param name="selector">selector expression</param>
+        /// <returns>the newly created "switch-case" statement</returns>
         CaseStatement Switch(Expression selector);
+
+        /// <summary>
+        /// Adds a case to the current "switch-case" statement.
+        /// </summary>
+        /// <param name="cond">case condition</param>
         void Case(Expression cond);
+
+        /// <summary>
+        /// Adds a default case to the current "switch-case" statement.
+        /// </summary>
         void DefaultCase();
+
+        /// <summary>
+        /// Hands program flow over to a different branch of the a "switch-case" statement.
+        /// </summary>
+        /// <param name="cstmt">referred "switch-case" statement</param>
+        /// <param name="index">0-based branch index</param>
         void GotoCase(CaseStatement cstmt, int index);
+
+        /// <summary>
+        /// Emits a "break case" statement.
+        /// </summary>
+        /// <param name="stmt">referred "switch-case" statement</param>
         void Break(CaseStatement stmt);
+
+        /// <summary>
+        /// Ends the current case of the current "switch-case" statement.
+        /// </summary>
         void EndCase();
+
+        /// <summary>
+        /// Ends the current "switch-case" statement.
+        /// </summary>
         void EndSwitch();
+
+        /// <summary>
+        /// Emits a "goto" statement.
+        /// </summary>
+        /// <returns>the newly created "goto" statement</returns>
         GotoStatement Goto();
+
+        /// <summary>
+        /// Emits a "return" statement.
+        /// </summary>
         void Return();
+
+        /// <summary>
+        /// Emits a "return" statement.
+        /// </summary>
+        /// <param name="returnValue">expression describing the return value</param>
         void Return(Expression returnValue);
+
+        /// <summary>
+        /// Emits a "throw exception" statement.
+        /// </summary>
+        /// <param name="expr">expression describing the exception to throw</param>
         void Throw(Expression expr);
+
+        /// <summary>
+        /// Emits a function call statement.
+        /// </summary>
+        /// <param name="callee">function to call</param>
+        /// <param name="arguments">arguments to pass</param>
         void Call(ICallable callee, params Expression[] arguments);
+
+        /// <summary>
+        /// Emits a "do nothing" statement.
+        /// </summary>
         void Nop();
+
+        /// <summary>
+        /// Returns the last output statement.
+        /// </summary>
         Statement LastStatement { get; }
+
+        /// <summary>
+        /// Removes the last output statement.
+        /// </summary>
         void RemoveLastStatement();
+
+        /// <summary>
+        /// Returns <c>true</c> if there already exists any output statement.
+        /// </summary>
         bool HaveAnyStatement { get; }
+
+        /// <summary>
+        /// Forks a new algorithm builder at the current position. 
+        /// To achieve this, a compound statement is inserted as placeholder.
+        /// </summary>
+        /// <returns>the new algorithm builder</returns>
         IAlgorithmBuilder BeginSubAlgorithm();
+
+        /// <summary>
+        /// Adds a comment to the last output statement.
+        /// </summary>
+        /// <param name="comment">comment text</param>
         void Comment(string comment);
     }
 
+    /// <summary>
+    /// Extends the algorithm builder interface by the capability of creating a SysDOM function.
+    /// </summary>
     public interface IFunctionBuilder: IAlgorithmBuilder
     {
+        /// <summary>
+        /// Returns the resulting SysDOM function.
+        /// </summary>
         Function ResultFunction { get; }
     }
 
@@ -1562,6 +1975,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Provides an abstract base implementation of the <c>IFunctionBuilder</c> interface.
+    /// </summary>
     public abstract class AbstractAlgorithmBuilder :
         IFunctionBuilder
     {
@@ -1569,12 +1985,22 @@ namespace SystemSharp.SysDOM
         private Stack<CompoundStatement> _cstack = new Stack<CompoundStatement>();
         private Stack<Statement> _sstack = new Stack<Statement>();
 
+        /// <summary>
+        /// Must be overridden to provide the result function.
+        /// </summary>
         public abstract Function ResultFunction { get; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public AbstractAlgorithmBuilder()
         {
         }
 
+        /// <summary>
+        /// Resets the currently active statement hierarchy.
+        /// </summary>
+        /// <param name="root">new statement to take as root statement</param>
         protected virtual void Reset(CompoundStatement root)
         {
             _cstack.Clear();
@@ -1843,6 +2269,12 @@ namespace SystemSharp.SysDOM
             _cstack.Peek().Statements.Add(stmt);
         }
 
+        /// <summary>
+        /// Creates a new local variable.
+        /// </summary>
+        /// <param name="prefix">name prefix</param>
+        /// <param name="type">descriptor of variable type</param>
+        /// <returns>the newly created local variable</returns>
         protected Variable CreateUniqueLocal(string prefix, TypeDescriptor type)
         {
             Variable v = UniqueVariable(new Variable(type)
@@ -1853,6 +2285,12 @@ namespace SystemSharp.SysDOM
             return v;
         }
 
+        /// <summary>
+        /// Ensures that a given local variable does not have the same name as any existing input argument,
+        /// local variable or output argument.
+        /// </summary>
+        /// <param name="var">variable to check</param>
+        /// <returns>the passed variable if it is new or a newly created variable with same type but different name</returns>
         protected Variable UniqueVariable(Variable var)
         {
             int count = 0;
@@ -1883,16 +2321,28 @@ namespace SystemSharp.SysDOM
             ResultFunction.LocalVariables.Add(var);
         }
 
+        /// <summary>
+        /// Indicates which variable should be semantically equivalent to "this".
+        /// </summary>
+        /// <param name="var">"this" variable</param>
         protected void DeclareThis(Variable var)
         {
             ResultFunction.ThisVariable = var;
         }
 
+        /// <summary>
+        /// Declares a literal as input argument.
+        /// </summary>
+        /// <param name="var">literal to declare as input argument</param>
         protected void DeclareInput(IStorableLiteral var)
         {
             ResultFunction.InputVariables.Add(var);
         }
 
+        /// <summary>
+        /// Declares a literal as output argument.
+        /// </summary>
+        /// <param name="var">literal to declare as output argument</param>
         protected void DeclareOutput(IStorableLiteral var)
         {
             ResultFunction.OutputVariables.Add(var);
@@ -1914,6 +2364,9 @@ namespace SystemSharp.SysDOM
             stmts.RemoveAt(stmts.Count - 1);
         }
 
+        /// <summary>
+        /// Returns the top-level statement.
+        /// </summary>
         public Statement TopStatement
         {
             get { return _sstack.Peek(); }
@@ -1946,12 +2399,19 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// An abstract algorithm builder implementation where the actual algorithm construction is
+    /// done inside the to-be-overridden <c>DeclareAlgorithm</c> method.
+    /// </summary>
     public abstract class AlgorithmTemplate :
         AbstractAlgorithmBuilder,
         IFunctionBuilder
     {
         private Function _func;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public AlgorithmTemplate()
         {
         }
@@ -1962,13 +2422,23 @@ namespace SystemSharp.SysDOM
             _func = new Function();
         }
 
+        /// <summary>
+        /// Constructs the actual algorithm. Must be overridden.
+        /// </summary>
         protected abstract void DeclareAlgorithm();
 
+        /// <summary>
+        /// Returns the function name. The default implementation returns <c>null</c>.
+        /// </summary>
         protected virtual string FunctionName
         {
             get { return null; }
         }
 
+        /// <summary>
+        /// Constructs the function.
+        /// </summary>
+        /// <returns>the newly constructed function</returns>
         public virtual Function GetAlgorithm()
         {
             Reset();
@@ -1987,8 +2457,14 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A default implementation of the algorithm builder interface.
+    /// </summary>
     public class DefaultAlgorithmBuilder : AbstractAlgorithmBuilder
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public DefaultAlgorithmBuilder()
         {
             _func = new Function();
@@ -1997,11 +2473,18 @@ namespace SystemSharp.SysDOM
 
         private Function _func;
 
+        /// <summary>
+        /// Returns the resulting function.
+        /// </summary>
         public override Function ResultFunction
         {
             get { return _func; }
         }
 
+        /// <summary>
+        /// Constructs the function.
+        /// </summary>
+        /// <returns>the newly constructed function</returns>
         public Function Complete()
         {
             CompoundStatement stmt = (CompoundStatement)TopStatement;
@@ -2012,8 +2495,16 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// This static class provides a helper extension for applying the visitor pattern to multiple statements at once.
+    /// </summary>
     public static class MultiStatementAcceptance
     {
+        /// <summary>
+        /// Applies a visitor to each statement inside the enumeration.
+        /// </summary>
+        /// <param name="stmts">statements enumeration</param>
+        /// <param name="visitor">visitor to apply</param>
         public static void Accept(this IEnumerable<Statement> stmts, IStatementVisitor visitor)
         {
             foreach (Statement stmt in stmts)
@@ -2123,8 +2614,16 @@ namespace SystemSharp.SysDOM
         #endregion
     }
 
+    /// <summary>
+    /// This static class provides a helper extension for removing all inner "do nothing" statements from a
+    /// given statement.
+    /// </summary>
     public static class NopRemoval
     {
+        /// <summary>
+        /// Removes all inner "do nothing" statements.
+        /// </summary>
+        /// <param name="stmt">the statement from which to remove all inner "do nothing" statements</param>
         public static void RemoveNops(this Statement stmt)
         {
             NopRemover nrm = new NopRemover();
@@ -2134,6 +2633,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Thrown when the conversion to an inline expression is not possible.
+    /// </summary>
     public class NotConvertibleToInlineExpressionException : Exception
     {
     }
@@ -2225,8 +2727,17 @@ namespace SystemSharp.SysDOM
         #endregion
     }
 
+    /// <summary>
+    /// This static class provides a service for converting a statement to an inline expression.
+    /// </summary>
     public static class InlineExpressionConversion
     {
+        /// <summary>
+        /// Converts the statement to an inline expression.
+        /// </summary>
+        /// <param name="stmt">statement to convert</param>
+        /// <returns>semantically equivalent inline expression</returns>
+        /// <exception cref="NotConvertibleToInlineExpressionException">if the statement is not convertible to an inline expression</exception>
         public static Expression ToInlineExpression(this Statement stmt)
         {
             stmt.RemoveNops();

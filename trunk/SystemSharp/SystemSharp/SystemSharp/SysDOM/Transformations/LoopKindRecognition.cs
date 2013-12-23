@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -466,6 +466,9 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
+    /// <summary>
+    /// Defines restrictions on "for" loop pattern matching.
+    /// </summary>
     public enum EForLoopLevel
     {
         /// <summary>
@@ -720,82 +723,19 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
-
-#if false
-    // nyi
-    class DoLoopRecognizer : IStatementVisitor
-    {
-        public LoopBlock Result { get; private set; }
-
-        public void AcceptCompoundStatement(CompoundStatement stmt)
-        {
-        }
-
-        public void AcceptLoopBlock(LoopBlock stmt)
-        {
-        }
-
-        public void AcceptBreakLoop(BreakLoopStatement stmt)
-        {
-        }
-
-        public void AcceptContinueLoop(ContinueLoopStatement stmt)
-        {
-        }
-
-        public void AcceptIf(IfStatement stmt)
-        {
-        }
-
-        public void AcceptCase(CaseStatement stmt)
-        {
-        }
-
-        public void AcceptStore(StoreStatement stmt)
-        {
-        }
-
-        public void AcceptNop(NopStatement stmt)
-        {
-        }
-
-        public void AcceptSolve(SolveStatement stmt)
-        {
-        }
-
-        public void AcceptBreakCase(BreakCaseStatement stmt)
-        {
-        }
-
-        public void AcceptGotoCase(GotoCaseStatement stmt)
-        {
-        }
-
-        public void AcceptGoto(GotoStatement stmt)
-        {
-        }
-
-        public void AcceptReturn(ReturnStatement stmt)
-        {
-        }
-
-        public void AcceptThrow(ThrowStatement stmt)
-        {
-        }
-
-        public void AcceptCall(CallStatement stmt)
-        {
-        }
-    }
-#endif 
-    
+    /// <summary>
+    /// This static class provides services for detecting common loop patterns, such as "while" loop and "for" loop.
+    /// If such pattern is detected, the statement can be rewritten to the explicit SysDOM representation of a "while"
+    /// or "for" loop, respectively.
+    /// </summary>
     public static class LoopKindDetection
     {
         /// <summary>
-        /// Tries to interprete the statement as a while-loop. Returns null upon failure.
+        /// Tries to interpret the statement as "while" loop.
         /// </summary>
-        /// <param name="stmt"></param>
-        /// <returns></returns>
+        /// <param name="stmt">assumed "while" loop</param>
+        /// <returns>an explicit SysDOM representation of the "while" loop, or <c>null</c> if the statement
+        /// does not match the expected pattern</returns>
         public static LoopBlock AsWhileLoop(this Statement stmt)
         {
             WhileLoopRecognizer wlr = new WhileLoopRecognizer();
@@ -803,6 +743,13 @@ namespace SystemSharp.SysDOM.Transformations
             return wlr.Result;
         }
 
+        /// <summary>
+        /// Tries to interpret the statement as "for" loop.
+        /// </summary>
+        /// <param name="stmt">assumed "for" loop</param>
+        /// <param name="level">pattern matching restrictions</param>
+        /// <returns>an explicit SysDOM representation of the "for" loop, or <c>null</c> if the statement
+        /// does not match the expected pattern</returns>
         public static LoopBlock AsForLoop(this Statement stmt, EForLoopLevel level)
         {
             ForLoopRecognizer flr = new ForLoopRecognizer()
@@ -812,15 +759,5 @@ namespace SystemSharp.SysDOM.Transformations
             stmt.Accept(flr);
             return flr.Result;
         }
-
-#if false
-        // nyi
-        public static LoopBlock AsDoLoop(this Statement stmt)
-        {
-            DoLoopRecognizer dlr = new DoLoopRecognizer();
-            stmt.Accept(dlr);
-            return dlr.Result;
-        }
-#endif
     }
 }

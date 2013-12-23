@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -124,6 +124,9 @@ namespace SystemSharp.SysDOM.Transformations
         #endregion
     }
 
+    /// <summary>
+    /// This static class provides a service for determining the containment relationship between statements.
+    /// </summary>
     public static class HierarchyAnalysis
     {
         /// <summary>
@@ -131,7 +134,7 @@ namespace SystemSharp.SysDOM.Transformations
         /// </summary>
         /// <param name="stmt">An assumed ancestor</param>
         /// <param name="grandChild">Its assumed granchild</param>
-        /// <returns>true if this statement is an ancestor of grandChild</returns>
+        /// <returns><c>true</c> if <paramref name="stmt"/> is an ancestor of <paramref name="grandChild"/></returns>
         /// <remarks>A statement a is an ancestor of a statement b iff there exists a sequence
         /// s1, s2,... , sN of zero or more statements such that a contains s1, s1 contains s2,
         /// ... and sN contains b. Furthermore, each statement is per definition an ancestor

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -196,7 +196,11 @@ namespace SystemSharp.SysDOM.Transformations
         }
     }
 
-    public static class SingleStatements
+    /// <summary>
+    /// This static class provides services for flattening the statement hierarchy by
+    /// eliminating compound statements.
+    /// </summary>
+    static class SingleStatements
     {
         public static Statement AsSingleStatement(this Statement stmt)
         {

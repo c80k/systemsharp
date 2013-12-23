@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -233,17 +233,21 @@ namespace SystemSharp.SysDOM.Transformations
         #endregion
     }
 
+    /// <summary>
+    /// This static class provides a service for retrieving all possible program flow successors of a statement.
+    /// </summary>
     public static class ProgramflowSuccessorsRetrieval
     {
         /// <summary>
         /// Returns the set of direct successors of a statement.
         /// </summary>
         /// <remarks>
-        /// This operation is only valid on atomic statements, that is all statement types except CompoundStatement and LoopBlock.
+        /// This operation is only valid on atomic statements, that is all statement types except <c>CompoundStatement</c> and 
+        /// <c>LoopBlock</c>.
         /// Furthermore, only atomic statements constitute the result enumeration.
         /// </remarks>
-        /// <param name="stmt"></param>
-        /// <returns></returns>
+        /// <param name="stmt">statement whose program flow successors shall be retrieved</param>
+        /// <returns>an enumeration of all possible program flow successors</returns>
         public static IEnumerable<Statement> GetProgramflowSucessors(Statement stmt)
         {
             ProgramflowSuccessorsGetter psg = new ProgramflowSuccessorsGetter();
@@ -343,6 +347,19 @@ namespace SystemSharp.SysDOM.Transformations
         #endregion
     }
 
+    /// <summary>
+    /// This static class provides services for extracting all atomic statements from a statement.
+    /// </summary>
+    /// <remarks>
+    /// A statement is considered "atomic" if it cannot be described by a composition of two or more statements.
+    /// E.g. a <c>StoreStatement</c> and a <c>CallStatement</c> are atomic, since they cannot be sub-divided into
+    /// smaller statements. A <c>CompoundStatement</c> is not atomic, since it consists of smaller statements.
+    /// Similarly, a <c>LoopStatement</c> is not atomic, since it consists of a body (of course, the body may be an 
+    /// atomic statement, but does not have to). <c>IfStatement</c> and <c>CaseStatement</c> are somewhat tricky,
+    /// since they rely on a condition which must be considered atomic. However, their inner branches consitute
+    /// further atomic statements. Therefore, those statements are considered atomic, and each inner branch is
+    /// analyzed as well.
+    /// </remarks>
     public static class AtomicStatementExtraction
     {
         /// <summary>

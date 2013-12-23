@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -30,12 +30,21 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.SysDOM.Eval
 {
+    /// <summary>
+    /// Thrown when to evaluation of a SysDOM expression shall be cancelled.
+    /// </summary>
     public class BreakEvaluationException : Exception
     {
     }
 
+    /// <summary>
+    /// A default implementation of a SysDOM expression evaluator.
+    /// </summary>
     public class DefaultEvaluator : IEvaluator
     {
+        /// <summary>
+        /// An evaluator instance which is capable of evaluating everything except variables.
+        /// </summary>
         public static readonly DefaultEvaluator DefaultConstEvaluator = new DefaultEvaluator();
 
         public delegate object EvalConstantFunc(Constant constant);
@@ -54,6 +63,9 @@ namespace SystemSharp.SysDOM.Eval
         public EvalArrayRefFunc DoEvalArrayRef;
         public EvalFunctionFn DoEvalFunction;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public DefaultEvaluator()
         {
             DoEvalConstant = DefaultEvalConstant;
