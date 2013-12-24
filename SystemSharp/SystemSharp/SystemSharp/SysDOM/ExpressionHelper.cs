@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,8 +24,14 @@ using System.Text;
 
 namespace SystemSharp.SysDOM
 {
+    /// <summary>
+    /// This static class provides extension methods which simplify the usage of expressions.
+    /// </summary>
     public static class ExpressionHelper
     {
+        /// <summary>
+        /// Returns <c>true</c> if the expression is a binary operation.
+        /// </summary>
         public static bool IsBinOp(this Expression e, BinOp.Kind op)
         {
             BinOp bop = e as BinOp;
@@ -34,6 +40,9 @@ namespace SystemSharp.SysDOM
             return bop.Operation == op;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the expression is a unary operation.
+        /// </summary>
         public static bool IsUnOp(this Expression e, UnOp.Kind op)
         {
             UnOp uop = e as UnOp;
@@ -42,6 +51,9 @@ namespace SystemSharp.SysDOM
             return uop.Operation == op;
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the expression is a constant literal.
+        /// </summary>
         public static bool IsConstantLiteral(this Expression e)
         {
             LiteralReference lr = e as LiteralReference;
@@ -54,6 +66,9 @@ namespace SystemSharp.SysDOM
                 return true;
         }
 
+        /// <summary>
+        /// Returns the constant value if the expression is a constant literal, otherwise <c>null</c>.
+        /// </summary>
         public static object AsConstantLiteralValue(this Expression e)
         {
             LiteralReference lr = e as LiteralReference;

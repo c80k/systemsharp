@@ -31,6 +31,9 @@ using SystemSharp.SysDOM.Eval;
 namespace SystemSharp.SysDOM
 {
 
+    /// <summary>
+    /// This static class provides simplification rules for expressions.
+    /// </summary>
     public static class SimplificationRules
     {
         private static bool IsZero(Expression e)
@@ -68,11 +71,29 @@ namespace SystemSharp.SysDOM
             return e.ResultType.Constraints.Any(_ => _.Size == 0);
         }
 
+        /// <summary>
+        /// Matches any constant zero-valued expression.
+        /// </summary>
         public static readonly Matching MatchZero = (Matching)IsZero;
+
+        /// <summary>
+        /// Matches any constant one-valued expression.
+        /// </summary>
         public static readonly Matching MatchOne = (Matching)IsOne;
+
+        /// <summary>
+        /// Matches any constant expression of value -1.
+        /// </summary>
         public static readonly Matching MatchMOne = (Matching)IsMOne;
+
+        /// <summary>
+        /// Matches any expression having an empty result type.
+        /// </summary>
         public static readonly Matching MatchZeroRange = (Matching)HasZeroRange;
 
+        /// <summary>
+        /// Returns a rule that replaces --x with x.
+        /// </summary>
         public static ReplacementRule ElimMultiMinus
         {
             get
@@ -82,6 +103,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces ~~x with x.
+        /// </summary>
         public static ReplacementRule ElimMultiBitNot
         {
             get
@@ -91,6 +115,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !!x with x.
+        /// </summary>
         public static ReplacementRule ElimMultiBoolNot
         {
             get
@@ -100,6 +127,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces 1*x with x.
+        /// </summary>
         public static ReplacementRule ElimOneTimes
         {
             get
@@ -109,6 +139,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x*1 with x.
+        /// </summary>
         public static ReplacementRule ElimTimesOne
         {
             get
@@ -118,6 +151,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces (-1)*x with -x.
+        /// </summary>
         public static ReplacementRule ElimMOneTimes
         {
             get
@@ -127,6 +163,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x*(-1) with -x.
+        /// </summary>
         public static ReplacementRule ElimTimesMOne
         {
             get
@@ -136,6 +175,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces 0*x with 0.
+        /// </summary>
         public static ReplacementRule ElimZeroTimes
         {
             get
@@ -145,6 +187,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x*0 with 0.
+        /// </summary>
         public static ReplacementRule ElimTimesZero
         {
             get
@@ -154,6 +199,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces 0/x with 0.
+        /// </summary>
         public static ReplacementRule ElimZeroDiv
         {
             get
@@ -163,6 +211,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x/1 with x.
+        /// </summary>
         public static ReplacementRule ElimDivOne
         {
             get
@@ -172,6 +223,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x/(-1) with -x.
+        /// </summary>
         public static ReplacementRule ElimDivMOne
         {
             get
@@ -181,6 +235,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces 0+x with x.
+        /// </summary>
         public static ReplacementRule ElimZeroPlus
         {
             get
@@ -190,6 +247,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x+0 with x.
+        /// </summary>
         public static ReplacementRule ElimPlusZero
         {
             get
@@ -199,6 +259,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces 0-x with -x.
+        /// </summary>
         public static ReplacementRule ElimZeroMinus
         {
             get
@@ -208,6 +271,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x-0 with x.
+        /// </summary>
         public static ReplacementRule ElimMinusZero
         {
             get
@@ -217,6 +283,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x-(-y) with x+y.
+        /// </summary>
         public static ReplacementRule ElimMinusNeg
         {
             get
@@ -227,6 +296,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces -0 with 0.
+        /// </summary>
         public static ReplacementRule ElimSignedZero
         {
             get
@@ -235,6 +307,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces -(x*y) with (-x)*y.
+        /// </summary>
         public static ReplacementRule RwNegProd
         {
             get
@@ -245,6 +320,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces -(x+y) with x-y.
+        /// </summary>
         public static ReplacementRule RwNegSum
         {
             get
@@ -255,6 +333,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x==y) with x!=y.
+        /// </summary>
         public static ReplacementRule NotEq
         {
             get
@@ -265,6 +346,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x!=y) with x==y.
+        /// </summary>
         public static ReplacementRule NotNEq
         {
             get
@@ -275,6 +359,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x&lt;y) with x&gt;=y.
+        /// </summary>
         public static ReplacementRule NotLt
         {
             get
@@ -285,6 +372,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x&lt;=y) with x&gt;y.
+        /// </summary>
         public static ReplacementRule NotLtEq
         {
             get
@@ -295,6 +385,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x&gt;y) with x&lt;=y.
+        /// </summary>
         public static ReplacementRule NotGt
         {
             get
@@ -305,6 +398,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x&gt;=y) with x&lt;y.
+        /// </summary>
         public static ReplacementRule NotGtEq
         {
             get
@@ -315,6 +411,10 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces any constant expression which evaluates to <c>true</c>
+        /// with <c>SpecialConstant.True</c>.
+        /// </summary>
         public static ReplacementRule TrueLit
         {
             get
@@ -325,6 +425,10 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces any constant expression which evaluates to <c>false</c>
+        /// with <c>SpecialConstant.False</c>.
+        /// </summary>
         public static ReplacementRule FalseLit
         {
             get
@@ -335,6 +439,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x == true with x.
+        /// </summary>
         public static ReplacementRule EqTrue
         {
             get
@@ -345,6 +452,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x != true with !x.
+        /// </summary>
         public static ReplacementRule NotEqTrue
         {
             get
@@ -355,6 +465,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x == false with !x.
+        /// </summary>
         public static ReplacementRule EqFalse
         {
             get
@@ -365,6 +478,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x != false with x.
+        /// </summary>
         public static ReplacementRule NotEqFalse
         {
             get
@@ -375,6 +491,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces <c>x == StdLogic._1</c> with <c>(bool)x</c>.
+        /// </summary>
         public static ReplacementRule EqSLTrue
         {
             get
@@ -385,6 +504,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces <c>x == StdLogic._0</c> with <c>!((bool)x)</c>.
+        /// </summary>
         public static ReplacementRule EqSLFalse
         {
             get
@@ -395,6 +517,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces <c>x != StdLogic._1</c> with <c>!((bool)x)</c>.
+        /// </summary>
         public static ReplacementRule NEqSLTrue
         {
             get
@@ -405,6 +530,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces <c>x != StdLogic._0</c> with <c>(bool)x</c>.
+        /// </summary>
         public static ReplacementRule NEqSLFalse
         {
             get
@@ -415,6 +543,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x & true with x.
+        /// </summary>
         public static ReplacementRule AndTrue
         {
             get
@@ -425,6 +556,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces true & x with x.
+        /// </summary>
         public static ReplacementRule TrueAnd
         {
             get
@@ -435,6 +569,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x & false with false.
+        /// </summary>
         public static ReplacementRule AndFalse
         {
             get
@@ -445,6 +582,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces false & x with false.
+        /// </summary>
         public static ReplacementRule FalseAnd
         {
             get
@@ -455,6 +595,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x | false with x.
+        /// </summary>
         public static ReplacementRule OrFalse
         {
             get
@@ -465,6 +608,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that repalces false | x with x.
+        /// </summary>
         public static ReplacementRule FalseOr
         {
             get
@@ -475,6 +621,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x | true with true.
+        /// </summary>
         public static ReplacementRule OrTrue
         {
             get
@@ -485,6 +634,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces true | x with true.
+        /// </summary>
         public static ReplacementRule TrueOr
         {
             get
@@ -495,6 +647,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x | (x & y) with x.
+        /// </summary>
         public static ReplacementRule Absorption1
         {
             get
@@ -507,6 +662,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x & (x | y) with x.
+        /// </summary>
         public static ReplacementRule Absorption2
         {
             get
@@ -519,6 +677,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x|y) with (!x)&(!y).
+        /// </summary>
         public static ReplacementRule DeMorgan1
         {
             get
@@ -529,6 +690,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces !(x&y) with (!x)|(!y).
+        /// </summary>
         public static ReplacementRule DeMorgan2
         {
             get
@@ -539,6 +703,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x|((!x)&y) with x|y.
+        /// </summary>
         public static ReplacementRule BoolMisc1
         {
             get
@@ -551,6 +718,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces x&(!x|y) with x&y.
+        /// </summary>
         public static ReplacementRule BoolMisc2
         {
             get
@@ -563,6 +733,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces (x&y)|(x&!y) with x.
+        /// </summary>
         public static ReplacementRule BoolMisc3
         {
             get
@@ -579,6 +752,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that replaces (x|y)&(x|!y) with x.
+        /// </summary>
         public static ReplacementRule BoolMisc4
         {
             get
@@ -595,6 +771,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that eliminates concatenations with zero-sized vectors (zero-sized vector at left).
+        /// </summary>
         public static ReplacementRule ElimConcatWithZeroRanged1
         {
             get
@@ -606,6 +785,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a rule that eliminates concatenations with zero-sized vectors (zero-sized vector at right).
+        /// </summary>
         public static ReplacementRule ElimConcatWithZeroRanged2
         {
             get
@@ -617,6 +799,11 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Tries to simplify the expression by applying a catalogue of simplifying replacement rules.
+        /// </summary>
+        /// <param name="e">expression to simplify</param>
+        /// <returns>simplified expression</returns>
         public static Expression Simplify(this Expression e)
         {
             ReplacementRule[] rules = new ReplacementRule[]
@@ -658,6 +845,11 @@ namespace SystemSharp.SysDOM
             return e;
         }
 
+        /// <summary>
+        /// Tries to simplify the expression by applying replacement rules for multi-valued logic.
+        /// </summary>
+        /// <param name="e">expression to simplify</param>
+        /// <returns>simplified expression</returns>
         public static Expression SimplifyMultiValuedLogic(this Expression e)
         {
             ReplacementRule[] rules = new ReplacementRule[]
@@ -679,6 +871,9 @@ namespace SystemSharp.SysDOM
             return e;
         }
 
+        /// <summary>
+        /// Substitutes each occurence of expression <paramref name="x"/> with expression <paramref name="y"/>.
+        /// </summary>
         public static Expression Substitute(this Expression e, Expression x, Expression y)
         {
             ReplacementRule rr = new ReplacementRule(te => te.DeepEquals(x), () => y);
@@ -687,6 +882,11 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Tries to simplify each matrix element by applying a catalogue of simplification rules.
+        /// </summary>
+        /// <param name="m">matrix to simplify</param>
+        /// <returns>simplified matrix</returns>
         public static Matrix Simplify(this Matrix m)
         {
             Matrix mnew = new Matrix(m.NumRows, m.NumCols);
@@ -698,17 +898,35 @@ namespace SystemSharp.SysDOM
         }
     }
 
-    public class ExpressionConstPredicate : IExpressionVisitor<bool>
+    /// <summary>
+    /// An expression visitor for determining whether a given expression is constant.
+    /// </summary>
+    class ExpressionConstPredicate : IExpressionVisitor<bool>
     {
+        /// <summary>
+        /// Specifies the semantics of the passed set of objects.
+        /// </summary>
         public enum EMode
         {
+            /// <summary>
+            /// The set contains all variable literals.
+            /// </summary>
             GivenVariables,
+
+            /// <summary>
+            /// The set contains all constant literals.
+            /// </summary>
             GivenConstants
         }
 
         private HashSet<object> _variables;
         private EMode _mode;
 
+        /// <summary>
+        /// Constructs the visitor.
+        /// </summary>
+        /// <param name="variables">a set of objects</param>
+        /// <param name="mode">whether the passed set of objects contains all constants or all variables</param>
         public ExpressionConstPredicate(HashSet<object> variables, EMode mode)
         {
             _variables = variables;
@@ -761,7 +979,7 @@ namespace SystemSharp.SysDOM
         #endregion
     }
 
-    public class ExpressionConstRules : IExpressionVisitor<bool>
+    class ExpressionConstRules : IExpressionVisitor<bool>
     {
         public enum ERuleMode
         {
@@ -861,7 +1079,7 @@ namespace SystemSharp.SysDOM
         #endregion
     }
 
-    public class ConstantFolder : IExpressionTransformer
+    class ConstantFolder : IExpressionTransformer
     {
         public Expression TransformLiteralReference(LiteralReference expr)
         {
@@ -915,7 +1133,7 @@ namespace SystemSharp.SysDOM
         }
     }
 
-    public class DerivativeBuilder : IExpressionTransformer
+    class DerivativeBuilder : IExpressionTransformer
     {
         private LiteralReference _derVar;
 
@@ -1094,14 +1312,22 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// This static class provides extension methods which simplify the usage of expressions.
+    /// </summary>
     public static class ExpressionExtensions
     {
+#if false
         public static bool IsConst(this Expression e, HashSet<object> variables, ExpressionConstPredicate.EMode mode)
         {
             ExpressionConstPredicate pred = new ExpressionConstPredicate(variables, mode);
             return e.Accept(pred);
         }
+#endif
 
+        /// <summary>
+        /// Returns <c>true</c> iff the expression has a constant value, assuming all literals to be variable.
+        /// </summary>
         public static bool IsConst(this Expression e)
         {
             ExpressionConstPredicate pred = new ExpressionConstPredicate(new HashSet<object>(),
@@ -1109,11 +1335,14 @@ namespace SystemSharp.SysDOM
             return e.Accept(pred);
         }
 
-        public static bool IsConst(this Expression e, ExpressionConstRules rules)
+        internal static bool IsConst(this Expression e, ExpressionConstRules rules)
         {
             return e.Accept(rules);
         }
 
+        /// <summary>
+        /// Extracts all literal references from the expression.
+        /// </summary>
         public static LiteralReference[] ExtractLiteralReferences(this Expression e)
         {
             LiteralReferenceExtractor lre = new LiteralReferenceExtractor();
@@ -1121,12 +1350,12 @@ namespace SystemSharp.SysDOM
             return lre.Results;
         }
 
-        public static Expression Derive(this Expression e, LiteralReference derVar)
+        internal static Expression Derive(this Expression e, LiteralReference derVar)
         {
             return e.Transform(new DerivativeBuilder(derVar));
         }
 
-        public static Expression FoldConstants(this Expression e)
+        internal static Expression FoldConstants(this Expression e)
         {
             return e.Transform(new ConstantFolder());
         }
