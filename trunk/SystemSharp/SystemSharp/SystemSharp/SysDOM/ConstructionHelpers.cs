@@ -31,6 +31,9 @@ using SystemSharp.SysDOM.Transformations;
 
 namespace SystemSharp.SysDOM
 {
+    /// <summary>
+    /// This static class provides extension methods so simplify the usage of algorithm builders.
+    /// </summary>
     public static class ConstructionHelpers
     {
         private static Expression ToExpression(object arg)
@@ -53,6 +56,11 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Emits a call to output a textual diagnostic message.
+        /// </summary>
+        /// <param name="builder">algorithm builder</param>
+        /// <param name="args">output arguments</param>
         public static void ReportLine(this IAlgorithmBuilder builder, params object[] args)
         {
             var arg = Expression.Concat(args.Select(_ => ToExpression(_)).ToArray());
