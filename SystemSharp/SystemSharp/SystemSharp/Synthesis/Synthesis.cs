@@ -150,7 +150,7 @@ namespace SystemSharp.Synthesis
     /// The synthesis context interface provides the "glue" between project generator,
     /// code generator and design.
     /// </summary>
-    interface ISynthesisContext
+    public interface ISynthesisContext
     {
         /// <summary>
         /// Returns the target generator project.
@@ -162,6 +162,10 @@ namespace SystemSharp.Synthesis
         /// </summary>
         ICodeGenerator CodeGen { get; }
 
+        /// <summary>
+        /// Instructs the synthesis engine to generate to particular component.
+        /// </summary>
+        /// <param name="component">component to generate</param>
         void DoBehavioralAnalysisAndGenerate(Component component);
     }
 

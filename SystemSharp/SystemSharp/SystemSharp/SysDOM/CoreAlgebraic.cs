@@ -34,62 +34,381 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.SysDOM
 {
+    /// <summary>
+    /// Evaluator interface for expressions.
+    /// </summary>
     public interface IEvaluator
     {
+        /// <summary>
+        /// Evaluates a constant literal.
+        /// </summary>
+        /// <param name="constant">constant literal</param>
+        /// <returns>literal value</returns>
         object EvalConstant(Constant constant);
+
+        /// <summary>
+        /// Evaluates a variable literal.
+        /// </summary>
+        /// <param name="variable">variable literal</param>
+        /// <returns>variable value</returns>
         object EvalVariable(Variable variable);
+
+        /// <summary>
+        /// Evaluates a signal reference.
+        /// </summary>
+        /// <param name="signalRef">signal reference</param>
+        /// <returns>value of referenced signal property</returns>
         object EvalSignalRef(SignalRef signalRef);
+
+        /// <summary>
+        /// Evaluates a field reference.
+        /// </summary>
+        /// <param name="fieldRef">field reference</param>
+        /// <returns>field value</returns>
         object EvalFieldRef(FieldRef fieldRef);
+
+        /// <summary>
+        /// Evaluates the "this" reference.
+        /// </summary>
+        /// <param name="thisRef">"this" reference</param>
+        /// <returns>current instance</returns>
         object EvalThisRef(ThisRef thisRef);
+
+        /// <summary>
+        /// Evaluates an array reference.
+        /// </summary>
+        /// <param name="arrayRef">array reference</param>
+        /// <returns>value of referenced array element</returns>
         object EvalArrayRef(ArrayRef arrayRef);
+
+        /// <summary>
+        /// Evaluates a literal.
+        /// </summary>
+        /// <param name="lit">literal</param>
+        /// <returns>literal value</returns>
         object EvalLiteral(ILiteral lit);
+
+        /// <summary>
+        /// Evaluates a function call.
+        /// </summary>
+        /// <param name="funcref">called function</param>
+        /// <param name="args">function arguments</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>function return value</returns>
         object EvalFunction(FunctionCall funcref, object[] args, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Negates a value.
+        /// </summary>
+        /// <param name="v">value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>negated value</returns>
         object Neg(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the boolean complement of a value.
+        /// </summary>
+        /// <param name="v">value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>boolean complement of value</returns>
         object BoolNot(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the bitwise complement of a value.
+        /// </summary>
+        /// <param name="v">value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>bitwise complement of the value</returns>
         object BitwiseNot(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Adds two values.
+        /// </summary>
+        /// <param name="v1">first summand</param>
+        /// <param name="v2">second summand</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the sum</returns>
         object Add(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Subtracts two values.
+        /// </summary>
+        /// <param name="v1">value</param>
+        /// <param name="v2">subtrahend</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the difference</returns>
         object Sub(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Multiplies two values.
+        /// </summary>
+        /// <param name="v1">first multiplicand</param>
+        /// <param name="v2">second multiplicand</param>
+        /// <param name="resultType"></param>
+        /// <returns>the product</returns>
         object Mul(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Divides two values.
+        /// </summary>
+        /// <param name="v1">dividend</param>
+        /// <param name="v2">divisor</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the quotient</returns>
         object Div(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the division remainder of two values.
+        /// </summary>
+        /// <param name="v1">dividend</param>
+        /// <param name="v2">divisor</param>
+        /// <param name="resultType"></param>
+        /// <returns>the remainder</returns>
         object Rem(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the boolean or bit-wise conjunction of two values, depending on their types.
+        /// </summary>
+        /// <param name="v1">first value</param>
+        /// <param name="v2">second value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>boolean or bit-wise conjunction</returns>
         object And(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the boolean or bit-wise disjunction of two values, depending on their types.
+        /// </summary>
+        /// <param name="v1">first value</param>
+        /// <param name="v2">second value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>boolean or bit-wise disjunction</returns>
         object Or(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the boolean or bit-wise anti-valence of two values, depending on their types.
+        /// </summary>
+        /// <param name="v1">first value</param>
+        /// <param name="v2">second value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>boolean or bit-wise anti-valence</returns>
         object Xor(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Shifts a value logically to the left.
+        /// </summary>
+        /// <param name="v1">value to shift</param>
+        /// <param name="v2">bit count to shift</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the shift result</returns>
         object LShift(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Shifts a value logically or arithmetically to the right, depending on whether it is of unsigned or signed type.
+        /// </summary>
+        /// <param name="v1">value to shift</param>
+        /// <param name="v2">bit count to shift</param>
+        /// <param name="resultType"></param>
+        /// <returns>the shift result</returns>
         object RShift(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Concatenates two values.
+        /// </summary>
+        /// <param name="v1">"upper" part</param>
+        /// <param name="v2">"lower" part</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>concatenated value</returns>
         object Concat(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes e^x.
+        /// </summary>
+        /// <param name="v">x</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>e to the power of x</returns>
         object Exp(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes x^y.
+        /// </summary>
+        /// <param name="v1">x</param>
+        /// <param name="v2">y</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>x to the power of y</returns>
         object Exp(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the natural logarithm of x.
+        /// </summary>
+        /// <param name="v">x</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the natural logarithm</returns>
         object Log(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the logarithm of x to base b.
+        /// </summary>
+        /// <param name="v1">x</param>
+        /// <param name="v2">b</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the logarithm</returns>
         object Log(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes the absolute value of x.
+        /// </summary>
+        /// <param name="v">x</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the absolute value of x</returns>
         object Abs(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes sin(x).
+        /// </summary>
+        /// <param name="v">x</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the sine</returns>
         object Sin(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Computes cos(x).
+        /// </summary>
+        /// <param name="v">x</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the cosine</returns>
         object Cos(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Makes a value in two's complement representation wider, i.e. pads zeroes or ones to the left, depending on the sign.
+        /// </summary>
+        /// <param name="v">value</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>sign extension</returns>
         object ExtendSign(object v, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns the fundamental constant e.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>e</returns>
         object E(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns the fundamental constant Pi.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>Pi</returns>
         object PI(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns the value of 1.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the value of 1 in expected result type</returns>
         object ScalarOne(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns the value of 0.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the value of 0 in expected result type</returns>
         object ScalarZero(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns the "true" constant.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the "true" constant in expected result type</returns>
         object True(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns the "false" constant.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the "false" constant in expected result type</returns>
         object False(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Performs a slice operation.
+        /// </summary>
+        /// <param name="v">vector value to slice</param>
+        /// <param name="lo">lower slice index</param>
+        /// <param name="hi">upper slice index</param>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>slice result</returns>
         object Slice(object v, object lo, object hi, TypeDescriptor resultType);
+
+        [Obsolete("Do not use.")]
         object Time(TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns a "true" representation if <paramref name="v1"/> is less than <paramref name="v2"/>, other wise a "false" representation.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the comparison result</returns>
         object IsLessThan(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns a "true" representation if <paramref name="v1"/> is less than or equal to <paramref name="v2"/>, other wise a "false" representation.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the comparison result</returns>
         object IsLessThanOrEqual(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns a "true" representation if <paramref name="v1"/> equals <paramref name="v2"/>, other wise a "false" representation.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the comparison result</returns>
         object IsEqual(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns a "true" representation if <paramref name="v1"/> is not equal to <paramref name="v2"/>, other wise a "false" representation.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the comparison result</returns>
         object IsNotEqual(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns a "true" representation if <paramref name="v1"/> is greater than or equal to <paramref name="v2"/>, other wise a "false" representation.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the comparison result</returns>
         object IsGreaterThanOrEqual(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns a "true" representation if <paramref name="v1"/> is greater than <paramref name="v2"/>, other wise a "false" representation.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the comparison result</returns>
         object IsGreaterThan(object v1, object v2, TypeDescriptor resultType);
+
+        /// <summary>
+        /// Returns <paramref name="thn"/> if <paramref name="cond"/> represents "true", otherwise <paramref name="els"/>.
+        /// </summary>
+        /// <param name="resultType">expected result type</param>
+        /// <returns>the combination result</returns>
         object ConditionallyCombine(object cond, object thn, object els, TypeDescriptor resultType);
     }
 
+    /// <summary>
+    /// Anything that supports evaluation by an evaluator.
+    /// </summary>
     public interface IEvaluable
     {
+        /// <summary>
+        /// Evaluates this symbol.
+        /// </summary>
+        /// <param name="eval">evaluator to use</param>
+        /// <returns>evaluation result</returns>
         object Eval(IEvaluator eval);
     }
 
     #region Stringification
 
+    /// <summary>
+    /// Associativity classification of infix operators.
+    /// </summary>
     public enum EOperatorAssociativity
     {
         /// <summary>
@@ -108,23 +427,95 @@ namespace SystemSharp.SysDOM
         UseParenthesis
     }
 
+    /// <summary>
+    /// Service interface to decide the operator precedence and associativity in a particular concrete syntax.
+    /// </summary>
     public interface IOperatorPrecedence
     {
+        /// <summary>
+        /// Returns the precendence order of a unary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>precedence order</returns>
         int GetOperatorOrder(UnOp.Kind op);
+
+        /// <summary>
+        /// Returns the precendence order of a binary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>precedence order</returns>
         int GetOperatorOrder(BinOp.Kind op);
+
+        /// <summary>
+        /// Returns the precendence order of a ternary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>precedence order</returns>
         int GetOperatorOrder(TernOp.Kind op);
+
+        /// <summary>
+        /// Returns the associativity of a unary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>associativity</returns>
         EOperatorAssociativity GetOperatorAssociativity(UnOp.Kind op);
+
+        /// <summary>
+        /// Returns the associativity of a binary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>associativity</returns>
         EOperatorAssociativity GetOperatorAssociativity(BinOp.Kind op);
+
+        /// <summary>
+        /// Returns the associativity of a ternary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>associativity</returns>
         EOperatorAssociativity GetOperatorAssociativity(TernOp.Kind op);
     }
 
+    /// <summary>
+    /// Produces a textual representation of a particular operator with given arguments in a particular conrete syntax.
+    /// </summary>
+    /// <param name="args">operator arguments</param>
+    /// <returns>notated operator</returns>
     public delegate string NotateFunc(params string[] args);
+
+    /// <summary>
+    /// Produces a textual representation of a function call with given arguments in a particular conrete syntax.
+    /// </summary>
+    /// <param name="callee">called function</param>
+    /// <param name="args">function arguments</param>
+    /// <returns>notated function call</returns>
     public delegate string FunctionNotateFunc(ICallable callee, params string[] args);
+
+    /// <summary>
+    /// Produces a textual representation of a literal in a particular concrete syntax.
+    /// </summary>
+    /// <param name="literal">literal to notate</param>
+    /// <param name="mode">describes how the literal is referenced</param>
+    /// <returns>notated literal</returns>
     public delegate string LiteralNotateFunc(ILiteral literal, LiteralReference.EMode mode);
+
+    /// <summary>
+    /// Notates parentheses in a particular concrete syntax around and argument to disambiguate precedence among expression.
+    /// </summary>
+    /// <param name="arg">argument</param>
+    /// <returns>argument in parentheses</returns>
     public delegate string BracketNotateFunc(string arg);
 
+    /// <summary>
+    /// This static class provides some default notators for expression stringification.
+    /// </summary>
     public static class DefaultNotators
     {
+        /// <summary>
+        /// Notates a literal by returning its name. In case of reference by address, the name is surrounded by @{...}.
+        /// </summary>
+        /// <param name="literal">literal to notate</param>
+        /// <param name="mode">describes how the literal is referenced</param>
+        /// <returns>the default literal notation</returns>
         public static string LiteralName(ILiteral literal, LiteralReference.EMode mode)
         {
             var name = literal.ToString();
@@ -133,31 +524,58 @@ namespace SystemSharp.SysDOM
             return name;
         }
 
+        /// <summary>
+        /// Puts <paramref name="expr"/> between round parentheses.
+        /// </summary>
         public static string Bracket(string expr)
         {
             return "(" + expr + ")";
         }
 
+        /// <summary>
+        /// Produces a prefix notation by concatenating <paramref name="symbol"/> with the first element of <paramref name="args"/>.
+        /// </summary>
         public static string NotatePrefix(string symbol, params string[] args)
         {
             return symbol + args[0];
         }
 
+        /// <summary>
+        /// Returns a prefix-style notator, using the specified symbol as prefix.
+        /// </summary>
+        /// <param name="symbol">symbol to use as prefix</param>
+        /// <returns>prefix notator</returns>
         public static NotateFunc Prefix(string symbol)
         {
             return (string[] args) => NotatePrefix(symbol, args);
         }
 
+        /// <summary>
+        /// Produces an infix notation by concatenating <c>args[0]</c> with <paramref name="symbol"/> and then <c>args[1]</c>.
+        /// </summary>
+        /// <param name="symbol">infix symbol</param>
+        /// <param name="args">infix operator arguments</param>
         public static string NotateInfix(string symbol, params string[] args)
         {
             return args[0] + " " + symbol + " " + args[1];
         }
 
+        /// <summary>
+        /// Returns an infix-style notator, using the specified symbol as infix.
+        /// </summary>
+        /// <param name="symbol">symbol to use as infix</param>
+        /// <returns>infix notator</returns>
         public static NotateFunc Infix(string symbol)
         {
             return (string[] args) => NotateInfix(symbol, args);
         }
 
+        /// <summary>
+        /// Notates a function call, using the default pattern <c>symbol '(' args[0], args[1], ... ')' </c>.
+        /// </summary>
+        /// <param name="symbol">function name</param>
+        /// <param name="args">function arguments</param>
+        /// <returns>the notated function call</returns>
         public static string NotateFunction(string symbol, params string[] args)
         {
             StringBuilder sb = new StringBuilder();
@@ -176,32 +594,95 @@ namespace SystemSharp.SysDOM
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Notates a function call, using the default pattern <c>callee.Name '(' args[0], args[1], ... ')' </c>.
+        /// </summary>
         public static string NotateFunctionCall(ICallable callee, params string[] args)
         {
             return NotateFunction(callee.Name, args);
         }
 
+        /// <summary>
+        /// Returns a function call notator for the specified function name.
+        /// </summary>
+        /// <param name="symbol">function name</param>
+        /// <returns>the default function call notator</returns>
         public static NotateFunc Function(string symbol)
         {
             return (string[] args) => NotateFunction(symbol, args);
         }
     }
 
+    /// <summary>
+    /// Service interface for operator stringification in a particular concrete syntax.
+    /// </summary>
     public interface IOperatorNotation
     {
+        /// <summary>
+        /// Returns a notator for a particular unary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>the notator</returns>
         NotateFunc GetNotation(UnOp.Kind op);
+
+        /// <summary>
+        /// Returns a notator for a particular binary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>the notator</returns>
         NotateFunc GetNotation(BinOp.Kind op);
+
+        /// <summary>
+        /// Returns a notator for a particular ternary operation.
+        /// </summary>
+        /// <param name="op">kind of operation</param>
+        /// <returns>the notator</returns>
         NotateFunc GetNotation(TernOp.Kind op);
+
+        /// <summary>
+        /// Returns a notator for function calls.
+        /// </summary>
+        /// <returns>the function call notator</returns>
         FunctionNotateFunc GetFunctionNotation();
+
+        /// <summary>
+        /// Returns the symbol of a special constant.
+        /// </summary>
+        /// <param name="constant">which special constant</param>
+        /// <returns>special constant symbol</returns>
         string GetSpecialConstantSymbol(SpecialConstant.Kind constant);
+
+        /// <summary>
+        /// Returns a notator for literals.
+        /// </summary>
+        /// <returns>the literal notator</returns>
         LiteralNotateFunc GetLiteralNotation();
+
+        /// <summary>
+        /// Returns a notator for putting expressions between parentheses to disambiguate precedence.
+        /// </summary>
+        /// <returns>the notator</returns>
         BracketNotateFunc GetBracketNotation();
     }
 
+    /// <summary>
+    /// Service interface for expression stringification.
+    /// </summary>
     public interface IStringifyInfo
     {
+        /// <summary>
+        /// Returns the operator precedence service.
+        /// </summary>
         IOperatorPrecedence Precedence { get; }
+
+        /// <summary>
+        /// Returns the operator notation service.
+        /// </summary>
         IOperatorNotation Notation { get; }
+
+        /// <summary>
+        /// Returns an action to be invoked whenever an expression is stringified.
+        /// </summary>
         Action<Expression> OnStringifyExpression { get; }
     }
 
@@ -209,6 +690,9 @@ namespace SystemSharp.SysDOM
 
     #region DefaultStringification
 
+    /// <summary>
+    /// Operator precedence service implementation for the C# language.
+    /// </summary>
     public class CSharpOperatorPrecedence : IOperatorPrecedence
     {
         public int GetOperatorOrder(UnOp.Kind op)
@@ -285,6 +769,9 @@ namespace SystemSharp.SysDOM
         public static readonly CSharpOperatorPrecedence Instance = new CSharpOperatorPrecedence();
     }
 
+    /// <summary>
+    /// Operator notation service implementation for the C# language.
+    /// </summary>
     public class CSharpOperatorNotation : IOperatorNotation
     {
         public NotateFunc GetNotation(UnOp.Kind op)
@@ -378,6 +865,9 @@ namespace SystemSharp.SysDOM
         public static readonly CSharpOperatorNotation Instance = new CSharpOperatorNotation();
     }
 
+    /// <summary>
+    /// Stringification service implementation for the C# language.
+    /// </summary>
     public class CSharpStringifyInfo : IStringifyInfo
     {
         public IOperatorPrecedence Precedence { get { return CSharpOperatorPrecedence.Instance; } }
@@ -386,22 +876,55 @@ namespace SystemSharp.SysDOM
         public static readonly CSharpStringifyInfo Instance = new CSharpStringifyInfo();
     }
 
+    /// <summary>
+    /// Common interface for all expressions.
+    /// </summary>
     public interface IExpression
     {
+        /// <summary>
+        /// Evaluates this expression.
+        /// </summary>
+        /// <param name="eval">evaluator to use</param>
+        /// <returns>expression value</returns>
         object Eval(IEvaluator eval);
     }
 
+    /// <summary>
+    /// A coarse classification of expression result types.
+    /// </summary>
     public enum EResultTypeClass
     {
+        /// <summary>
+        /// An algebraic quantity, i.e. a conceptually continuous number.
+        /// </summary>
         Algebraic,
+
+        /// <summary>
+        /// An integral quantity.
+        /// </summary>
         Integral,
+
+        /// <summary>
+        /// A boolean quantity.
+        /// </summary>
         Boolean,
+
+        /// <summary>
+        /// An object.
+        /// </summary>
         ObjectReference,
+
         Unknown
     }
 
+    /// <summary>
+    /// This static class provides a service to convert CLI types to their result type classification.
+    /// </summary>
     public static class ResultTypeClasses
     {
+        /// <summary>
+        /// Retrieves the result type classification of <paramref name="type"/>.
+        /// </summary>
         public static EResultTypeClass FromType(Type type)
         {
             if (type.Equals(typeof(int)) || type.Equals(typeof(long)))
@@ -415,14 +938,48 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Common interface of objects that supported attached attributes.
+    /// </summary>
     [ContractClass(typeof(AttributedContractClass))]
     public interface IAttributed
     {
+        /// <summary>
+        /// Attaches an attribute to this instance. The object type is used to identify the attribute.
+        /// </summary>
+        /// <param name="attr">attribute to attach</param>
         void AddAttribute(object attr);
+
+        /// <summary>
+        /// Removes an attribute from this instance.
+        /// </summary>
+        /// <typeparam name="T">type of attribute, which is used to identify it</typeparam>
+        /// <returns><c>true</c> if such an attribute was found, <c>false</c> if not</returns>
         bool RemoveAttribute<T>();
+
+        /// <summary>
+        /// Retrieves an attribute from this instance.
+        /// </summary>
+        /// <typeparam name="T">type of attribute, which is used to identify it</typeparam>
+        /// <returns>the retrieved attribute</returns>
         T QueryAttribute<T>();
+
+        /// <summary>
+        /// Tells whether this instance has a specific attribute.
+        /// </summary>
+        /// <typeparam name="T">type of attribute, which is used to identify it</typeparam>
+        /// <returns><c>true</c> if such attribute exists, <c>false</c> if not</returns>
         bool HasAttribute<T>();
+
+        /// <summary>
+        /// Enumerates all attributes of this instance.
+        /// </summary>
         IEnumerable<object> Attributes { get; }
+
+        /// <summary>
+        /// Copies all attributes from another instance.
+        /// </summary>
+        /// <param name="other">instance to copy attributes from</param>
         void CopyAttributesFrom(IAttributed other);
     }
 
@@ -469,6 +1026,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Provides a default implementation of the <c>IAttributed</c> interface.
+    /// </summary>
     public class AttributedObject: 
         IAttributed
     {
@@ -530,20 +1090,50 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// An expression.
+    /// </summary>
     public abstract class Expression : 
         AttributedObject,
         IExpression
     {
+        /// <summary>
+        /// Matches an expression for some preficate.
+        /// </summary>
+        /// <param name="e">expression to match</param>
+        /// <returns><c>true</c> if the expression matches the predicate, <c>false</c> if not</returns>
         public delegate bool MatchFunction(Expression e);
+
+        /// <summary>
+        /// Callback action to call whenever an expression is evaluated.
+        /// </summary>
+        /// <param name="expr">evaluated expression</param>
+        /// <param name="value">expression value</param>
         public delegate void OnExpressionEvaluatedFn(Expression expr, object value);
 
+        /// <summary>
+        /// Evaluates this expression.
+        /// </summary>
+        /// <param name="eval">evaluator to use</param>
+        /// <param name="efn">callback action to call whenever a (sub-)expression is evaluated</param>
+        /// <returns>the value of this expression</returns>
         public abstract object Eval(IEvaluator eval, OnExpressionEvaluatedFn efn);
 
+        /// <summary>
+        /// Evaluates this expression.
+        /// </summary>
+        /// <param name="eval">evaluator to use</param>
+        /// <returns>the value of this expression</returns>
         public object Eval(IEvaluator eval)
         {
             return Eval(eval, (e, v) => { });
         }
 
+        /// <summary>
+        /// Computes a textual representation of this expression, using the specified stringification service.
+        /// </summary>
+        /// <param name="info">stringification service to use</param>
+        /// <returns>textual representation of this expression</returns>
         public virtual string ToString(IStringifyInfo info)
         {
             if (info.OnStringifyExpression != null)
@@ -559,8 +1149,16 @@ namespace SystemSharp.SysDOM
 
         private Expression[] _children;
 
+        /// <summary>
+        /// Returns the precedence order of this expression, using the specified precedence order service.
+        /// </summary>
+        /// <param name="prec">precedence order service to use</param>
+        /// <returns>the precedence order of this expression</returns>
         public abstract int GetPrecedence(IOperatorPrecedence prec);
 
+        /// <summary>
+        /// Returns the number of operands.
+        /// </summary>
         public virtual int Arity
         {
             get { return _children.Length; }
@@ -570,13 +1168,26 @@ namespace SystemSharp.SysDOM
             }
         }
         
+        /// <summary>
+        /// Returns the expression operands.
+        /// </summary>
         public virtual Expression[] Children
         {
             get { return _children; }
         }
 
+        /// <summary>
+        /// Clones this expression, using the supplied operands.
+        /// </summary>
+        /// <param name="newChildren">new epxression operands</param>
+        /// <returns>a clone of this expression</returns>
         protected abstract Expression CloneThisImpl(Expression[] newChildren);
 
+        /// <summary>
+        /// Clones this expression, using the supplied operands.
+        /// </summary>
+        /// <param name="newChildren">new epxression operands</param>
+        /// <returns>a clone of this expression</returns>
         public Expression CloneThis(Expression[] newChildren)
         {
             var result = CloneThisImpl(newChildren);
@@ -584,6 +1195,9 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Returns a clone of this expression.
+        /// </summary>
         public Expression Clone
         {
             get
@@ -595,16 +1209,47 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Accepts an expression visitor.
+        /// </summary>
+        /// <typeparam name="ResultType">visitor result type</typeparam>
+        /// <param name="vtor">visitor to accept</param>
+        /// <returns>result returned from visitor</returns>
         public abstract ResultType Accept<ResultType>(IExpressionVisitor<ResultType> vtor);
+
+        /// <summary>
+        /// Returns <c>true</c>, iff this expression has the same semantics like the supplied expression, without considering any operand.
+        /// </summary>
+        /// <param name="e">expression to compare to</param>
         public abstract bool NodeEquals(Expression e);
+
+        /// <summary>
+        /// Returns <c>true</c>, iff this expression has the same semantics like the supplied expression, considering the complete structure.
+        /// </summary>
+        /// <param name="e">expression to compare to</param>
         public abstract bool DeepEquals(Expression e);
+
+        /// <summary>
+        /// Returns the result type classification of this expression.
+        /// </summary>
         public abstract EResultTypeClass ResultTypeClass { get; }
 
+        /// <summary>
+        /// Accepts an expression transformation visitor.
+        /// </summary>
+        /// <param name="xform">transformation visitor</param>
+        /// <returns>the transformed expression</returns>
         public virtual Expression Transform(IExpressionTransformer xform)
         {
             return Accept(xform);
         }
 
+        /// <summary>
+        /// Searches and returns an expression that matches the given predicate, considering this expression
+        /// and recursively all operands.
+        /// </summary>
+        /// <param name="fn">predicate</param>
+        /// <returns>first matched expression, or <c>null</c> if no such exists</returns>
         public Expression Match(MatchFunction fn)
         {
             if (fn(this))
@@ -619,6 +1264,14 @@ namespace SystemSharp.SysDOM
             return null;
         }
 
+        /// <summary>
+        /// Replaces all expressions tha match a given predicate with a generated expression, considering
+        /// this expression and recursively all operands.
+        /// </summary>
+        /// <param name="fn">predicate</param>
+        /// <param name="g">expression generator for matched expressions</param>
+        /// <param name="hit">out parameter to receive whether any expression was matched</param>
+        /// <returns>the replacement result expression</returns>
         public Expression Replace(MatchFunction fn, ExpressionGenerator g, out bool hit)
         {
             if (fn(this))
@@ -650,6 +1303,11 @@ namespace SystemSharp.SysDOM
             return CloneThisImpl(newChildren);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the operands of <paramref name="e"/> are equal to the operands of this
+        /// expression, in terms of the <c>DeepEquals</c> method.
+        /// </summary>
+        /// <param name="e">expression to compare</param>
         protected bool ChildrenAreDeepEqualTo(Expression e)
         {
             Contract.Requires(e.Children != null);
@@ -664,10 +1322,16 @@ namespace SystemSharp.SysDOM
             return true;
         }
 
+        /// <summary>
+        /// Gets or sets a user-defined object.
+        /// </summary>
         public object Cookie { get; set; }
 
         protected TypeDescriptor _resultType;
 
+        /// <summary>
+        /// Returns the type descriptor of this expression evaluated.
+        /// </summary>
         public virtual TypeDescriptor ResultType 
         { 
             get
@@ -689,13 +1353,15 @@ namespace SystemSharp.SysDOM
             }
             set
             {
-                //Contract.Requires(value != null);
                 if (value == null)
                     throw new ArgumentException();
                 _resultType = value;
             }
         }
 
+        /// <summary>
+        /// Recursively sets of cookies to <c>null</c>.
+        /// </summary>
         public void ClearCookies()
         {
             Cookie = null;
@@ -705,6 +1371,10 @@ namespace SystemSharp.SysDOM
 
         private int _cachedHashCode;
 
+        /// <summary>
+        /// Computes a hash code for this expression.
+        /// </summary>
+        /// <returns>computed hash code</returns>
         protected abstract int ComputeHashCode();
 
         public override int GetHashCode()
@@ -714,6 +1384,9 @@ namespace SystemSharp.SysDOM
             return _cachedHashCode;
         }
 
+        /// <summary>
+        /// Returns the count of leaf expressions, i.e. expressions without any operands.
+        /// </summary>
         public int LeafCount
         {
             get
@@ -727,6 +1400,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Performs a consistency check of this expression.
+        /// </summary>
         public void CheckConsistency()
         {
             System.Diagnostics.Debug.Assert(ResultType != null);
@@ -745,6 +1421,12 @@ namespace SystemSharp.SysDOM
             IsInlined = true;
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the sum of the supplied expressions.
+        /// </summary>
+        /// <param name="e1">first summand</param>
+        /// <param name="e2">second summand</param>
+        /// <returns>the sum expression</returns>
         public static Expression operator +(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -755,6 +1437,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the difference of the supplied expressions.
+        /// </summary>
+        /// <param name="e1">first expression</param>
+        /// <param name="e2">subtrahend</param>
+        /// <returns>the difference expression</returns>
         public static Expression operator -(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -765,6 +1453,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the product of the supplied expressions.
+        /// </summary>
+        /// <param name="e1">first multiplicand</param>
+        /// <param name="e2">second multiplicand</param>
+        /// <returns>the product expression</returns>
         public static Expression operator *(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -775,6 +1469,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the quotient of the supplied expressions.
+        /// </summary>
+        /// <param name="e1">dividend</param>
+        /// <param name="e2">divisor</param>
+        /// <returns>the quotient expression</returns>
         public static Expression operator /(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -785,6 +1485,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the division remainder of the supplied expressions.
+        /// </summary>
+        /// <param name="e1">dividend</param>
+        /// <param name="e2">divisor</param>
+        /// <returns>the remainder expression</returns>
         public static Expression operator %(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -795,6 +1501,13 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the logical or bit-wise conjunction of the supplied
+        /// expressions, depending on their result types.
+        /// </summary>
+        /// <param name="e1">first expression</param>
+        /// <param name="e2">second expression</param>
+        /// <returns>the conjunction expression</returns>
         public static Expression operator &(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -805,6 +1518,13 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the logical or bit-wise disjunction of the supplied
+        /// expressions, depending on their result types.
+        /// </summary>
+        /// <param name="e1">first expression</param>
+        /// <param name="e2">second expression</param>
+        /// <returns>the disjunction expression</returns>
         public static Expression operator |(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -815,6 +1535,13 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the logical or bit-wise anti-valence of the supplied
+        /// expressions, depending on their result types.
+        /// </summary>
+        /// <param name="e1">first expression</param>
+        /// <param name="e2">second expression</param>
+        /// <returns>the anti-valence expression</returns>
         public static Expression operator ^(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -825,6 +1552,11 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the negation of the supplied expression.
+        /// </summary>
+        /// <param name="e">expression to negate</param>
+        /// <returns>the negation expression</returns>
         public static Expression operator -(Expression e)
         {
             return new UnOp()
@@ -834,6 +1566,11 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the bit-wise complement of the supplied expression.
+        /// </summary>
+        /// <param name="e">expression to complement</param>
+        /// <returns>the complement expression</returns>
         public static Expression operator ~(Expression e)
         {
             return new UnOp()
@@ -843,6 +1580,11 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the boolean inverse of the supplied expression.
+        /// </summary>
+        /// <param name="e">expression to invert</param>
+        /// <returns>the inversion expression</returns>
         public static Expression operator !(Expression e)
         {
             return new UnOp()
@@ -853,6 +1595,11 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an identity expression. The identity function maps any value to the same value.
+        /// </summary>
+        /// <param name="e">expression</param>
+        /// <returns>the identity expression</returns>
         public static Expression Id(Expression e)
         {
             return new UnOp()
@@ -862,33 +1609,54 @@ namespace SystemSharp.SysDOM
             };
         }
 
-        public static Expression Exp(Expression e)
+        /// <summary>
+        /// Constructs an expression that represents the e^x operation.
+        /// </summary>
+        /// <param name="x">x</param>
+        /// <returns>the e^x operator expression</returns>
+        public static Expression Exp(Expression x)
         {
             return new UnOp()
             {
                 Operation = UnOp.Kind.Exp,
-                Operand = e
+                Operand = x
             };
         }
 
-        public static Expression Log(Expression e)
+        /// <summary>
+        /// Constructs an expression that represents the natural logarithm.
+        /// </summary>
+        /// <param name="x">x</param>
+        /// <returns>the log(x) operator expression</returns>
+        public static Expression Log(Expression x)
         {
             return new UnOp()
             {
                 Operation = UnOp.Kind.Log,
-                Operand = e
+                Operand = x
             };
         }
 
-        public static Expression Abs(Expression e)
+        /// <summary>
+        /// Constructs an expression that represents the absolute value function.
+        /// </summary>
+        /// <param name="x">x</param>
+        /// <returns>the abs(x) operator expression</returns>
+        public static Expression Abs(Expression x)
         {
             return new UnOp()
             {
                 Operation = UnOp.Kind.Abs,
-                Operand = e
+                Operand = x
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the sign extension operator.
+        /// </summary>
+        /// <param name="e">operand</param>
+        /// <param name="targetType">target type of sign-extended value</param>
+        /// <returns>the sign extension operator expression</returns>
         public static Expression ExtendSign(Expression e, TypeDescriptor targetType)
         {
             return new UnOp()
@@ -899,6 +1667,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the x^y operator.
+        /// </summary>
+        /// <param name="e1">x</param>
+        /// <param name="e2">y</param>
+        /// <returns>the x^y operator expression</returns>
         public static Expression Pow(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -909,6 +1683,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the logarithm operator.
+        /// </summary>
+        /// <param name="e1">operand</param>
+        /// <param name="e2">logarithm base</param>
+        /// <returns>the logarithm operator expression</returns>
         public static Expression Log(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -919,6 +1699,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the "less than" operator
+        /// </summary>
+        /// <param name="e1">first operand</param>
+        /// <param name="e2">second operand</param>
+        /// <returns>the "less than" operator expression</returns>
         public static Expression LessThan(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -930,6 +1716,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the "less than or equal" operator
+        /// </summary>
+        /// <param name="e1">first operand</param>
+        /// <param name="e2">second operand</param>
+        /// <returns>the "less than or equal" operator expression</returns>
         public static Expression LessThanOrEqual(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -941,6 +1733,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the equality operator
+        /// </summary>
+        /// <param name="e1">first operand</param>
+        /// <param name="e2">second operand</param>
+        /// <returns>the equality operator expression</returns>
         public static Expression Equal(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -952,7 +1750,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
-
+        /// <summary>
+        /// Constructs an expression that represents the inequality operator
+        /// </summary>
+        /// <param name="e1">first operand</param>
+        /// <param name="e2">second operand</param>
+        /// <returns>the inequality operator expression</returns>
         public static Expression NotEqual(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -964,7 +1767,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
-
+        /// <summary>
+        /// Constructs an expression that represents the "greater than" operator
+        /// </summary>
+        /// <param name="e1">first operand</param>
+        /// <param name="e2">second operand</param>
+        /// <returns>the "greater than" operator expression</returns>
         public static Expression GreaterThan(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -976,6 +1784,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the "greater than or equal" operator
+        /// </summary>
+        /// <param name="e1">first operand</param>
+        /// <param name="e2">second operand</param>
+        /// <returns>the "greater than or equal" operator expression</returns>
         public static Expression GreaterThanOrEqual(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -987,6 +1801,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the logical left shift operator.
+        /// </summary>
+        /// <param name="e1">shifted operand</param>
+        /// <param name="e2">bit count to shift</param>
+        /// <returns>the left shift operator expression</returns>
         public static Expression LShift(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -997,6 +1817,13 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the arithmetical or logical right shift
+        /// operator, depending on whether the shift operand is signed.
+        /// </summary>
+        /// <param name="e1">shifted operand</param>
+        /// <param name="e2">bit count to shift</param>
+        /// <returns>right shift operator expression</returns>
         public static Expression RShift(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -1007,6 +1834,12 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the concatenation operator.
+        /// </summary>
+        /// <param name="e1">"upper part" expression</param>
+        /// <param name="e2">"lower part" expression</param>
+        /// <returns>concatenation operator expression</returns>
         public static Expression Concat(Expression e1, Expression e2)
         {
             return new BinOp()
@@ -1017,6 +1850,11 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the concatenation operator.
+        /// </summary>
+        /// <param name="exprs">expressions to be concatenated, from first "upper part" to last "lower part"</param>
+        /// <returns>concatenation operator expression</returns>
         public static Expression Concat(params Expression[] exprs)
         {
             if (exprs == null || exprs.Length < 2)
@@ -1031,6 +1869,13 @@ namespace SystemSharp.SysDOM
             return cur;
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the slice operator.
+        /// </summary>
+        /// <param name="e">operand</param>
+        /// <param name="first">first slice index</param>
+        /// <param name="second">second slice index</param>
+        /// <returns>slice operator expression</returns>
         public static Expression Slice(Expression e, Expression first, Expression second)
         {
             TernOp result = new TernOp()
@@ -1043,6 +1888,13 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the conditional operator.
+        /// </summary>
+        /// <param name="cond">condition operand</param>
+        /// <param name="first">operand to take if condition evaluates to "true"</param>
+        /// <param name="second">operand to take if condition evaluates to "false"</param>
+        /// <returns>conditional operator expression</returns>
         public static Expression Conditional(Expression cond, Expression first, Expression second)
         {
             if (!first.ResultType.Equals(second.ResultType))
@@ -1059,6 +1911,11 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Constructs an expression that represents a constant of type <c>double</c>.
+        /// </summary>
+        /// <param name="value">constant value</param>
+        /// <returns>the constant value expression</returns>
         public static Expression Constant(double value)
         {
             if (value == 0.0)
@@ -1069,6 +1926,12 @@ namespace SystemSharp.SysDOM
                 return LiteralReference.Constant(value);
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the sum if its operands.
+        /// </summary>
+        /// <param name="exprs">summands</param>
+        /// <param name="signs">array of signs, <c>true</c> means that the operand should be subtracted instead of added</param>
+        /// <returns>the sum expression</returns>
         public static Expression Sum(Expression[] exprs, bool[] signs)
         {
             if (exprs == null || signs == null || exprs.Length != signs.Length)
@@ -1107,54 +1970,106 @@ namespace SystemSharp.SysDOM
             return Sum(rexprs, rsigns);
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the sum of its operands.
+        /// </summary>
+        /// <param name="exprs">operands to sum up</param>
+        /// <returns>the sum expression</returns>
         public static Expression Sum(Expression[] exprs)
         {
             return Sum(exprs, new bool[exprs.Length]);
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the ceiling operator.
+        /// </summary>
+        /// <param name="expr">operand</param>
+        /// <returns>the ceiling operator expression</returns>
         public static Expression Ceil(Expression expr)
         {
             return new UnOp() { Operation = UnOp.Kind.Ceil, Operand = expr };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the floor operator.
+        /// </summary>
+        /// <param name="expr">operand</param>
+        /// <returns>the floor operator expression</returns>
         public static Expression Floor(Expression expr)
         {
             return new UnOp() { Operation = UnOp.Kind.Floor, Operand = expr };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the minimum operator.
+        /// </summary>
+        /// <param name="a">first operand</param>
+        /// <param name="b">second operand</param>
+        /// <returns>the minimum operator expression</returns>
         public static Expression Min(Expression a, Expression b)
         {
             return new BinOp() { Operation = BinOp.Kind.Min, Operand1 = a, Operand2 = b };
         }
 
+        /// <summary>
+        /// Constructs an expression that represents the maximum operator.
+        /// </summary>
+        /// <param name="a">first operand</param>
+        /// <param name="b">second operand</param>
+        /// <returns>the maximum operator expression</returns>
         public static Expression Max(Expression a, Expression b)
         {
             return new BinOp() { Operation = BinOp.Kind.Max, Operand1 = a, Operand2 = b };
         }
     }
 
+    /// <summary>
+    /// A replacement rule combines a matching predicate with an expression generator.
+    /// </summary>
     public class ReplacementRule
     {
         private Expression.MatchFunction _matchFn;
         private ExpressionGenerator _gen;
 
+        /// <summary>
+        /// Constructs a new replacement rule.
+        /// </summary>
+        /// <param name="matchFn">expression match predicate</param>
+        /// <param name="gen">expression generator for matched expressions</param>
         public ReplacementRule(Expression.MatchFunction matchFn, ExpressionGenerator gen)
         {
             _matchFn = matchFn;
             _gen = gen;
         }
 
+        /// <summary>
+        /// Constructs a new replacement rule.
+        /// </summary>
+        /// <param name="m">expression match predicate</param>
+        /// <param name="g">expression generator for matched expressions</param>
         public ReplacementRule(Matching m, Generation g)
         {
             _matchFn = m;
             _gen = g;
         }
 
+        /// <summary>
+        /// Applies this replacement rule to the first matched expression of the expression hierarchy.
+        /// </summary>
+        /// <param name="e">expression to apply this rule to</param>
+        /// <param name="hit">out parameter to receive whether an expression was matched</param>
+        /// <returns>newly constructed expession with applied replacement</returns>
         public Expression ApplyOnce(Expression e, out bool hit)
         {
             return e.Replace(_matchFn, _gen, out hit);
         }
 
+        /// <summary>
+        /// Applies this replacement rule as often as possible to all expressions of the expression hierarchy.
+        /// </summary>
+        /// <param name="e">expression to apply this rule to</param>
+        /// <param name="hit">out parameter to receive whether an expression was matched</param>
+        /// <returns>newly constructed expession with applied replacement(s)</returns>
         public Expression ApplyRepeatedly(Expression e, out bool hit)
         {
             bool localHit;
@@ -1169,6 +2084,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A reference expression to a model element.
+    /// </summary>
     public abstract class ElementReference : Expression
     {
         public override int GetPrecedence(IOperatorPrecedence prec)
@@ -1177,14 +2095,32 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A reference expression to a literal.
+    /// </summary>
     public class LiteralReference : ElementReference
     {
+        /// <summary>
+        /// Describes the way how the literal it referenced.
+        /// </summary>
         public enum EMode
         {
+            /// <summary>
+            /// Direct reference
+            /// </summary>
             Direct,
+
+            /// <summary>
+            /// Address of literal reference
+            /// </summary>
             ByAddress
         }
 
+        /// <summary>
+        /// Constructs a new literal reference expression.
+        /// </summary>
+        /// <param name="referencedObject">literal to reference</param>
+        /// <param name="mode">referencing mode</param>
         public LiteralReference(ILiteral referencedObject, EMode mode = EMode.Direct)
         {
             Arity = 0;
@@ -1192,7 +2128,14 @@ namespace SystemSharp.SysDOM
             Mode = mode;
         }
 
+        /// <summary>
+        /// The reference literal
+        /// </summary>
         public ILiteral ReferencedObject { get; private set; }
+
+        /// <summary>
+        /// The way how the literal is referenced
+        /// </summary>
         public EMode Mode { get; private set; }
 
         public override object Eval(IEvaluator eval, OnExpressionEvaluatedFn efn)
@@ -1291,23 +2234,58 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// An expression that represents a special/fundamental constant.
+    /// </summary>
     public class SpecialConstant : ElementReference
     {
+        /// <summary>
+        /// Choice of constants
+        /// </summary>
         public enum Kind
         {
+            /// <summary>
+            /// Fundamental constant e
+            /// </summary>
             E,
+
+            /// <summary>
+            /// Fundamental constant Pi
+            /// </summary>
             PI,
+
+            /// <summary>
+            /// 0
+            /// </summary>
             ScalarZero,
+
+            /// <summary>
+            /// 1
+            /// </summary>
             ScalarOne,
+
+            /// <summary>
+            /// boolean "true" literal
+            /// </summary>
             True,
+
+            /// <summary>
+            /// boolean "false" literal
+            /// </summary>
             False
         }
 
+        /// <summary>
+        /// Constructs an instance of a special constant expression.
+        /// </summary>
         public SpecialConstant()
         {
             Arity = 0;
         }
 
+        /// <summary>
+        /// Which constant is represented.
+        /// </summary>
         public new Kind Constant { get; set; }
 
         public override object Eval(IEvaluator eval, OnExpressionEvaluatedFn efn)
@@ -1346,7 +2324,9 @@ namespace SystemSharp.SysDOM
                 return other.Constant == Constant;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override bool DeepEquals(Expression e)
@@ -1397,6 +2377,9 @@ namespace SystemSharp.SysDOM
             };
         }
 
+        /// <summary>
+        /// Returns symbolic "0" of result type <c>double</c>.
+        /// </summary>
         public static SpecialConstant ScalarZero
         {
             get
@@ -1409,6 +2392,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns symbolic "1" of result type <c>double</c>.
+        /// </summary>
         public static SpecialConstant ScalarOne
         {
             get
@@ -1421,6 +2407,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns "Pi" of result type <c>double</c>.
+        /// </summary>
         public static SpecialConstant PI
         {
             get
@@ -1433,6 +2422,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns "e" of result type <c>double</c>.
+        /// </summary>
         public static SpecialConstant E
         {
             get
@@ -1445,6 +2437,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns "true" of result type <c>bool</c>.
+        /// </summary>
         public static SpecialConstant True
         {
             get
@@ -1457,6 +2452,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns "false" of result type <c>bool</c>.
+        /// </summary>
         public static SpecialConstant False
         {
             get
@@ -1470,32 +2468,98 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A unary operator expression.
+    /// </summary>
     public class UnOp : Expression
     {
+        /// <summary>
+        /// Choice of unary operators.
+        /// </summary>
         public enum Kind
         {
+            /// <summary>
+            /// The identity function maps any value to itself.
+            /// </summary>
             Identity,
+
+            /// <summary>
+            /// Negation
+            /// </summary>
             Neg,
+
+            /// <summary>
+            /// Boolean inversion
+            /// </summary>
             BoolNot,
+
+            /// <summary>
+            /// Bit-wise complement
+            /// </summary>
             BitwiseNot,
+
+            /// <summary>
+            /// Sign extension
+            /// </summary>
             ExtendSign,
+
+            /// <summary>
+            /// e^x
+            /// </summary>
             Exp,
+
+            /// <summary>
+            /// Natural logarithm
+            /// </summary>
             Log,
+
+            /// <summary>
+            /// Absolute value
+            /// </summary>
             Abs,
+
+            /// <summary>
+            /// Sine
+            /// </summary>
             Sin,
+
+            /// <summary>
+            /// Cosine
+            /// </summary>
             Cos,
+
+            /// <summary>
+            /// Square-root
+            /// </summary>
             Sqrt,
+
+            /// <summary>
+            /// Ceiling operator
+            /// </summary>
             Ceil,
+
+            /// <summary>
+            /// Floor operator
+            /// </summary>
             Floor
         }
 
+        /// <summary>
+        /// Constructs a new unary operation.
+        /// </summary>
         public UnOp()
         {
             Arity = 1;
         }
 
+        /// <summary>
+        /// Gets or sets the kind of operation.
+        /// </summary>
         public Kind Operation { get; set; }
 
+        /// <summary>
+        /// Gets or sets the operand.
+        /// </summary>
         public Expression Operand 
         {
             get { return Children[0]; }
@@ -1648,46 +2712,148 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Binary operator expression.
+    /// </summary>
     public class BinOp : Expression
     {
+        /// <summary>
+        /// Choice of binary operators.
+        /// </summary>
         public enum Kind
         {
+            /// <summary>
+            /// Addition
+            /// </summary>
             Add,
+
+            /// <summary>
+            /// Subtraction
+            /// </summary>
             Sub,
+
+            /// <summary>
+            /// Multiplication
+            /// </summary>
             Mul,
+
+            /// <summary>
+            /// Division
+            /// </summary>
             Div,
+
+            /// <summary>
+            /// Division remainder
+            /// </summary>
             Rem,
+
+            /// <summary>
+            /// Boolean or bit-wise conjunction
+            /// </summary>
             And,
+
+            /// <summary>
+            /// Boolean or bit-wise disjunction
+            /// </summary>
             Or,
+
+            /// <summary>
+            /// Boolean or bit-wise anti-valence
+            /// </summary>
             Xor,
+
+            /// <summary>
+            /// Logical left shift
+            /// </summary>
             LShift,
+
+            /// <summary>
+            /// Arithmetical or logical right shift
+            /// </summary>
             RShift,
+
+            /// <summary>
+            /// Concatenation
+            /// </summary>
             Concat,
+
+            /// <summary>
+            /// e^x
+            /// </summary>
             Exp,
+
+            /// <summary>
+            /// Natural logarithm
+            /// </summary>
             Log,
+
+            /// <summary>
+            /// Equality comparison
+            /// </summary>
             Eq,
+
+            /// <summary>
+            /// "Greater than" comparison
+            /// </summary>
             Gt,
+
+            /// <summary>
+            /// "Greater than or equal" comparison
+            /// </summary>
             GtEq,
+
+            /// <summary>
+            /// "Less than" comparison
+            /// </summary>
             Lt,
+
+            /// <summary>
+            /// "Less than or equal" comparison
+            /// </summary>
             LtEq,
+
+            /// <summary>
+            /// Inequality comparison
+            /// </summary>
             NEq,
+
+            /// <summary>
+            /// Minimum operator
+            /// </summary>
             Min,
+
+            /// <summary>
+            /// Maximum operator
+            /// </summary>
             Max
         }
 
+        /// <summary>
+        /// Constructs a new instance of the binary operator expression.
+        /// </summary>
         public BinOp()
         {
             Arity = 2;
         }
 
+        /// <summary>
+        /// Gets or sets the kind of operation.
+        /// </summary>
         public Kind Operation { get; set; }
 
+        /// <summary>
+        /// Gets or sets the first operand.
+        /// </summary>
         public Expression Operand1 
         {
             get { return Children[0]; }
             set { Children[0] = value; }
 
         }
+
+        /// <summary>
+        /// Gets or sets the second operand.
+        /// </summary>
         public Expression Operand2 
         {
             get { return Children[1]; }
@@ -1783,7 +2949,9 @@ namespace SystemSharp.SysDOM
                 return Operation == other.Operation;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override bool DeepEquals(Expression e)
@@ -1978,21 +3146,43 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A ternary operation expression.
+    /// </summary>
     public class TernOp : Expression
     {
+        /// <summary>
+        /// Choice of ternary operators
+        /// </summary>
         public enum Kind
         {
+            /// <summary>
+            /// Slice operation
+            /// </summary>
             Slice,
+
+            /// <summary>
+            /// Conditional operation, i.e. C# operator <c>c ? x : y</c>
+            /// </summary>
             Conditional
         }
 
+        /// <summary>
+        /// Constructs a new ternary operator expression.
+        /// </summary>
         public TernOp()
         {
             Arity = 3;
         }
 
+        /// <summary>
+        /// Gets or sets the kind of operation.
+        /// </summary>
         public Kind Operation { get; set; }
 
+        /// <summary>
+        /// Returns the operands.
+        /// </summary>
         public Expression[] Operands
         {
             get { return Children; }
@@ -2095,7 +3285,9 @@ namespace SystemSharp.SysDOM
                 return Operation.Equals(other.Operation);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override bool DeepEquals(Expression e)
@@ -2141,16 +3333,37 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Common interface for everything which may be called as a function.
+    /// </summary>
     public interface ICallable
     {
+        /// <summary>
+        /// Function name
+        /// </summary>
         string Name { get; }
     }
 
+    /// <summary>
+    /// Reference to a SysDOM function.
+    /// </summary>
     public class FunctionRef: ICallable
     {
+        /// <summary>
+        /// The function name
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// The function itself
+        /// </summary>
         public Function Implementation { get; private set; }
 
+        /// <summary>
+        /// Constructs a new SysDOM function reference.
+        /// </summary>
+        /// <param name="name">function name</param>
+        /// <param name="impl">referenced function</param>
         public FunctionRef(string name, Function impl)
         {
             Name = name;
@@ -2158,27 +3371,64 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A function specifier with possibly multiple representations in different domains.
+    /// </summary>
     public class FunctionSpec : ICallable
     {
+        /// <summary>
+        /// Constructs a new function specifier.
+        /// </summary>
+        /// <param name="resultType">type of function return value</param>
         public FunctionSpec(TypeDescriptor resultType)
         {
             Contract.Requires(resultType != null);
             _resultType = resultType;
         }
 
+        /// <summary>
+        /// CLI method information on the specified function.
+        /// </summary>
         public MethodBase CILRep { get; internal set; }
+
+        /// <summary>
+        /// SysDOM representation of the specified function without calling context specializations.
+        /// </summary>
         public MethodDescriptor GenericSysDOMRep { get; internal set; }
+
+        /// <summary>
+        /// SysDOM representation of the specified function with calling context specializations.
+        /// </summary>
         public MethodDescriptor SpecialSysDOMRep { get; internal set; }
+
+        /// <summary>
+        /// XIL-S representation of the specified function.
+        /// </summary>
         public XILSFunction XILSRep { get; internal set; }
+
+        /// <summary>
+        /// XIL-3 representation of the specified function. 
+        /// </summary>
         public XILSFunction XIL3Rep { get; internal set; }
+
+        /// <summary>
+        /// Intrinsic representation of the specified function.
+        /// </summary>
         public IntrinsicFunction IntrinsicRep { get; internal set; }
 
         private TypeDescriptor _resultType;
+
+        /// <summary>
+        /// Returns the type of the function return value.
+        /// </summary>
         public TypeDescriptor ResultType
         {
             get { return _resultType; }
         }
 
+        /// <summary>
+        /// Returns the function name.
+        /// </summary>
         public string Name
         {
             get
@@ -2240,10 +3490,19 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A function call expression.
+    /// </summary>
     public class FunctionCall : Expression
     {
+        /// <summary>
+        /// Gets or sets the called function.
+        /// </summary>
         public ICallable Callee { get; set; }
 
+        /// <summary>
+        /// Gets or sets the call arguments.
+        /// </summary>
         public Expression[] Arguments 
         {
             get
@@ -2257,6 +3516,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Constructs a new function call expression.
+        /// </summary>
         public FunctionCall()
         {
             SetResultTypeClass = EResultTypeClass.Unknown;
@@ -2291,7 +3553,9 @@ namespace SystemSharp.SysDOM
                 return Callee.Equals(other.Callee);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override bool DeepEquals(Expression e)
@@ -2332,10 +3596,7 @@ namespace SystemSharp.SysDOM
 
         public override EResultTypeClass ResultTypeClass
         {
-            get
-            {
-                return SetResultTypeClass;
-            }
+            get { return SetResultTypeClass; }
         }
 
         protected override Expression CloneThisImpl(Expression[] newChildren)
@@ -2350,9 +3611,16 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A placeholder expression which gets substituted at some later stage.
+    /// </summary>
     public class LazyExpression : Expression
     {
         private Expression _placeHolder;
+
+        /// <summary>
+        /// Gets or sets the placeholder expression.
+        /// </summary>
         public Expression PlaceHolder 
         {
             get { return _placeHolder; }
@@ -2430,7 +3698,9 @@ namespace SystemSharp.SysDOM
         public override bool Equals(object obj)
         {
             if (PlaceHolder != null)
+            {
                 return PlaceHolder.Equals(obj);
+            }
             else
             {
                 LazyExpression other = obj as LazyExpression;
@@ -2461,6 +3731,10 @@ namespace SystemSharp.SysDOM
 
     #region Transformation
 
+    /// <summary>
+    /// Visitor pattern interface for expressions.
+    /// </summary>
+    /// <typeparam name="ResultType">visitor method return type</typeparam>
     public interface IExpressionVisitor<ResultType>
     {
         ResultType TransformLiteralReference(LiteralReference expr);
@@ -2469,15 +3743,20 @@ namespace SystemSharp.SysDOM
         ResultType TransformBinOp(BinOp expr);
         ResultType TransformTernOp(TernOp expr);
         ResultType TransformFunction(FunctionCall expr);
-        //ResultType TransformDerivative(Derivative expr);
     }
 
+    /// <summary>
+    /// A special expression visitor that transforms expressions into expressions.
+    /// </summary>
     public interface IExpressionTransformer: IExpressionVisitor<Expression>
     {
     }
 
     #endregion
 
+    /// <summary>
+    /// A matrix whose elements a expressions.
+    /// </summary>
     public class Matrix
     {
         private class ElementIndex
@@ -2532,17 +3811,35 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Constructs a new expression matrix.
+        /// </summary>
+        /// <param name="numRows">number of rows</param>
+        /// <param name="numCols">number of columns</param>
         public Matrix(int numRows, int numCols)
         {
             NumRows = numRows;
             NumCols = numCols;
         }
 
+        /// <summary>
+        /// The number of matrix rows
+        /// </summary>
         public int NumRows { get; private set; }
+
+        /// <summary>
+        /// The number of matrix columns
+        /// </summary>
         public int NumCols { get; private set; }
 
         private Dictionary<ElementIndex, Expression> _elements = new Dictionary<ElementIndex, Expression>();
 
+        /// <summary>
+        /// Gets or sets a matrix element.
+        /// </summary>
+        /// <param name="row">row</param>
+        /// <param name="col">column</param>
+        /// <returns>the matrix element at specified row/column pair</returns>
         public Expression this[int row, int col]
         {
             get
@@ -2562,6 +3859,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Enumerates all matrix elements.
+        /// </summary>
         public IEnumerable<Entry> Elements
         {
             get
@@ -2573,6 +3873,14 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a sub-matrix.
+        /// </summary>
+        /// <param name="row0">start row</param>
+        /// <param name="col0">start column</param>
+        /// <param name="numRows">height of sub-matrix</param>
+        /// <param name="numCols">width of sub-matrix</param>
+        /// <returns>the specified sub-matrix</returns>
         public Matrix GetSubRange(int row0, int col0, int numRows, int numCols)
         {
             Matrix result = new Matrix(numRows, numCols);
@@ -2587,6 +3895,12 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Returns the sub-matrix that originates from removing a certain row and a certain column.
+        /// </summary>
+        /// <param name="killRow">row to remove</param>
+        /// <param name="killCol">column to remove</param>
+        /// <returns>specified sub-matrix</returns>
         public Matrix KillRowCol(int killRow, int killCol)
         {
             Matrix result = new Matrix(NumRows - 1, NumCols - 1);
@@ -2605,6 +3919,9 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Returns the symbolic determinant of this matrix.
+        /// </summary>
         public Expression Det
         {
             get
@@ -2687,6 +4004,12 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Computes the matrix that one gets by replacing a certain column with the specified vector.
+        /// </summary>
+        /// <param name="col">column to replace</param>
+        /// <param name="b">replacement vector</param>
+        /// <returns>the matrix with replaced column</returns>
         public Matrix ReplaceCol(int col, Matrix b)
         {
             if (col < 0 || col >= NumCols ||
@@ -2708,6 +4031,11 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Solves the equation system "this" * x == b symbolically, using Cramer's rule.
+        /// </summary>
+        /// <param name="b">right side</param>
+        /// <returns>x</returns>
         public Matrix SolveByCramer(Matrix b)
         {
             if (b == null || b.NumCols != 1 || b.NumRows != NumRows || NumRows != NumCols)
@@ -2723,6 +4051,13 @@ namespace SystemSharp.SysDOM
             return result.Simplify();
         }
 
+        /// <summary>
+        /// Solves the equation system "this" * x == b symbolically, using LU decomposition.
+        /// </summary>
+        /// <param name="veilThreshold">threshold value for expression veiling, in order to avoid overly large expressions</param>
+        /// <param name="createVariable">variable creation function</param>
+        /// <param name="tempStmts">out parameter to receive the temporary assignments from veiling</param>
+        /// <returns>x</returns>
         public Matrix ComputeLU(int veilThreshold, CreateVariableFn createVariable, out List<StoreStatement> tempStmts)
         {
             if (NumRows != NumCols)
@@ -2778,6 +4113,16 @@ namespace SystemSharp.SysDOM
             return lu.Simplify();
         }
 
+        /// <summary>
+        /// Solves the equation system "this" * x == b symbolically, using LU decomposition, and
+        /// returns a list of variable assignments which solve the specfied equation system.
+        /// </summary>
+        /// <param name="unknowns">variables that represent "x"</param>
+        /// <param name="residual">right side of equation</param>
+        /// <param name="createVariable">variable creation function</param>
+        /// <param name="veilThreshold">threshold value for expression veiling, in order to avoid overly large expressions</param>
+        /// <param name="tempVars">out parameter to receive all created temporary variable</param>
+        /// <returns>list of assignments to solve the specified system</returns>
         public List<StoreStatement> ComputeLUAndSolve(Variable[] unknowns, Expression[] residual, 
             CreateVariableFn createVariable, int veilThreshold, out List<Variable> tempVars)
         {
@@ -2872,16 +4217,32 @@ namespace SystemSharp.SysDOM
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Returns a matrix filled with zeroes as elements.
+        /// </summary>
+        /// <param name="rows">number of rows</param>
+        /// <param name="cols">number of columns</param>
+        /// <returns>the zero matrix</returns>
         public static Matrix GetZeroes(int rows, int cols)
         {
             return new Matrix(rows, cols);
         }
 
+        /// <summary>
+        /// Returns a symmetric matrix filled with ones as elements.
+        /// </summary>
+        /// <param name="dim">dimension</param>
+        /// <returns>the zero matrix</returns>
         public static Matrix GetZeroes(int dim)
         {
             return new Matrix(dim, dim);
         }
 
+        /// <summary>
+        /// Returns a unit matrix.
+        /// </summary>
+        /// <param name="dim">dimension</param>
+        /// <returns>the unit matrix of specified dimension</returns>
         public static Matrix GetUnity(int dim)
         {
             Matrix result = new Matrix(dim, dim);
@@ -2892,6 +4253,11 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Converts an array of expressions to a row vector.
+        /// </summary>
+        /// <param name="ev">array of expressions</param>
+        /// <returns>the row vector</returns>
         public static Matrix RowVector(Expression[] ev)
         {
             Matrix m = new Matrix(ev.Length, 1);
@@ -2900,6 +4266,11 @@ namespace SystemSharp.SysDOM
             return m;
         }
 
+        /// <summary>
+        /// Flips the sign of each matrix element.
+        /// </summary>
+        /// <param name="m">matrix to negate</param>
+        /// <returns>the negated matrix</returns>
         public static Matrix operator -(Matrix m)
         {
             Matrix r = new Matrix(m.NumRows, m.NumCols);
@@ -2911,21 +4282,52 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Computes a symbolic matrix norm.
+    /// </summary>
+    /// <param name="m">matrix</param>
+    /// <returns>symbolic matrix norm</returns>
     public delegate Expression Norm(Matrix m);
+
+    /// <summary>
+    /// Transforms one expression into another one.
+    /// </summary>
+    /// <param name="e">expression to transform</param>
+    /// <returns>transformed expression</returns>
     public delegate Expression Manipulation(Expression e);
 
+    /// <summary>
+    /// This static class provides some standard norms on symbolic matrices.
+    /// </summary>
     public static class Norms
     {
+        /// <summary>
+        /// Takes the absolute value of a matrix element.
+        /// </summary>
+        /// <param name="e">expression</param>
+        /// <returns>absolute value expression</returns>
         public static Expression GetManhattan(Expression e)
         {
             return Expression.Abs(e);
         }
 
+        /// <summary>
+        /// Takes the square value of a matrix element.
+        /// </summary>
+        /// <param name="e">expression</param>
+        /// <returns>square value expression</returns>
         public static Expression GetEuclidian(Expression e)
         {
             return e * e;
         }
 
+        /// <summary>
+        /// Computes a symbolic matrix norm by applying a transformation to each matrix element
+        /// and summing up all transformed elements.
+        /// </summary>
+        /// <param name="m">matrix</param>
+        /// <param name="manip">element-wise transformation</param>
+        /// <returns>symbolic norm</returns>
         public static Expression FromElementFn(Matrix m, Manipulation manip)
         {
             List<Expression> terms = new List<Expression>();
@@ -2936,46 +4338,40 @@ namespace SystemSharp.SysDOM
             return Expression.Sum(terms.ToArray(), new bool[terms.Count]);
         }
 
+        /// <summary>
+        /// Computes the symbolic Manhattan norm of a matrix.
+        /// </summary>
+        /// <param name="m">matrix</param>
+        /// <returns>the symbolic Manhattan norm</returns>
         public static Expression GetManhattan(Matrix m)
         {
             return FromElementFn(m, GetManhattan);
         }
 
-        public static Expression GetManhattan(object x)
-        {
-            if (x is Expression)
-                return GetManhattan((Expression)x);
-            else
-                return GetManhattan((Matrix)x);
-        }
-
+        /// <summary>
+        /// Computes the symbolic Euclidian norm of a matrix.
+        /// </summary>
+        /// <param name="m">matrix</param>
+        /// <returns>the symbolic Euclidian norm</returns>
         public static Expression GetEuclidian(Matrix m)
         {
             return FromElementFn(m, GetEuclidian);
         }
 
-        public static Expression GetEuclidian(object x)
-        {
-            if (x is Expression)
-                return GetEuclidian((Expression)x);
-            else
-                return GetEuclidian((Matrix)x);
-        }
-
+        /// <summary>
+        /// Returns the Manhattan norm.
+        /// </summary>
         public static Norm Manhattan
         {
-            get
-            {
-                return x => GetManhattan(x);
-            }
+            get { return x => GetManhattan(x); }
         }
 
+        /// <summary>
+        /// Returns the Euclidian norm.
+        /// </summary>
         public static Norm Euclidian
         {
-            get
-            {
-                return x => GetEuclidian(x);
-            }
+            get { return x => GetEuclidian(x); }
         }
     }
 
