@@ -35,29 +35,59 @@ using SystemSharp.SysDOM.Eval;
 
 namespace SystemSharp.SysDOM
 {
+    /// <summary>
+    /// Base interface of things that may be used a left-hand side of an assignment.
+    /// </summary>
     public interface IStorable
     {
         string Name { get; }
         EStoreMode StoreMode { get; }
     }
 
+    /// <summary>
+    /// Assignment semantics
+    /// </summary>
     public enum EStoreMode
     {
+        /// <summary>
+        /// Value assignment
+        /// </summary>
         Assign,
+
+        /// <summary>
+        /// Value-to-signal transfer
+        /// </summary>
         Transfer
     }
 
+    /// <summary>
+    /// Base interface for literals.
+    /// </summary>
     public interface ILiteral
     {
+        /// <summary>
+        /// Accepts a literal visitor.
+        /// </summary>
+        /// <param name="visitor">visitor to accept</param>
         void Accept(ILiteralVisitor visitor);
+
+        /// <summary>
+        /// Returns the type descriptor of the data which is represented by this literal.
+        /// </summary>
         TypeDescriptor Type { get; }
     }
 
+    /// <summary>
+    /// Base interface for literals which may be used as left-hand side of an assignment.
+    /// </summary>
     public interface IStorableLiteral:
         ILiteral, IStorable, IEvaluable
     {
     }
 
+    /// <summary>
+    /// Abstract base class for literals.
+    /// </summary>
     public abstract class Literal : 
         AttributedObject,
         IEvaluable, ILiteral
@@ -71,16 +101,29 @@ namespace SystemSharp.SysDOM
 
         #endregion
 
+        /// <summary>
+        /// Implicitly converts a literal to an expression.
+        /// </summary>
         public static implicit operator LiteralReference(Literal lit)
         {
             return new LiteralReference(lit, LiteralReference.EMode.Direct);
         }
     }
 
+    /// <summary>
+    /// A literal representing a constant value.
+    /// </summary>
     public class Constant : Literal
     {
+        /// <summary>
+        /// The constant value.
+        /// </summary>
         public object ConstantValue { get; private set; }
 
+        /// <summary>
+        /// Creates an instance.
+        /// </summary>
+        /// <param name="value">constant value to be represented</param>
         public Constant(object value)
         {
             ConstantValue = value;
@@ -105,7 +148,9 @@ namespace SystemSharp.SysDOM
                 return object.Equals(ConstantValue, other.ConstantValue);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override int GetHashCode()
@@ -144,9 +189,16 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A local variable.
+    /// </summary>
     public class Variable :
         Literal, IStorableLiteral
     {
+        /// <summary>
+        /// Constructs a local variable.
+        /// </summary>
+        /// <param name="type">type of data stored in the variable</param>
         public Variable(TypeDescriptor type)
         {
             _type = type;
@@ -154,6 +206,9 @@ namespace SystemSharp.SysDOM
             LocalSubIndex = -1;
         }
 
+        /// <summary>
+        /// Gets or sets the variable name.
+        /// </summary>
         public string Name { get; set; }
 
         private TypeDescriptor _type;
@@ -167,15 +222,33 @@ namespace SystemSharp.SysDOM
             get { return EStoreMode.Assign; } 
         }
 
+        /// <summary>
+        /// Adjusts thee variable type.
+        /// </summary>
+        /// <param name="type">new variable type, which must be a refinement of its former type</param>
         public void UpgradeType(TypeDescriptor type)
         {
             _type = type;
         }
 
+        /// <summary>
+        /// Gets or sets the variable index.
+        /// </summary>
         public int LocalIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the variable sub-index (as a result of SSA analysis)
+        /// </summary>
         public int LocalSubIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets the variable's initial value.
+        /// </summary>
         public object InitialValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets an indication whether the variable is accessed by address.
+        /// </summary>
         public bool IsAccessedByAddress { get; set; }
 
         public override string ToString()
@@ -212,25 +285,26 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A field reference literal.
+    /// </summary>
     public class FieldRef :
         Literal, IStorableLiteral
     {
-        //public FieldInfo Field { get; private set; }
-        //public Expression Instance { get; private set; }
+        /// <summary>
+        /// Referenced field descriptor.
+        /// </summary>
         public FieldDescriptor FieldDesc { get; internal set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="field">referenced field descriptor</param>
         public FieldRef(FieldDescriptor field)
         {
             FieldDesc = field;
             CopyAttributes();
         }
-
-        /*public FieldRef(FieldDescriptor field, Expression instance)
-        {
-            FieldDesc = field;
-            Instance = instance;
-            CopyAttributes();
-        }*/
 
         private void CopyAttributes()
         {
@@ -238,6 +312,9 @@ namespace SystemSharp.SysDOM
                 AddAttribute(attr);
         }
 
+        /// <summary>
+        /// Returns the name of the field descriptor.
+        /// </summary>
         public string Name
         {
             get { return FieldDesc.Name; }
@@ -256,18 +333,13 @@ namespace SystemSharp.SysDOM
         public override string ToString()
         {
             string result = "";
-            //if (Instance != null)
-            //    result = Instance.ToString() + ".";
             result += Name;
             return result;
         }
 
         public override int GetHashCode()
         {
-            //if (Instance == null)
-                return FieldDesc.GetHashCode();
-            //else
-            //    return Instance.GetHashCode() ^ FieldDesc.GetHashCode();
+            return FieldDesc.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -275,12 +347,12 @@ namespace SystemSharp.SysDOM
             if (obj is FieldRef)
             {
                 FieldRef fref = (FieldRef)obj;
-                return /*((Instance == null && fref.Instance == null) ||
-                    (Instance != null && Instance.Equals(fref.Instance))) &&*/
-                    FieldDesc.Equals(fref.FieldDesc);
+                return FieldDesc.Equals(fref.FieldDesc);
             }
             else
+            {
                 return false;
+            }
         }
 
         public override void Accept(ILiteralVisitor visitor)
@@ -299,11 +371,26 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A literal which represents the currently active instance during non-static method execution.
+    /// </summary>
     public class ThisRef : Literal
     {
+        /// <summary>
+        /// Declaring class.
+        /// </summary>
         public Type ClassContext { get; private set; }
+
+        /// <summary>
+        /// Active instance.
+        /// </summary>
         public object Instance { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="classContext">declaring class</param>
+        /// <param name="instance">active instance</param>
         public ThisRef(Type classContext, object instance)
         {
             if (classContext == null)
@@ -316,6 +403,9 @@ namespace SystemSharp.SysDOM
             Instance = instance;
         }
 
+        /// <summary>
+        /// Returns "this"
+        /// </summary>
         public string Name
         {
             get { return "this"; }
@@ -345,7 +435,9 @@ namespace SystemSharp.SysDOM
                     Instance == tref.Instance;
             }
             else
+            {
                 return false;
+            }
         }
 
         public override void Accept(ILiteralVisitor visitor)
@@ -364,8 +456,17 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// This static class provides extension methods for converting dimensional specifiers and
+    /// index specifiers to expressions.
+    /// </summary>
     public static class DimExtensions
     {
+        /// <summary>
+        /// Converts the dimensional specifier to an expression.
+        /// </summary>
+        /// <param name="dimSpec">dimensional specifier to convert</param>
+        /// <returns>expression representing the dimensional specifier</returns>
         public static Expression AsExpression(this DimSpec dimSpec)
         {
             switch (dimSpec.Kind)
@@ -380,32 +481,92 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Converts an index specifier to an array of expressions.
+        /// </summary>
+        /// <param name="indexSpec">index specifier to convert</param>
+        /// <returns>nested array of expressions, each representing an individual index</returns>
         public static Expression[][] AsExpressions(this IndexSpec indexSpec)
         {
             return indexSpec.Indices.Select(idx => new Expression[] { idx.AsExpression() }).ToArray();
         }
     }
 
+    /// <summary>
+    /// Signal reference literal
+    /// </summary>
     public class SignalRef :
         Literal, IStorableLiteral
     {
+        /// <summary>
+        /// Selects, which property of the signal is referenced
+        /// </summary>
         public enum EReferencedProperty
         {
+            /// <summary>
+            /// The signal instance itself
+            /// </summary>
             Instance,
+
+            /// <summary>
+            /// The "Next" property
+            /// </summary>
             Next,
+
+            /// <summary>
+            /// The "Cur" property
+            /// </summary>
             Cur,
+
+            /// <summary>
+            /// The "Pre" property
+            /// </summary>
             Pre,
+
+            /// <summary>
+            /// The signal change event
+            /// </summary>
             ChangedEvent,
+
+            /// <summary>
+            /// The rising edge event
+            /// </summary>
             RisingEdge,
+
+            /// <summary>
+            /// The falling edge event
+            /// </summary>
             FallingEdge
         }
 
+        /// <summary>
+        /// The referenced descriptor
+        /// </summary>
         public ISignalOrPortDescriptor Desc { get; private set; }
+
+        /// <summary>
+        /// The referenced property
+        /// </summary>
         public EReferencedProperty Prop { get; private set; }
+
+        /// <summary>
+        /// Indices to apply to the signal
+        /// </summary>
         public IEnumerable<Expression[]> Indices { get; private set; }
+
+        /// <summary>
+        /// Sample index
+        /// </summary>
         public IndexSpec IndexSample { get; private set; }
+
+        /// <summary>
+        /// Whether the applied signal index is static (i.e. constant)
+        /// </summary>
         public bool IsStaticIndex { get; private set; }
 
+        /// <summary>
+        /// Returns the name of the signal descriptor.
+        /// </summary>
         public string Name
         {
             get { return Desc.Name; }
@@ -436,29 +597,6 @@ namespace SystemSharp.SysDOM
                     }
                 }
 
-#if false
-                TypeDescriptor elemType = Desc.ElementType;
-                foreach (Expression[] index in Indices)
-                {
-                    if (index.Length == 0)
-                        continue;
-                    else if (index.Length == 1)
-                    {
-                        dynamic sample = elemType.GetSampleInstance();
-                        elemType = TypeDescriptor.GetTypeOf(sample[0]);
-                        //elemType = elemType.Element0Type;
-                    }
-                    else if (index.Length == 2)
-                    {
-                        elemType = elemType.MakeUnconstrainedType();
-                    }
-                    else
-                    {
-                        throw new NotSupportedException();
-                    }
-                }
-#endif
-
                 switch (Prop)
                 {
                     case EReferencedProperty.ChangedEvent:
@@ -485,6 +623,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns always <c>EStoreMode.Transfer</c>.
+        /// </summary>
         public EStoreMode StoreMode
         {
             get { return EStoreMode.Transfer; }
@@ -528,6 +669,11 @@ namespace SystemSharp.SysDOM
             return result;
         }
 
+        /// <summary>
+        /// Constructs a signal reference literal.
+        /// </summary>
+        /// <param name="desc">referenced descriptor</param>
+        /// <param name="prop">referenced signal property</param>
         public SignalRef(ISignalOrPortDescriptor desc, EReferencedProperty prop)
         {
             Contract.Requires(desc != null);
@@ -539,6 +685,15 @@ namespace SystemSharp.SysDOM
             IsStaticIndex = true;
         }
 
+        /// <summary>
+        /// Constructs a signal reference literal.
+        /// </summary>
+        /// <param name="desc">referenced descriptor</param>
+        /// <param name="prop">referenced signal property</param>
+        /// <param name="indices">indices to apply</param>
+        /// <param name="indexSample">sample index</param>
+        /// <param name="isStaticIndex">whether the indices are static (i.e.) constant, in which case the sample index can be taken
+        /// for granted</param>
         public SignalRef(ISignalOrPortDescriptor desc, EReferencedProperty prop, 
             IEnumerable<Expression[]> indices, IndexSpec indexSample, bool isStaticIndex)
         {
@@ -547,20 +702,6 @@ namespace SystemSharp.SysDOM
             Contract.Requires(indexSample != null);
             Contract.Requires(indices.Count() == indexSample.Indices.Length);
 
-            /*if (isStaticIndex)
-            {
-                IndexSpec rootIndex;
-                desc.GetUnindexedContainer(out rootIndex);
-                try
-                {
-                    indexSample.ApplyTo(rootIndex);
-                }
-                catch (ArgumentException)
-                {
-                    throw new ArgumentException("Invalid index sample");
-                }
-            }*/
-
             Desc = desc;
             Prop = prop;
             Indices = indices.ToList();
@@ -568,6 +709,10 @@ namespace SystemSharp.SysDOM
             IsStaticIndex = isStaticIndex;
         }
 
+        /// <summary>
+        /// Constructs a signal reference literal, based on another one.
+        /// </summary>
+        /// <param name="other">signal reference literal to copy from</param>
         public SignalRef(SignalRef other)
         {
             Desc = other.Desc;
@@ -697,6 +842,9 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns a signal instance which is described by this literal.
+        /// </summary>
         public ISignal ToSignal()
         {
             var sd = Desc as SignalDescriptor;
@@ -707,6 +855,10 @@ namespace SystemSharp.SysDOM
             return sd.Instance.ApplyIndex(IndexSample);
         }
 
+        /// <summary>
+        /// Removes all indices from the underlying descriptor and adds them to this reference literal.
+        /// </summary>
+        /// <returns>a possibly modified, but semantically equivalent signal reference literal</returns>
         public SignalRef AssimilateIndices()
         {
             if (!IsStaticIndex)
@@ -722,18 +874,33 @@ namespace SystemSharp.SysDOM
                 myIndex, true);
         }
 
+        /// <summary>
+        /// Creates a new signal reference literal.
+        /// </summary>
+        /// <param name="desc">referenced descriptor</param>
+        /// <param name="prop">referenced property</param>
         public static SignalRef Create(ISignalOrPortDescriptor desc, EReferencedProperty prop)
         {
             Contract.Requires(desc != null);
             return new SignalRef(desc, prop);
         }
 
+        /// <summary>
+        /// Creates a new signal reference literal.
+        /// </summary>
+        /// <param name="signal">reference signal instance</param>
+        /// <param name="prop">referenced property</param>
         public static SignalRef Create(SignalBase signal, EReferencedProperty prop)
         {
             Contract.Requires(signal != null);
             return Create(signal.Descriptor, prop);
         }
 
+        /// <summary>
+        /// Returns the signal reference which results from applying an index to this one.
+        /// </summary>
+        /// <param name="index">index specifier to apply</param>
+        /// <returns>the indexed reference</returns>
         public SignalRef ApplyIndex(IndexSpec index)
         {
             if (!IsStaticIndex)
@@ -745,12 +912,28 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// An array element reference literal.
+    /// </summary>
     public class ArrayRef :
         Literal, IStorableLiteral
     {
+        /// <summary>
+        /// Expression representing the array.
+        /// </summary>
         public Expression ArrayExpr { get; private set; }
+
+        /// <summary>
+        /// Expressions representing the array indices.
+        /// </summary>
         public Expression[] Indices { get; private set; }
 
+        /// <summary>
+        /// Constructs a new array element reference literal.
+        /// </summary>
+        /// <param name="arrayExpr">expression representing the referenced array</param>
+        /// <param name="elemType">element type descriptor</param>
+        /// <param name="indices">expressions representing the accessed array indices</param>
         public ArrayRef(Expression arrayExpr, TypeDescriptor elemType, params Expression[] indices)
         {
             if (arrayExpr == null || indices == null || elemType == null)
@@ -769,7 +952,6 @@ namespace SystemSharp.SysDOM
         private TypeDescriptor _type;
         public override TypeDescriptor Type
         {
-            //get { return ArrayExpr.ResultType.Element0Type; }
             get { return _type; }
         }
 
@@ -805,9 +987,10 @@ namespace SystemSharp.SysDOM
             ArrayRef aref = obj as ArrayRef;
             if (aref == null)
                 return false;
+
             return
                 object.Equals(ArrayExpr, aref.ArrayExpr) &&
-                Enumerable.SequenceEqual(Indices, aref.Indices);
+                    Enumerable.SequenceEqual(Indices, aref.Indices);
         }
 
         public override int GetHashCode()
@@ -828,6 +1011,9 @@ namespace SystemSharp.SysDOM
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Converts this instance to a fixed array reference.
+        /// </summary>
         public FixedArrayRef AsFixed()
         {
             LiteralReference lr = ArrayExpr as LiteralReference;
@@ -855,17 +1041,40 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Describes an array element reference whose base array instance is fixed and known during code analysis.
+    /// </summary>
     public class FixedArrayRef
     {
+        /// <summary>
+        /// Literal describing the referenced array.
+        /// </summary>
         public ILiteral ArrayLit { get; private set; }
+
+        /// <summary>
+        /// Instance of referenced array.
+        /// </summary>
         public Array ArrayObj { get; private set; }
+
+        /// <summary>
+        /// Array indices
+        /// </summary>
         public long[] Indices { get; private set; }
 
+        /// <summary>
+        /// Returns <c>true</c> if the array indices are constant.
+        /// </summary>
         public bool IndicesConst
         {
             get { return Indices != null; }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="arrayLit">literal describing the referenced array</param>
+        /// <param name="array">array instance</param>
+        /// <param name="indices">constant indices</param>
         public FixedArrayRef(ILiteral arrayLit, Array array, long[] indices)
         {
             ArrayLit = arrayLit;
@@ -873,6 +1082,11 @@ namespace SystemSharp.SysDOM
             Indices = indices;
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="arrayLit">literal describing the referenced array</param>
+        /// <param name="array">array instance</param>
         public FixedArrayRef(ILiteral arrayLit, Array array)
         {
             ArrayLit = arrayLit;
@@ -909,6 +1123,9 @@ namespace SystemSharp.SysDOM
                 (Indices == null ? 0 : Indices.GetSequenceHashCode());
         }
 
+        /// <summary>
+        /// Returns the element type descriptor.
+        /// </summary>
         public TypeDescriptor ElementType
         {
             get
@@ -919,6 +1136,10 @@ namespace SystemSharp.SysDOM
             }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if this reference may alias another fixed array reference.
+        /// </summary>
+        /// <param name="other">other fixed array reference</param>
         public bool MayAlias(FixedArrayRef other)
         {
             if (ArrayObj != other.ArrayObj)
@@ -929,9 +1150,15 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// A placeholder literal.
+    /// </summary>
     public class LazyLiteral :
         Literal, IStorableLiteral
     {
+        /// <summary>
+        /// Gets or sets the actual literal which is encapsulated by this literal.
+        /// </summary>
         public IStorableLiteral PlaceHolder { get; set; }
 
         public override void Accept(ILiteralVisitor visitor)
@@ -973,6 +1200,9 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// Visitor pattern interface for literals.
+    /// </summary>
     public interface ILiteralVisitor
     {
         void VisitConstant(Constant constant);
@@ -983,6 +1213,9 @@ namespace SystemSharp.SysDOM
         void VisitArrayRef(ArrayRef arrayRef);
     }
 
+    /// <summary>
+    /// A default implementation of <c>ILiteralVisitor</c> which re-directs to delegates.
+    /// </summary>
     public class LambdaLiteralVisitor: ILiteralVisitor
     {
         public delegate void VisitConstantFunc(Constant constant);
@@ -992,13 +1225,39 @@ namespace SystemSharp.SysDOM
         public delegate void VisitSignalRefFunc(SignalRef signalRef);
         public delegate void VisitArrayRefFunc(ArrayRef arrayRef);
 
+        /// <summary>
+        /// Gets or sets the delegate for constant visiting.
+        /// </summary>
         public VisitConstantFunc OnVisitConstant { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate for vairable visiting.
+        /// </summary>
         public VisitVariableFunc OnVisitVariable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate for field reference visiting.
+        /// </summary>
         public VisitFieldRefFunc OnVisitFieldRef { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate for visiting the "this" reference.
+        /// </summary>
         public VisitThisRefFunc OnVisitThisRef { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate for signal reference visiting.
+        /// </summary>
         public VisitSignalRefFunc OnVisitSignalRef { get; set; }
+
+        /// <summary>
+        /// Gets or sets the delegate for array reference visiting.
+        /// </summary>
         public VisitArrayRefFunc OnVisitArrayRef { get; set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public LambdaLiteralVisitor()
         {
             OnVisitConstant = x => { };
@@ -1121,8 +1380,17 @@ namespace SystemSharp.SysDOM
         }
     }
 
+    /// <summary>
+    /// This static class provides extension methods to simplify the usage of literals.
+    /// </summary>
     public static class LiteralExtensions
     {
+        /// <summary>
+        /// Returns <c>true</c> if the literal depicts a constant.
+        /// </summary>
+        /// <param name="lit">literal</param>
+        /// <param name="constValue">out parameter to receive the constant value, if the literal 
+        /// depicts a constant, otherwise <c>null</c></param>
         public static bool IsConst(this ILiteral lit, out object constValue)
         {
             IsConstLiteralVisitor vtor = new IsConstLiteralVisitor();
