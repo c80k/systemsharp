@@ -28,6 +28,9 @@ using SystemSharp.SetAlgorithms;
 
 namespace SystemSharp.TreeAlgorithms
 {
+    /// <summary>
+    /// Describes the access priviliges for property maps.
+    /// </summary>
     public enum EAccess
     {
         NoAccess,
@@ -36,12 +39,29 @@ namespace SystemSharp.TreeAlgorithms
         ReadWrite
     }
 
+    /// <summary>
+    /// Property map interface.
+    /// </summary>
+    /// <typeparam name="TThis">type of accessed element</typeparam>
+    /// <typeparam name="TValue">type of accessed property</typeparam>
     public interface IPropMap<TThis, TValue>
     {
+        /// <summary>
+        /// Gets or sets an element property.
+        /// </summary>
+        /// <param name="elem">element whose property is accessed</param>
+        /// <returns>property value</returns>
         TValue this[TThis elem] { get; set; }
+
+        /// <summary>
+        /// Returns the access privilege for this property map.
+        /// </summary>
         EAccess Access { get; }
     }
 
+    /// <summary>
+    /// Node types of Havlak's loop analysis algorithm.
+    /// </summary>
     public enum ENodeType
     {
         Nonheader,
@@ -50,47 +70,126 @@ namespace SystemSharp.TreeAlgorithms
         Irreducible
     }
 
+    /// <summary>
+    /// Adapter interface to tree analysis algorithms.
+    /// </summary>
+    /// <typeparam name="T">type of a vertex</typeparam>
     public interface IGraphAdapter<T>
     {
+        /// <summary>
+        /// Returns a property map on the parent relation.
+        /// </summary>
         IPropMap<T, T> Parent { get; }
+
+        /// <summary>
+        /// Returns a property map on the successor relation.
+        /// </summary>
         IPropMap<T, T[]> Succs { get; }
+
+        /// <summary>
+        /// Returns a property map on the predecessor relation.
+        /// </summary>
         IPropMap<T, T[]> Preds { get; }
+        
+        /// <summary>
+        /// Returns a property map on temporary list storage.
+        /// </summary>
         IPropMap<T, List<T>> TempList { get; }
+
+        /// <summary>
+        /// Returns a property map on the DFS pre-order index.
+        /// </summary>
         IPropMap<T, int> PreOrderIndex { get; }
+
+        /// <summary>
+        /// Returns a property map on the DFS pre-order last index, as defined by Havlak's loop analysis algorithm.
+        /// </summary>
         IPropMap<T, T> PreOrderLast { get; }
+
+        /// <summary>
+        /// Returns a property map on the DFS post-order index.
+        /// </summary>
         IPropMap<T, int> PostOrderIndex { get; }
+
+        /// <summary>
+        /// Returns a property map on the node type, as defined by Havlak's loop analysis algorithm.
+        /// </summary>
         IPropMap<T, ENodeType> Type { get; }
+
+        /// <summary>
+        /// Returns a property map on the backPreds relation, as defined by Havlak's loop analysis algorithm.
+        /// </summary>
         IPropMap<T, HashSet<T>> BackPreds { get; }
+
+        /// <summary>
+        /// Returns a property map on the nonBackPreds relation, as defined by Havlak's loop analysis algorithm.
+        /// </summary>
         IPropMap<T, HashSet<T>> NonBackPreds { get; }
+
+        /// <summary>
+        /// Returns a property map on the redBackIn relation, as defined by Havlak's loop analysis algorithm.
+        /// </summary>
         IPropMap<T, HashSet<T>> RedBackIn { get; }
+
+        /// <summary>
+        /// Returns a property map on the otherIn relation, as defined by Havlak's loop analysis algorithm.
+        /// </summary>
         IPropMap<T, HashSet<T>> OtherIn { get; }
+
+        /// <summary>
+        /// Returns a property map on the loop header relation.
+        /// </summary>
         IPropMap<T, T> Header { get; }
+
+        /// <summary>
+        /// Returns a property map on the immediate dominator.
+        /// </summary>
         IPropMap<T, T> IDom { get; }
-        //IPropMap<T, T> IPDom { get; }
+
+        /// <summary>
+        /// Returns a property map on the immediate dominatees.
+        /// </summary>
         IPropMap<T, T[]> IDoms { get; }
-        //IPropMap<T, T[]> IPDoms { get; }
     }
 
     public delegate TValue GetterFunc<TThis, TValue>(TThis elem);
     public delegate void SetterFunc<TThis, TValue>(TThis elem, TValue value);
 
+    /// <summary>
+    /// An <c>IPropMap&lt;&gt;</c> implementation using delegates.
+    /// </summary>
+    /// <typeparam name="TThis">type of element whose property is to be accessed</typeparam>
+    /// <typeparam name="TValue">type of the property value which is accessed</typeparam>
     public class DelegatePropMap<TThis, TValue> :
         IPropMap<TThis, TValue>
     {
         private GetterFunc<TThis, TValue> _get;
         private SetterFunc<TThis, TValue> _set;
 
+        /// <summary>
+        /// Constructs a new instance capable of reading and writing property values.
+        /// </summary>
+        /// <param name="get">property getter delegate</param>
+        /// <param name="set">property setter delegate</param>
         public DelegatePropMap(GetterFunc<TThis, TValue> get, SetterFunc<TThis, TValue> set)
         {
             _get = get;
             _set = set;
         }
 
+        /// <summary>
+        /// Constructs a new instance capable of reading property values.
+        /// </summary>
+        /// <param name="get">property getter delegate</param>
         public DelegatePropMap(GetterFunc<TThis, TValue> get)
         {
             _get = get;
         }
 
+        /// <summary>
+        /// Constructs a new instance capable of writing property values.
+        /// </summary>
+        /// <param name="set">property setter delegate</param>
         public DelegatePropMap(SetterFunc<TThis, TValue> set)
         {
             _set = set;
@@ -132,11 +231,19 @@ namespace SystemSharp.TreeAlgorithms
         }
     }
 
+    /// <summary>
+    /// A hash table-based <c>IPropMap&lt;&gt;</c> implementation.
+    /// </summary>
+    /// <typeparam name="TThis">type of element whose property is to be accessed</typeparam>
+    /// <typeparam name="TValue">type of the property value which is accessed</typeparam>
     public class HashBasedPropMap<TThis, TValue> :
         IPropMap<TThis, TValue>
     {
         private Dictionary<TThis, TValue> _map = new Dictionary<TThis, TValue>();
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public HashBasedPropMap()
         {
             Access = EAccess.ReadWrite;
@@ -156,34 +263,58 @@ namespace SystemSharp.TreeAlgorithms
             }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the underlying dictionary contains the given key.
+        /// </summary>
         public bool ContainsKey(TThis key)
         {
             return _map.ContainsKey(key);
         }
 
+        /// <summary>
+        /// Enumerates all present keys of the underlying dictionary.
+        /// </summary>
         public IEnumerable<TThis> Keys
         {
             get { return _map.Keys; }
         }
 
+        /// <summary>
+        /// Enumerates all present values of the underlying dictionary.
+        /// </summary>
         public IEnumerable<TValue> Values
         {
             get { return _map.Values; }
         }
 
+        /// <summary>
+        /// Returns the count of present key-value pairs.
+        /// </summary>
         public int Count
         {
             get { return _map.Count; }
         }
 
+        /// <summary>
+        /// Gets or sets the access privilege to the property map.
+        /// </summary>
         public EAccess Access { get; set; }
     }
 
+    /// <summary>
+    /// A CacheDictionary&lt;&gt;-based <c>IPropMap&lt;&gt;</c> implementation.
+    /// </summary>
+    /// <typeparam name="TThis">type of element whose property is to be accessed</typeparam>
+    /// <typeparam name="TValue">type of the property value which is accessed</typeparam>
     public class CacheBasedPropMap<TThis, TValue> :
         IPropMap<TThis, TValue>
     {
         private CacheDictionary<TThis, TValue> _map;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="creator">property value creator</param>
         public CacheBasedPropMap(Func<TThis, TValue> creator)
         {
             _map = new CacheDictionary<TThis, TValue>(creator);
@@ -201,30 +332,48 @@ namespace SystemSharp.TreeAlgorithms
             }
         }
 
+        /// <summary>
+        /// Enumerates all present keys of this property map.
+        /// </summary>
         public IEnumerable<TThis> Keys
         {
             get { return _map.Keys; }
         }
 
+        /// <summary>
+        /// Enumerates all present values of this property map.
+        /// </summary>
         public IEnumerable<TValue> Values
         {
             get { return _map.Values; }
         }
 
+        /// <summary>
+        /// Returns always <c>EAccess.ReadOnly</c>.
+        /// </summary>
         public EAccess Access
         {
             get { return EAccess.ReadOnly; }
         }
     }
 
+    /// <summary>
+    /// An array-based <c>IPropMap&lt;&gt;</c> implementation.
+    /// </summary>
+    /// <typeparam name="TKey">type of element whose property is to be accessed</typeparam>
+    /// <typeparam name="TValue">type of the property value which is accessed</typeparam>
     public class ArrayBackedPropMap<TKey, TValue> :
         IPropMap<TKey, TValue>
     {
-        public delegate TValue IndexFunc(TKey elem);
-
         private TValue[] _back;
         private Func<TKey, int> _indexFunc;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="back">array for storing property values</param>
+        /// <param name="indexFunc">index function, mapping keys to array indices</param>
+        /// <param name="access">desired access privilege</param>
         public ArrayBackedPropMap(TValue[] back, Func<TKey, int> indexFunc, EAccess access = EAccess.ReadWrite)
         {
             _back = back;
@@ -251,23 +400,76 @@ namespace SystemSharp.TreeAlgorithms
         public EAccess Access { get; private set; }
     }
 
+    /// <summary>
+    /// This static class provides helper methods for creating property maps.
+    /// </summary>
     public static class PropMaps
     {
+        /// <summary>
+        /// Creates a property map which is backed by an array.
+        /// </summary>
+        /// <typeparam name="TKey">type of element whose property is to be accessed</typeparam>
+        /// <typeparam name="TValue">type of the property value which is accessed</typeparam>
+        /// <param name="array">array for storing property values</param>
+        /// <param name="indexFunc">index function, mapping keys to array indices</param>
+        /// <param name="access">desired access privilege</param>
         public static IPropMap<TKey, TValue> CreateForArray<TKey, TValue>(
             TValue[] array, Func<TKey, int> indexFunc, EAccess access = EAccess.ReadWrite)
         {
             return new ArrayBackedPropMap<TKey, TValue>(array, indexFunc, access);
         }
 
+        /// <summary>
+        /// Creates a property map which is backed by an array.
+        /// </summary>
+        /// <typeparam name="TValue">type of element whose property is to be accessed</typeparam>
+        /// <param name="array">array for storing property values</param>
+        /// <param name="access">desired access privilege</param>
         public static IPropMap<int, TValue> CreateForArray<TValue>(TValue[] array, EAccess access)
         {
             return new ArrayBackedPropMap<int, TValue>(array, i => i, access);
         }
     }
 
+    /// <summary>
+    /// A default <c>IGraphAdapter&lt;&gt;</c> implementation, based on delegates.
+    /// </summary>
+    /// <typeparam name="T">type of vertex</typeparam>
     public class DefaultTreeAdapter<T> :
         IGraphAdapter<T>
     {
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="getParent">node parent getter delegate</param>
+        /// <param name="getChildren">node children getter delegate</param>
+        /// <param name="setChildren">node children setter delegate</param>
+        /// <param name="getPreds">node predecessors getter delegate</param>
+        /// <param name="setPreds">node predecessors setter delegate</param>
+        /// <param name="getTempList">node temporary list storage getter delegate</param>
+        /// <param name="setTempList">node temporary list storage getter delegate</param>
+        /// <param name="getPreOrderIndex">node pre-order index getter delegate</param>
+        /// <param name="setPreOrderIndex">node pre-order index setter delegate</param>
+        /// <param name="getPreOrderLast">node pre-order last index getter delegate</param>
+        /// <param name="setPreOrderLast">node pre-order last index setter delegate</param>
+        /// <param name="getPostOrderIndex">node post-order index getter delegate</param>
+        /// <param name="setPostOrderIndex">node post-order index setter delegate</param>
+        /// <param name="getType">node type getter delegate</param>
+        /// <param name="setType">node type setter delegate</param>
+        /// <param name="getBackPreds">node backPreds getter delegate</param>
+        /// <param name="setBackPreds">node backPreds setter delegate</param>
+        /// <param name="getNonBackPreds">node nonBackPreds getter delegate</param>
+        /// <param name="setNonBackPreds">node nonBackPreds setter delegate</param>
+        /// <param name="getRedBackIn">node redBackIn getter delegate</param>
+        /// <param name="setRedBackIn">node redBackIn setter delegate</param>
+        /// <param name="getOtherIn">node otherIn getter delegate</param>
+        /// <param name="setOtherIn">node otherIn setter delegate</param>
+        /// <param name="getHeader">node loop header getter delegate</param>
+        /// <param name="setHeader">node loop header setter delegate</param>
+        /// <param name="getIDom">node immediate dominator getter delegate</param>
+        /// <param name="setIDom">node immediate dominator setter delegate</param>
+        /// <param name="getIDoms">node immediate dominatees getter delegate</param>
+        /// <param name="setIDoms">node immediate dominatees setter delegate</param>
         public DefaultTreeAdapter(GetterFunc<T,T> getParent,
             GetterFunc<T,T[]> getChildren,
             SetterFunc<T,T[]> setChildren,
@@ -295,12 +497,8 @@ namespace SystemSharp.TreeAlgorithms
             SetterFunc<T,T> setHeader,
             GetterFunc<T,T> getIDom,
             SetterFunc<T,T> setIDom,
-            //GetterFunc<T,T> getIPDom,
-            //SetterFunc<T,T> setIPDom,
             GetterFunc<T,T[]> getIDoms,
             SetterFunc<T,T[]> setIDoms
-            //,GetterFunc<T,T[]> getIPDoms,
-            //SetterFunc<T,T[]> setIPDoms
             )
         {
             Parent = new DelegatePropMap<T, T>(getParent);
@@ -317,9 +515,7 @@ namespace SystemSharp.TreeAlgorithms
             OtherIn = new DelegatePropMap<T, HashSet<T>>(getOtherIn, setOtherIn);
             Header = new DelegatePropMap<T, T>(getHeader, setHeader);
             IDom = new DelegatePropMap<T, T>(getIDom, setIDom);
-            //IPDom = new DelegatePropMap<T, T>(getIPDom, setIPDom);
             IDoms = new DelegatePropMap<T, T[]>(getIDoms, setIDoms);
-            //IPDoms = new DelegatePropMap<T, T[]>(getIPDoms, setIPDoms);
         }
 
         #region ITreeAdapter<T> Members
@@ -347,9 +543,16 @@ namespace SystemSharp.TreeAlgorithms
         #endregion
     }
 
+    /// <summary>
+    /// A has map-based <c>IGraphAdapter&lt;&gt;</c> implementation.
+    /// </summary>
+    /// <typeparam name="T">type of vertex</typeparam>
     public class HashingGraphAdapter<T> :
         IGraphAdapter<T>
     {
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public HashingGraphAdapter()
         {
             Parent = new HashBasedPropMap<T, T>();
@@ -390,6 +593,9 @@ namespace SystemSharp.TreeAlgorithms
         public IPropMap<T, T[]> IPDoms  { get; private set; }
     }
 
+    /// <summary>
+    /// This static class provides extension methods to simplify the usage of property maps.
+    /// </summary>
     public static class TreeOperations
     {
         private class PreOrderSetAdapter<T> :
@@ -409,6 +615,11 @@ namespace SystemSharp.TreeAlgorithms
             #endregion
         }
 
+        /// <summary>
+        /// Checks whether the property map grants the requested access privilege and throws an exception if it doesn't.
+        /// </summary>
+        /// <param name="access">required access privilege</param>
+        /// <exception cref="InvalidOperationException">if requested access privilege is not supported</exception>
         public static void RequireAccess<TThis, TValue>(this IPropMap<TThis, TValue> pmap, EAccess access)
         {
             bool granted;
@@ -440,6 +651,12 @@ namespace SystemSharp.TreeAlgorithms
             }
         }
 
+        /// <summary>
+        /// Sets all specified keys of the property map to the specified reset value.
+        /// </summary>
+        /// <param name="pmap">the property map</param>
+        /// <param name="nodes">the elements whose property values are to be reset</param>
+        /// <param name="value">reset value</param>
         public static void Reset<TThis, TValue>(this IPropMap<TThis, TValue> pmap,
             IEnumerable<TThis> nodes, TValue value)
         {
@@ -450,12 +667,22 @@ namespace SystemSharp.TreeAlgorithms
             }
         }
 
+        /// <summary>
+        /// Sets all specified keys of the property map to <c>default(TValue)</c>.
+        /// </summary>
+        /// <param name="pmap">the property map</param>
+        /// <param name="nodes">the elements whose property values are to be reset</param>
         public static void Clear<TThis, TValue>(this IPropMap<TThis, TValue> pmap,
             IEnumerable<TThis> nodes)
         {
             pmap.Reset(nodes, default(TValue));
         }
 
+        /// <summary>
+        /// Creates a new list for each temporary list storage property.
+        /// </summary>
+        /// <param name="a">the graph adapter</param>
+        /// <param name="nodes">enumeration of nodes whose temporary list storage properties are to be initialized</param>
         public static void CreateDefaultTempStorage<T>(this IGraphAdapter<T> a, IEnumerable<T> nodes)
         {
             a.TempList.RequireAccess(EAccess.WriteOnly);
@@ -465,6 +692,13 @@ namespace SystemSharp.TreeAlgorithms
             }
         }
 
+        /// <summary>
+        /// Inverts a property map-based relation.
+        /// </summary>
+        /// <param name="a">graph adapter providing temporary list storage</param>
+        /// <param name="srcrel">source property map</param>
+        /// <param name="dstrel">destination property map for inverted relation</param>
+        /// <param name="nodes">nodes to be considered for the inversion</param>
         public static void InvertRelation<T>(this IGraphAdapter<T> a, 
             IPropMap<T,T> srcrel, IPropMap<T,T[]> dstrel, IEnumerable<T> nodes)
         {
@@ -485,6 +719,13 @@ namespace SystemSharp.TreeAlgorithms
             a.TempList.Clear(nodes);
         }
 
+        /// <summary>
+        /// Inverts a property map-based relation.
+        /// </summary>
+        /// <param name="a">graph adapter providing temporary list storage</param>
+        /// <param name="srcrel">source property map</param>
+        /// <param name="dstrel">destination property map for inverted relation</param>
+        /// <param name="nodes">nodes to be considered for the inversion</param>
         public static void InvertRelation<T>(this IGraphAdapter<T> a,
             IPropMap<T, T[]> srcrel, IPropMap<T, T[]> dstrel, IEnumerable<T> nodes)
         {
@@ -505,11 +746,21 @@ namespace SystemSharp.TreeAlgorithms
             a.TempList.Clear(nodes);
         }
 
+        /// <summary>
+        /// Inverts a parent relation, taking the successor relation as target.
+        /// </summary>
+        /// <param name="a">graph adapter providing the relations</param>
+        /// <param name="nodes">nodes to be considered</param>
         public static void ComputeSuccessorsFromParent<T>(this IGraphAdapter<T> a, IEnumerable<T> nodes)
         {
             a.InvertRelation(a.Parent, a.Succs, nodes);
         }
 
+        /// <summary>
+        /// Inverts a successor relation, taking the predecessor relation as target.
+        /// </summary>
+        /// <param name="a">graph adapter providing the relations</param>
+        /// <param name="nodes">nodes to be considered</param>
         public static void ComputePredecessorsFromSuccessors<T>(this IGraphAdapter<T> a, IEnumerable<T> nodes)
         {
             a.InvertRelation(a.Succs, a.Preds, nodes);
@@ -533,6 +784,14 @@ namespace SystemSharp.TreeAlgorithms
             a.PreOrderLast[node] = result[index - 1];
         }
 
+        /// <summary>
+        /// Performs a depth-first search on the successor relation, updating the pre-order index
+        /// and pre-order last index relations of the graph adapter.
+        /// </summary>
+        /// <param name="a">graph adapter</param>
+        /// <param name="nodes">nodes to be considered</param>
+        /// <param name="start">start node</param>
+        /// <returns>all visited nodes in pre-order</returns>
         public static T[] GetPreOrder<T>(this IGraphAdapter<T> a,
             IList<T> nodes, T start)
         {
@@ -546,6 +805,14 @@ namespace SystemSharp.TreeAlgorithms
             return result;
         }
 
+        /// <summary>
+        /// Performs a depth-first search on the successor relation, updating the pre-order index
+        /// and pre-order last index relations of the graph adapter. All nodes without parent are
+        /// taken as start nodes.
+        /// </summary>
+        /// <param name="a">graph adapter</param>
+        /// <param name="nodes">nodes to be considered</param>
+        /// <returns>all visited nodes in pre-order</returns>
         public static T[] GetPreOrder<T>(this IGraphAdapter<T> a,
             IList<T> nodes)
         {
@@ -582,6 +849,15 @@ namespace SystemSharp.TreeAlgorithms
             result.Push(node);
         }
 
+        /// <summary>
+        /// Performs a depth-first search on the graph and retrieves a post-order sorting.
+        /// </summary>
+        /// <param name="succrel">successor relation</param>
+        /// <param name="indexMap">index map for receiving the post order indices</param>
+        /// <param name="nodes">nodes to consider</param>
+        /// <param name="start">start node</param>
+        /// <param name="reverse">whether a reverse post-order sorting is desired</param>
+        /// <returns>all visited nodes in post-order sorting or inverse post-order sorting</returns>
         public static T[] GetPostOrder<T>(IPropMap<T, T[]> succrel, 
             IPropMap<T, int> indexMap,
             IList<T> nodes, T start, bool reverse)
@@ -606,6 +882,11 @@ namespace SystemSharp.TreeAlgorithms
             return order.ToArray();
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="w"/> is an ancestor of <c>v</c>.
+        /// </summary>
+        /// <param name="indexrel">pre-order index relation</param>
+        /// <param name="lastrel">pre-order last index relation</param>
         public static bool IsAncestor<T>(
             IPropMap<T, int> indexrel, IPropMap<T, T> lastrel,
             T w, T v)
@@ -614,16 +895,24 @@ namespace SystemSharp.TreeAlgorithms
                 indexrel[v] <= indexrel[lastrel[w]];
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="w"/> is an ancestor of <c>v</c>.
+        /// </summary>
         public static bool IsAncestor<T>(this IGraphAdapter<T> a, T w, T v)
         {
             return IsAncestor(a.PreOrderIndex, a.PreOrderLast, w, v);
         }
 
-        /** This is Paul Havlak's loop analysis algorithm
-         * Reference:
-         *   ACM Transactions on Programming Languages and Systems, 
-         *   Vol. 19, No. 4, July 1997, Pages 557-567
-         * */
+        /// <summary>
+        /// Determines the loop nesting structure of the given (control-flow) graph.
+        /// </summary>
+        /// <remarks>
+        /// This is an implementation of Paul Havlak's loop analysis algorithm.
+        /// Reference: ACM Transactions on Programming Languages and Systems, Vol. 19, No. 4, July 1997, Pages 557-567.
+        /// </remarks>
+        /// <param name="a">graph adapter</param>
+        /// <param name="nodes">nodes to consider</param>
+        /// <param name="start">entry node</param>
         public static void AnalyzeLoops<T>(this IGraphAdapter<T> a,
             IList<T> nodes, T start)
         {
@@ -706,14 +995,27 @@ namespace SystemSharp.TreeAlgorithms
             }
         }
 
-        /** This is an algorithm from Cooper, Harvey and Kennedy for the computation 
-         * of immediate dominators in a control flow graph
-         * 
-         * Reference:
-         * SOFTWARE—PRACTICE AND EXPERIENCE 2001; 4:1–10
-         * Keith D. Cooper, Timothy J. Harvey and Ken Kennedy
-         * A Simple, Fast Dominance Algorithm
-         * */
+        /// <summary>
+        /// Computes the immediate dominators of the specified graph nodes.
+        /// </summary>
+        /// <remarks>
+        /// This is an algorithm from Cooper, Harvey and Kennedy for the computation 
+        /// of immediate dominators in a control flow graph.
+        /// Reference:
+        /// <para>
+        /// SOFTWARE—PRACTICE AND EXPERIENCE 2001; 4:1–10
+        /// </para><para>
+        /// Keith D. Cooper, Timothy J. Harvey and Ken Kennedy
+        /// </para><para>
+        /// A Simple, Fast Dominance Algorithm
+        /// </para>
+        /// </remarks>
+        /// <param name="succrel">successor relation</param>
+        /// <param name="predrel">predecessor relation</param>
+        /// <param name="index">node index map</param>
+        /// <param name="dom">immediate dominators relation</param>
+        /// <param name="nodes">nodes to consider</param>
+        /// <param name="start">start node</param>
         public static void ComputeImmediateDominators<T>(
             IPropMap<T, T[]> succrel, IPropMap<T, T[]> predrel,
             IPropMap<T, int> index,
@@ -770,6 +1072,12 @@ namespace SystemSharp.TreeAlgorithms
             return finger1;
         }
 
+        /// <summary>
+        /// Computes a the immediate dominators of all specified graph nodes.
+        /// </summary>
+        /// <param name="a">graph adapter</param>
+        /// <param name="nodes">nodes to consider</param>
+        /// <param name="entry">entry node</param>
         public static void ComputeImmediateDominators<T>(this IGraphAdapter<T> a,
             IList<T> nodes, T entry) where T: class
         {
@@ -836,8 +1144,21 @@ namespace SystemSharp.TreeAlgorithms
         }
     }
 
+    /// <summary>
+    /// This static class provides an implementation of Dijkstra's shortest path algorithm.
+    /// </summary>
     public static class Dijkstra
     {
+        /// <summary>
+        /// Finds the shortest paths from a specified entry node to all other nodes.
+        /// </summary>
+        /// <typeparam name="T">node type</typeparam>
+        /// <param name="nodes">nodes to consider</param>
+        /// <param name="start">start node</param>
+        /// <param name="succs">successor relation</param>
+        /// <param name="rootDist">relation for storing the distance from each node to the start node</param>
+        /// <param name="pred">predecessor relation</param>
+        /// <param name="dist">adjacent node distance relation</param>
         public static void FindShortestPaths<T>(IEnumerable<T> nodes, T start,
             IPropMap<T, T[]> succs, IPropMap<T, int> rootDist, IPropMap<T, T> pred,
             IPropMap<Tuple<T, T>, int> dist)
