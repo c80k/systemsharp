@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -27,8 +27,16 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Interop.Xilinx.TRCE
 {
+    /// <summary>
+    /// Provides methods for parsing TRCE-generated TWX reports.
+    /// </summary>
     public static class TWXParser
     {
+        /// <summary>
+        /// Parses the minimum clock period from a TWX report.
+        /// </summary>
+        /// <param name="reportPath">path to TWX report</param>
+        /// <param name="rec">performance record to receive the parsed information</param>
         public static void ParseMinPeriod(string reportPath, PerformanceRecord rec)
         {
             var doc = new XmlDocument();

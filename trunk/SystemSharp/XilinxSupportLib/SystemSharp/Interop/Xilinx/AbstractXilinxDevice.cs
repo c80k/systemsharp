@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -33,18 +33,49 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Abstract base class for Xilinx devices.
+    /// </summary>
     public abstract class AbstractXilinxDevice
     {
+        /// <summary>
+        /// Returns the device.
+        /// </summary>
         public abstract EDevice Device { get; }
+
+        /// <summary>
+        /// Returns the package.
+        /// </summary>
         public abstract EPackage Package { get; }
+
+        /// <summary>
+        /// Gets or sets the speed grade.
+        /// </summary>
         public ESpeedGrade SpeedGrade { get; set; }
 
+        /// <summary>
+        /// Gets or sets the top-level component of the design.
+        /// </summary>
         public Component TopLevelComponent { get; set; }
+
+        /// <summary>
+        /// Returns the list of testbenches.
+        /// </summary>
         public List<Component> Testbenches { get; private set; }
 
+        /// <summary>
+        /// Returns the pin map.
+        /// </summary>
         public abstract IPropMap<string, XilinxPin> Pins { get; }
+
+        /// <summary>
+        /// Enumerates all pins.
+        /// </summary>
         public abstract IEnumerable<XilinxPin> PinList { get; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public AbstractXilinxDevice()
         {
             Testbenches = new List<Component>();
@@ -102,6 +133,15 @@ namespace SystemSharp.Interop.Xilinx
             sw.Close();
         }
 
+        /// <summary>
+        /// Synthesizes the design.
+        /// </summary>
+        /// <param name="destPath">target path which will contain the generated files</param>
+        /// <param name="designName">name of the design</param>
+        /// <param name="info">ISE information</param>
+        /// <param name="twinProject">optional twin project</param>
+        /// <param name="step">what stages of the overall flow to execute</param>
+        /// <returns>the generated ISE project</returns>
         public XilinxProject Synthesize(string destPath, string designName, ISEInfo info,
             IProject twinProject = null, EFlowStep step = EFlowStep.HDLGenAndIPCores)
         {
@@ -142,6 +182,15 @@ namespace SystemSharp.Interop.Xilinx
             return project;
         }
 
+        /// <summary>
+        /// Synthesizes the design.
+        /// </summary>
+        /// <param name="destPath">target path which will contain the generated files</param>
+        /// <param name="designName">name of the design</param>
+        /// <param name="iseVersion">ISE version to generate for</param>
+        /// <param name="twinProject">optional twin project</param>
+        /// <param name="step">what stages of the overall flow to execute</param>
+        /// <returns>the generated ISE project</returns>
         public XilinxProject Synthesize(string destPath, string designName, EISEVersion iseVersion, 
             IProject twinProject = null, EFlowStep step = EFlowStep.HDLGenAndIPCores)
         {
@@ -151,6 +200,14 @@ namespace SystemSharp.Interop.Xilinx
             return Synthesize(destPath, designName, info, twinProject, step);
         }
 
+        /// <summary>
+        /// Synthesizes the design.
+        /// </summary>
+        /// <param name="destPath">target path which will contain the generated files</param>
+        /// <param name="designName">name of the design</param>
+        /// <param name="twinProject">optional twin project</param>
+        /// <param name="step">what stages of the overall flow to execute</param>
+        /// <returns>the generated ISE project</returns>
         public XilinxProject Synthesize(string destPath, string designName, IProject twinProject = null, EFlowStep step = EFlowStep.IPCores)
         {
             EISEVersion iseVersion = EISEVersion._11_2;
@@ -161,19 +218,41 @@ namespace SystemSharp.Interop.Xilinx
         }
     }
 
-
+    /// <summary>
+    /// Describes a pin of a Xilinx device.
+    /// </summary>
     public class XilinxPin
     {
+        /// <summary>
+        /// Name of the pin
+        /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the signal which is bound to the pin (if any).
+        /// </summary>
         public IPort AssociatedSignal { get; set; }
+
+        /// <summary>
+        /// Gets or sets the index which has to be applied to the signal.
+        /// </summary>
         public int[] AssociatedIndex { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="name">name of the pin</param>
         public XilinxPin(string name)
         {
             Name = name;
             AssociatedIndex = new int[0];
         }
 
+        /// <summary>
+        /// Maps the pin.
+        /// </summary>
+        /// <param name="signal">bound signal</param>
+        /// <param name="index">index which has to be applied to the pin</param>
         public void Map(IPort signal, params int[] index)
         {
             AssociatedSignal = signal;

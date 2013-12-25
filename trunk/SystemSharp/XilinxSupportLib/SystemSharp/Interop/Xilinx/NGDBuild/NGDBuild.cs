@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -31,6 +31,9 @@ namespace SystemSharp.Interop.Xilinx.NGDBuild
         Off
     }
 
+    /// <summary>
+    /// Provides access to the Xilinx "ngdbuild" tool.
+    /// </summary>
     public class NGDBuildFlow
     {
         public string PartName { get; set; }

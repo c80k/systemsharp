@@ -224,11 +224,18 @@ namespace SystemSharp.Interop.Xilinx.CoreGen
         }
     }
 
+    /// <summary>
+    /// Gathers all necessary data to generate a core generator script (.xco).
+    /// </summary>
     public class CoreGenDescription
     {
         private List<CoreGenCommand> _commands = new List<CoreGenCommand>();
         public string Path { get; private set; }
 
+        /// <summary>
+        /// Constructs a new description.
+        /// </summary>
+        /// <param name="path">target path of .xco file</param>
         public CoreGenDescription(string path)
         {
             Path = path;
@@ -254,26 +261,49 @@ namespace SystemSharp.Interop.Xilinx.CoreGen
             get { return _commands.Where(_ => _ is CSetCommand).Cast<CSetCommand>(); }
         }
 
+        /// <summary>
+        /// Adds a "Set" command to the script.
+        /// </summary>
+        /// <param name="attrName">attribute name</param>
+        /// <param name="attrValue">attribute value</param>
+        /// <param name="attrValueType">type of attribute value</param>
         public void Set(string attrName, string attrValue, Type attrValueType = null)
         {
             _commands.Add(new SetCommand(attrName, attrValue, attrValueType));
         }
 
+        /// <summary>
+        /// Adds a "CSet" command to the script.
+        /// </summary>
+        /// <param name="attrName">attribute name</param>
+        /// <param name="attrValue">attribute value</param>
+        /// <param name="attrValueType">type of attribute value</param>
         public void CSet(string attrName, string attrValue, Type attrValueType = null)
         {
             _commands.Add(new CSetCommand(attrName, attrValue, attrValueType));
         }
 
+        /// <summary>
+        /// Adds a "Select" command to the script.
+        /// </summary>
+        /// <param name="selection">selection name</param>
+        /// <param name="selectionValueType">type of selection name</param>
         public void Select(string selection, Type selectionValueType = null)
         {
             _commands.Add(new SelectCommand(selection, selectionValueType));
         }
 
+        /// <summary>
+        /// Adds a "Generate" command to the script.
+        /// </summary>
         public void Generate()
         {
             _commands.Add(new GenerateCommand());
         }
 
+        /// <summary>
+        /// Saves the script.
+        /// </summary>
         public void Store()
         {
             StreamWriter sw = new StreamWriter(Path);

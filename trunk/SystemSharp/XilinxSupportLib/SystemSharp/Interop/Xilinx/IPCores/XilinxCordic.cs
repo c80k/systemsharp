@@ -36,24 +36,87 @@ using SystemSharp.Synthesis.VHDLGen;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
+    /// <summary>
+    /// Transaction site interface for Xilinx CORDIC
+    /// </summary>
     public interface ICordicTransactionSite :
         ITransactionSite
     {
+        /// <summary>
+        /// Rotates a vector.
+        /// </summary>
+        /// <param name="x">x component of vector</param>
+        /// <param name="y">y component of vector</param>
+        /// <param name="ang">rotation angle</param>
+        /// <param name="xOut">receives x component of rotated vector</param>
+        /// <param name="yOut">receives y component of rotated vector</param>
+        /// <returns>rotation transaction</returns>
         IEnumerable<TAVerb> Rotate(ISignalSource<StdLogicVector> x, ISignalSource<StdLogicVector> y,
             ISignalSource<StdLogicVector> ang, ISignalSink<StdLogicVector> xOut, ISignalSink<StdLogicVector> yOut);
+
+        /// <summary>
+        /// Translates vector from cartesic to polar coordinates.
+        /// </summary>
+        /// <param name="x">x component of vector</param>
+        /// <param name="y">y component of vector</param>
+        /// <param name="mag">receives vector magnitude</param>
+        /// <param name="ang">receives vector angle</param>
+        /// <returns>translation transaction</returns>
         IEnumerable<TAVerb> Translate(ISignalSource<StdLogicVector> x, ISignalSource<StdLogicVector> y,
             ISignalSink<StdLogicVector> mag, ISignalSink<StdLogicVector> ang);
+
+        /// <summary>
+        /// Computes sine and cosine.
+        /// </summary>
+        /// <param name="ang">argument</param>
+        /// <param name="cosOut">receives cosine value</param>
+        /// <param name="sinOut">receives sine value</param>
+        /// <returns>sine/cosine transaction</returns>
         IEnumerable<TAVerb> SinCos(ISignalSource<StdLogicVector> ang,
             ISignalSink<StdLogicVector> cosOut, ISignalSink<StdLogicVector> sinOut);
+
+        /// <summary>
+        /// Computes hyperbolic sine and cosine.
+        /// </summary>
+        /// <param name="ang">argument</param>
+        /// <param name="coshOut">receives cosh value</param>
+        /// <param name="sinhOut">receives sinh value</param>
+        /// <returns>sinh/cosh transaction</returns>
         IEnumerable<TAVerb> SinhCosh(ISignalSource<StdLogicVector> ang,
             ISignalSink<StdLogicVector> coshOut, ISignalSink<StdLogicVector> sinhOut);
+
+        /// <summary>
+        /// Computes atan2.
+        /// </summary>
+        /// <param name="x">x component of vector</param>
+        /// <param name="y">y component of vector</param>
+        /// <param name="ang">receives the computed angle</param>
+        /// <returns>atan2 transaction</returns>
         IEnumerable<TAVerb> Atan(ISignalSource<StdLogicVector> x, ISignalSource<StdLogicVector> y,
             ISignalSink<StdLogicVector> ang);
+
+        /// <summary>
+        /// Computes hyperbolic atan2.
+        /// </summary>
+        /// <param name="x">x component of vector</param>
+        /// <param name="y">y component of vector</param>
+        /// <param name="ang">receives the computed angle</param>
+        /// <returns>hyperbolic atan2 transaction</returns>
         IEnumerable<TAVerb> Atanh(ISignalSource<StdLogicVector> x, ISignalSource<StdLogicVector> y,
             ISignalSink<StdLogicVector> ang);
+
+        /// <summary>
+        /// Computes the square-root.
+        /// </summary>
+        /// <param name="x">argument</param>
+        /// <param name="sqrt">receives to computed square-root</param>
+        /// <returns>square-root transaction</returns>
         IEnumerable<TAVerb> Sqrt(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> sqrt);
     }
 
+    /// <summary>
+    /// Models a Xilinx CORDIC core.
+    /// </summary>
     [DeclareXILMapper(typeof(CordicXILMapper))]
     public class XilinxCordic : Component
     {
@@ -830,6 +893,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         private RegPipe _ppipe;
         private SLVSignal _xr, _yr, _pr;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public XilinxCordic()
         {
             Generator = EGenerator.CORDIC_4_0;
@@ -1146,6 +1212,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// Provides tuning options for the Xilinx CORDIC core.
+    /// </summary>
     public class CordicConfiguration
     {
         public XilinxCordic.EArchitecturalConfiguration ArchitecturalConfiguration { get; set; }
@@ -1161,10 +1230,16 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         public bool RegisterOutputs { get; set; }
     }
 
+    /// <summary>
+    /// Manages CORDIC core configurations for different functional selections.
+    /// </summary>
     public class CordicConfigurator
     {
         private CacheDictionary<XilinxCordic.EFunctionalSelection, CordicConfiguration> _map;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public CordicConfigurator()
         {
             _map = new CacheDictionary<XilinxCordic.EFunctionalSelection, CordicConfiguration>(CreateConfiguration);
@@ -1175,12 +1250,20 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             return new CordicConfiguration();
         }
 
+        /// <summary>
+        /// Returns a core configuration for a given functional selection.
+        /// </summary>
+        /// <param name="key">functional selection</param>
+        /// <returns>the associated core configuration</returns>
         public CordicConfiguration this[XilinxCordic.EFunctionalSelection key]
         {
             get { return _map[key]; }
         }
     }
 
+    /// <summary>
+    /// Maps appropriate instructions to the Xilinx CORDIC core.
+    /// </summary>
     public class CordicXILMapper : IXILMapper
     {
         private class CordicXILMapping : IXILMapping
@@ -1342,6 +1425,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             #endregion
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public CordicXILMapper()
         {
             Config = new CordicConfigurator();
@@ -1431,6 +1517,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             Config[XilinxCordic.EFunctionalSelection.Sqrt].HasSCLR = false;
         }
 
+        /// <summary>
+        /// The configuration manager.
+        /// </summary>
         public CordicConfigurator Config { get; private set; }
 
         public IEnumerable<XILInstr> GetSupportedInstructions()

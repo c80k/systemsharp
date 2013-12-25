@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,6 +25,9 @@ using System.Text;
 
 namespace XilinxSupportLib.SystemSharp.Interop.Xilinx.AXI
 {
+    /// <summary>
+    /// Generates an AXI Lite slave top module in VHDL.
+    /// </summary>
     public partial class AXILiteSlaveTop
     {
         public dynamic Slave { get; set; }

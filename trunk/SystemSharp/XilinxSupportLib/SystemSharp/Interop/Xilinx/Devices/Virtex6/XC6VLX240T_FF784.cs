@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,7 +24,10 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx.Devices.Virtex6
 {
-    public class XC6VLX240T_FF784 : XilinxDevice
+    /// <summary>
+    /// Frame model of a XC6VLX240T FF784 device.
+    /// </summary>
+    class XC6VLX240T_FF784 : XilinxDevice
     {
         public override EDevice Device
         {

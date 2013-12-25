@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,7 +26,13 @@ using SystemSharp.DataTypes;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
-    public class XilinxClockingWizard: Component
+    /// <summary>
+    /// Models the Xilinx clocking wizard IP core.
+    /// </summary>
+    /// <remarks>
+    /// Implementation is incomplete!
+    /// </remarks>
+    class XilinxClockingWizard: Component
     {
         public enum EGenerator
         {

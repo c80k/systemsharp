@@ -29,6 +29,9 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Interop.Xilinx.CoreGen
 {
+    /// <summary>
+    /// This static class provides extension methods to initialize core generator description from components.
+    /// </summary>
     public static class AutoCoreGen
     {
         internal static void FromProject(this CoreGenDescription desc, XilinxProject proj, EPropAssoc assoc)
@@ -51,6 +54,11 @@ namespace SystemSharp.Interop.Xilinx.CoreGen
             }
         }
 
+        /// <summary>
+        /// Initializes the core generator description from a component instance.
+        /// </summary>
+        /// <param name="desc">description to initialize</param>
+        /// <param name="component">component instance</param>
         public static void FromComponent(this CoreGenDescription desc, Component component)
         {
             Type type = component.GetType();

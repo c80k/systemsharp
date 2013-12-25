@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,6 +25,12 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Describes the Xilinx devices.
+    /// </summary>
+    /// <remarks>
+    /// This enum describes only a few devices which were relevant to the author. An exhaustive enumeration is yet to be defined.
+    /// </remarks>
     public enum EDevice
     {
         Undefined,

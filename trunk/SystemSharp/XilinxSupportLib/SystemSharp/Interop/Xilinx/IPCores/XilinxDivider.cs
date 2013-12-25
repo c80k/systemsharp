@@ -35,16 +35,30 @@ using SystemSharp.Synthesis.VHDLGen;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
+    /// <summary>
+    /// Transaction site interface for Xilinx dividers.
+    /// </summary>
     public interface IDividerTransactionSite:
         ITransactionSite
     {
+        /// <summary>
+        /// Performs a division.
+        /// </summary>
+        /// <returns>division transaction</returns>
         IEnumerable<TAVerb> Divide(ISignalSource<StdLogicVector> dividend, ISignalSource<StdLogicVector> divisor,
             ISignalSink<StdLogicVector> quotient);
 
+        /// <summary>
+        /// Performs a division with fractional part computation.
+        /// </summary>
+        /// <returns>division transaction</returns>
         IEnumerable<TAVerb> Divide(ISignalSource<StdLogicVector> dividend, ISignalSource<StdLogicVector> divisor,
             ISignalSink<StdLogicVector> quotient, ISignalSink<StdLogicVector> fractional);
     }
 
+    /// <summary>
+    /// Models a Xilinx divider IP core.
+    /// </summary>
     [DeclareXILMapper(typeof(XilinxDividerXILMapper))]
     public class XilinxDivider : Component
     {
@@ -518,6 +532,10 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
 
         private TransactionSite _tasite;
+
+        /// <summary>
+        /// Returns the divider transaction site.
+        /// </summary>
         public IDividerTransactionSite TASite
         {
             get { return _tasite; }
@@ -528,6 +546,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         private RegPipe _qpipe;
         private RegPipe _rpipe;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public XilinxDivider()
         {
             Generator = EGenerator.Divider_3_0;
@@ -611,20 +632,35 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// Maps integral and fixed-point divisions to the Xilinx divider IP core.
+    /// </summary>
     public class XilinxDividerXILMapper : IXILMapper
     {
+        /// <summary>
+        /// Provides core-specific tuning options.
+        /// </summary>
         public class CoreConfig
         {
-            public CoreConfig()
+            internal CoreConfig()
             {
                 PipeStageScaling = 1.0;
             }
 
+            /// <summary>
+            /// Gets or sets the latency scaling factor.
+            /// </summary>
             public double PipeStageScaling { get; set; }
         }
 
+        /// <summary>
+        /// Provides core-specific tuning options.
+        /// </summary>
         public CoreConfig Config { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public XilinxDividerXILMapper()
         {
             Config = new CoreConfig();

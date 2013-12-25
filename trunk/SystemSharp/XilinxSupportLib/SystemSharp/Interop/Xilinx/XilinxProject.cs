@@ -54,6 +54,9 @@ namespace SystemSharp.Interop.Xilinx
         All = HDLGenAndIPCores | SynthImplReport
     }
 
+    /// <summary>
+    /// Generates an ISE project.
+    /// </summary>
     public class XilinxProject : IProject
     {
         private static Dictionary<string, string> _fileExtToFileType = new Dictionary<string, string>();
@@ -77,6 +80,11 @@ namespace SystemSharp.Interop.Xilinx
             return file.Replace('\\', '/');
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="projectPath">path to the project file</param>
+        /// <param name="projectName">project name</param>
         public XilinxProject(string projectPath, string projectName)
         {
             if (!Directory.Exists(projectPath))
@@ -99,19 +107,47 @@ namespace SystemSharp.Interop.Xilinx
             get { return _pbag; }
         }
 
+        /// <summary>
+        /// Path to the project file.
+        /// </summary>
         public string ProjectPath { get; private set; }
+
+        /// <summary>
+        /// Project name
+        /// </summary>
         public string ProjectName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a twin project.
+        /// </summary>
+        /// <remarks>
+        /// All files which are added to this project will be added to the twin project as well.
+        /// </remarks>
         public IProject TwinProject { get; set; }
 
+        /// <summary>
+        /// Returns the project property dictionary.
+        /// </summary>
         public Dictionary<EXilinxProjectProperties, object> Properties
         {
             get { return _pbag.Properties; }
         }
 
+        /// <summary>
+        /// Gets or sets the target ISE version.
+        /// </summary>
         public EISEVersion ISEVersion { get; set; }
+
+        /// <summary>
+        /// Gets or sets the ISE installation path.
+        /// </summary>
         public string ISEBinPath { get; set; }
 
         private List<string> _projectFiles = new List<string>();
+
+        /// <summary>
+        /// Returns all current project files (read-only).
+        /// </summary>
         public IList<string> ProjectFiles
         {
             get { return new ReadOnlyCollection<string>(_projectFiles); }
@@ -122,11 +158,21 @@ namespace SystemSharp.Interop.Xilinx
         private Queue<ProcessPool.ToolBatch> _runningTools = 
             new Queue<ProcessPool.ToolBatch>();
 
+        /// <summary>
+        /// Retrieves a project property.
+        /// </summary>
+        /// <param name="prop">property to retrieve</param>
+        /// <returns>property value</returns>
         public object GetProperty(EXilinxProjectProperties prop)
         {
             return _pbag.GetProperty(prop);
         }
 
+        /// <summary>
+        /// Sets a project property.
+        /// </summary>
+        /// <param name="prop">property to set</param>
+        /// <param name="value">property value to set</param>
         public void PutProperty(EXilinxProjectProperties prop, object value)
         {
             _pbag.PutProperty(prop, value);
@@ -156,6 +202,11 @@ namespace SystemSharp.Interop.Xilinx
             return _projectFiles.Remove(file);
         }
 
+        /// <summary>
+        /// Returns the full path of a project file.
+        /// </summary>
+        /// <param name="file">project file</param>
+        /// <returns>full path to project file</returns>
         public string MakeFullPath(string file)
         {
             return ProjectPath + "\\" + file;
@@ -168,6 +219,12 @@ namespace SystemSharp.Interop.Xilinx
             return cdesc;
         }
 
+        /// <summary>
+        /// Adds a new core generator script to the project.
+        /// </summary>
+        /// <param name="name">name of the component</param>
+        /// <param name="cgProj">out parameter to receive the core generator project (.cgp)</param>
+        /// <param name="xco">out parameter to receive the core generator script (.xco)</param>
         public void AddNewCoreGenDescription(string name, out CoreGenDescription cgProj, out CoreGenDescription xco)
         {
             string cgprojPath = MakeFullPath(name + ".cgp");
@@ -188,6 +245,9 @@ namespace SystemSharp.Interop.Xilinx
             }
         }
 
+        /// <summary>
+        /// Configures the project for VHDL generation.
+        /// </summary>
         public void SetVHDLProfile()
         {
             PutProperty(EXilinxProjectProperties.PreferredLanguage, EHDL.VHDL);
@@ -235,6 +295,12 @@ namespace SystemSharp.Interop.Xilinx
             }
         }
 
+        /// <summary>
+        /// Returns all attributes of given type of the given file.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to lookup</typeparam>
+        /// <param name="file">file name</param>
+        /// <returns>all found attributes</returns>
         public IEnumerable<T> LookupAttributes<T>(string file)
         {
             HashSet<object> attrs = _fileAttributes.Get(file);
@@ -243,6 +309,12 @@ namespace SystemSharp.Interop.Xilinx
                    select (T)attr;
         }
 
+        /// <summary>
+        /// Returns a single attribute of given type of the given file.
+        /// </summary>
+        /// <typeparam name="T">type of attribute to lookup</typeparam>
+        /// <param name="file">file name</param>
+        /// <returns>the attribute, or <c>null</c> if no such exists</returns>
         public T LookupAttribute<T>(string file)
         {
             return LookupAttributes<T>(file).SingleOrDefault();
@@ -357,6 +429,11 @@ namespace SystemSharp.Interop.Xilinx
                 TwinProject.Save();
         }
 
+        /// <summary>
+        /// Executes the core generator.
+        /// </summary>
+        /// <param name="xcoPath">path to core generator script (.xco)</param>
+        /// <param name="cgprojPath">path to core generator project (.cgp)</param>
         public void ExecuteCoreGen(string xcoPath, string cgprojPath)
         {
             //var cg = XilinxCoreGenPool.Instance.RequestCoreGen();
@@ -366,40 +443,61 @@ namespace SystemSharp.Interop.Xilinx
                 _runningTools.Enqueue(batch);
         }
 
+        /// <summary>
+        /// Gets or sets a flag which indicates whether IP core generation should be skipped.
+        /// </summary>
         public bool SkipIPCoreSynthesis { get; set; }
 
         private IComponentDescriptor _topLevelComponent;
+
+        /// <summary>
+        /// Gets or sets the top-level component of the design.
+        /// </summary>
         public IComponentDescriptor TopLevelComponent 
         {
             get { return _topLevelComponent; }
             set { _topLevelComponent = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the target device family.
+        /// </summary>
         public EDeviceFamily DeviceFamily
         {
             get { return (EDeviceFamily)GetProperty(EXilinxProjectProperties.DeviceFamily); }
             set { PutProperty(EXilinxProjectProperties.DeviceFamily, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the target device.
+        /// </summary>
         public EDevice Device
         {
             get { return (EDevice)GetProperty(EXilinxProjectProperties.Device); }
             set { PutProperty(EXilinxProjectProperties.Device, value); }
         }
 
-
+        /// <summary>
+        /// Gets or sets the target device speed grade.
+        /// </summary>
         public ESpeedGrade SpeedGrade
         {
             get { return (ESpeedGrade)GetProperty(EXilinxProjectProperties.SpeedGrade); }
             set { PutProperty(EXilinxProjectProperties.SpeedGrade, value); }
         }
 
+        /// <summary>
+        /// Gets or sets the target device package.
+        /// </summary>
         public EPackage Package
         {
             get { return (EPackage)GetProperty(EXilinxProjectProperties.Package); }
             set { PutProperty(EXilinxProjectProperties.Package, value); }
         }
 
+        /// <summary>
+        /// Suspends the current thread until all tools busy with generating this project have exited.
+        /// </summary>
         public void AwaitRunningToolsToFinish()
         {
             while (_runningTools.Any())
@@ -414,101 +512,17 @@ namespace SystemSharp.Interop.Xilinx
             _runningTools.Enqueue(bat);
         }
 
+        /// <summary>
+        /// Configures a tool flow for the given component as top-level component.
+        /// </summary>
+        /// <param name="top">top-level component</param>
+        /// <returns>tool flow</returns>
         public ToolFlow ConfigureFlow(Component top)
         {
             var flow = new ToolFlow(this);
             flow.Configure(top);
             return flow;
         }
-
-#if false
-        public void RunFlow(Component top, EFlowStep step)
-        {
-            AwaitRunningToolsToFinish();
-
-            string xstRoot = Path.Combine(ProjectPath, "xst");
-            Directory.CreateDirectory(xstRoot);
-            string xstProjPath = Path.Combine(xstRoot, "input.prj");
-            var xstproj = new XSTProject(xstProjPath);
-            string ucf = null;
-            foreach (string file in ProjectFiles)
-            {
-                string xstFile = file;
-                string ext = Path.GetExtension(file);
-                if (ext.Equals(".xco"))
-                {
-                    xstFile = Path.GetFileNameWithoutExtension(file) + ".vhd";
-                }
-                else if (ext.Equals(".ucf"))
-                {
-                    ucf = file;
-                    continue;
-                }
-                xstproj.AddFile(xstFile);
-            }
-            xstproj.Save();
-            string partName = Tooling.MakePartName(Device, SpeedGrade, Package);
-            var xst = new XSTFlow();
-            xst.PartName = partName;
-            string xstTempDir = Path.Combine(xstRoot, "inter");
-            Directory.CreateDirectory(xstTempDir);
-            xst.TempDir = xstTempDir;
-            xst.XSTProjectPath = xstProjPath;
-            xst.XstHdpDir = ProjectPath;
-            xst.TopLevelUnitName = top.Descriptor.Name;
-            var bat = ProcessPool.Instance.CreateBatch();
-            string xstScriptPath = Path.Combine(xstRoot, "synthesis.xst");
-            string ngcPath = Path.Combine(xstRoot, "design.ngc");
-            string logPath = Path.Combine(xstRoot, "synthesis.log");
-            xst.OutputFile = ngcPath;
-            if (step.HasFlag(EFlowStep.XST))
-                xst.SaveToXSTScriptAndAddToBatch(this, bat, xstScriptPath, logPath);
-            string ngdRoot = Path.Combine(ProjectPath, "ngd");
-            Directory.CreateDirectory(ngdRoot);
-            string ngdTempDir = Path.Combine(ngdRoot, "inter");
-            Directory.CreateDirectory(ngdTempDir);
-            var ngdbuild = new NGDBuildFlow();
-            ngdbuild.PartName = partName;
-            if (ucf != null)
-                ngdbuild.UserConstraintsFile = Path.Combine(ProjectPath, ucf);
-            ngdbuild.DesignName = ngcPath;
-            ngdbuild.IntermediateDir = ngdTempDir;
-            string ngdFile = Path.Combine(ngdRoot, "design.ngd");
-            ngdbuild.SearchDirs.Add(xstRoot);
-            ngdbuild.NGDFile = ngdFile;
-            if (step.HasFlag(EFlowStep.NGDBuild))
-                ngdbuild.AddToBatch(this, bat);
-            string mapRoot = Path.Combine(ProjectPath, "map");
-            Directory.CreateDirectory(mapRoot);
-            string ncdFile = Path.Combine(mapRoot, "design.ncd");
-            var map = new MAPFlow();
-            map.PartName = partName;                    
-            map.InputFile = ngdFile;
-            map.OutputFile = ncdFile;
-            if (step.HasFlag(EFlowStep.Map))
-                map.AddToBatch(this, bat);
-            string parRoot = Path.Combine(ProjectPath, "par");
-            string parNcdFile = Path.Combine(parRoot, "design.ncd");
-            Directory.CreateDirectory(parRoot);
-            var par = new PARFlow();
-            par.InputFile = ncdFile;
-            par.OutputFile = parNcdFile;
-            if (step.HasFlag(EFlowStep.PAR))
-                par.AddToBatch(this, bat);
-            var trce = new TRCEFlow();
-            trce.PhysicalDesignFile = parNcdFile;
-            string trceRoot = Path.Combine(ProjectPath, "trce");
-            Directory.CreateDirectory(trceRoot);
-            string twrPath = Path.Combine(trceRoot, "design.twr");
-            string twxPath = Path.Combine(trceRoot, "design.twx");
-            trce.ReportFile = twrPath;
-            trce.XMLReportFile = twxPath;
-            if (step.HasFlag(EFlowStep.TRCE))
-                trce.AddToBatch(this, bat);
-            bat.Start();
-            _runningTools.Enqueue(bat);
-        }
-#endif
     }
 
 }

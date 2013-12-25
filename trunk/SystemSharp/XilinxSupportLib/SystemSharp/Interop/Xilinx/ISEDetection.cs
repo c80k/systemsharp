@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,13 +26,30 @@ using System.Text.RegularExpressions;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Provides information on an ISE installation.
+    /// </summary>
     public class ISEInfo
     {
+        /// <summary>
+        /// Gets or sets the installation path.
+        /// </summary>
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the textual version.
+        /// </summary>
         public string VersionText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version.
+        /// </summary>
         public EISEVersion VersionTag { get; set; }
     }
 
+    /// <summary>
+    /// This static class provides methods for detecting existing ISE installations.
+    /// </summary>
     public static class ISEDetector
     {
         private static Dictionary<string, EISEVersion> _versionMap = new Dictionary<string, EISEVersion>();
@@ -43,6 +60,12 @@ namespace SystemSharp.Interop.Xilinx
                 _versionMap[prop.IDs[EPropAssoc.ISE]] = (EISEVersion)prop.EnumValue;
         }
 
+        /// <summary>
+        /// Tries to convert an ISE version text to the version enum value.
+        /// </summary>
+        /// <param name="text">version text</param>
+        /// <param name="version">out parameter to receive the parsed version</param>
+        /// <returns><c>true</c> if the version text was recognized</returns>
         public static bool GetISEVersionFromText(string text, out EISEVersion version)
         {
             return _versionMap.TryGetValue(text, out version);
@@ -71,6 +94,9 @@ namespace SystemSharp.Interop.Xilinx
             return CombineDirs(0, dirs);
         }
 
+        /// <summary>
+        /// Detects and enumerates all ISE installations.
+        /// </summary>
         public static IEnumerable<ISEInfo> DetectISEInstallations()
         {
             string[] rootDirs = new string[] { "C:\\Xilinx" };
@@ -146,6 +172,9 @@ namespace SystemSharp.Interop.Xilinx
             }
         }
 
+        /// <summary>
+        /// Detects and returns the ISE installation with the most recent version.
+        /// </summary>
         public static ISEInfo DetectMostRecentISEInstallation()
         {
             return DetectISEInstallations()
@@ -153,6 +182,10 @@ namespace SystemSharp.Interop.Xilinx
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Tries to locate an ISE installation by the specified version.
+        /// </summary>
+        /// <returns>information on located ISE installation, or <c>null</c> if no such was found</returns>
         public static ISEInfo LocateISEByVersion(EISEVersion version)
         {
             return DetectISEInstallations()

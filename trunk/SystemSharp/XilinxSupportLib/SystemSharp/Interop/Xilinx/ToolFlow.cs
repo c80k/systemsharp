@@ -32,18 +32,60 @@ using SystemSharp.Synthesis.VHDLGen;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Represents the FPGA tool flow from synthesis to place-and-route.
+    /// </summary>
     public class ToolFlow
     {
+        /// <summary>
+        /// The ISE project
+        /// </summary>
         public XilinxProject Project { get; private set; }
+
+        /// <summary>
+        /// XST flow
+        /// </summary>
         public XSTFlow XST { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the XST script path.
+        /// </summary>
         public string XSTScriptPath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the XST logging path.
+        /// </summary>
         public string XSTLogPath { get; set; }
+
+        /// <summary>
+        /// NGDBuild flow
+        /// </summary>
         public NGDBuildFlow NGDBuild { get; private set; }
+
+        /// <summary>
+        /// Map flow
+        /// </summary>
         public MAPFlow Map { get; private set; }
+
+        /// <summary>
+        /// PAR flow
+        /// </summary>
         public PARFlow PAR { get; private set; }
+
+        /// <summary>
+        /// TRCE flow
+        /// </summary>
         public TRCEFlow TRCE { get; private set; }
+
+        /// <summary>
+        /// PAR report path
+        /// </summary>
         public string PARReportPath { get; private set; }
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
+        /// <param name="project">ISE project</param>
         public ToolFlow(XilinxProject project)
         {
             Project = project;
@@ -54,6 +96,10 @@ namespace SystemSharp.Interop.Xilinx
             TRCE = new TRCEFlow();
         }
 
+        /// <summary>
+        /// Configures the flow for the given component.
+        /// </summary>
+        /// <param name="top">top-level component of the design</param>
         public void Configure(Component top)
         {
             string flowRoot = Path.Combine(Project.ProjectPath, "flow");
@@ -150,6 +196,11 @@ namespace SystemSharp.Interop.Xilinx
             return bat;
         }
 
+        /// <summary>
+        /// Queues the flow in the process pool.
+        /// </summary>
+        /// <param name="steps">flow items to execute</param>
+        /// <returns>the created batch job</returns>
         public ProcessPool.ToolBatch Start(EFlowStep steps)
         {
             var bat = CreateBatch(steps);
@@ -159,6 +210,11 @@ namespace SystemSharp.Interop.Xilinx
             return bat;
         }
 
+        /// <summary>
+        /// Parses the generated resource reports.
+        /// </summary>
+        /// <param name="designRec">out parameter to receive the parsed performance data</param>
+        /// <param name="deviceRec">out parameter to receive the parsed resource data</param>
         public void ParseResourceRecords(out PerformanceRecord designRec, out ResourceRecord deviceRec)
         {
             designRec = new PerformanceRecord();

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,6 +24,12 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Describes the Xilinx device families.
+    /// </summary>
+    /// <remarks>
+    /// This enum is far from being complete.
+    /// </remarks>
     public enum EDeviceFamily
     {
         [PropID(EPropAssoc.ISE, "Automotive 9500XL")]
