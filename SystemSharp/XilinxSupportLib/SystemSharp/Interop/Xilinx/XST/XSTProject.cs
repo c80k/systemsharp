@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -27,11 +27,18 @@ using SystemSharp.Synthesis;
 
 namespace SystemSharp.Interop.Xilinx.XST
 {
+    /// <summary>
+    /// Generates projects which are compatible with the Xilinx XST tool.
+    /// </summary>
     public class XSTProject: IProject
     {
         private string _path;
         private List<string> _fileList = new List<string>();
 
+        /// <summary>
+        /// Constructs a new project.
+        /// </summary>
+        /// <param name="path">path to project file</param>
         public XSTProject(string path)
         {
             _path = path;

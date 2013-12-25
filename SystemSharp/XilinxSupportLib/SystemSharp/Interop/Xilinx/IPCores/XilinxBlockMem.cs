@@ -76,36 +76,88 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// Transaction site interface for Xilinx block memory.
+    /// </summary>
     public interface IXilinxBlockMemSide: 
         ITransactionSite,
         IRAM
     {
+        /// <summary>
+        /// Reads from the memory.
+        /// </summary>
+        /// <param name="addr">address to read from</param>
+        /// <param name="data">signal sink to receive read data</param>
+        /// <returns>the read transaction</returns>
         [StaticEvaluation]
         [AssumeCalled]
         IEnumerable<TAVerb> Read(
             ISignalSource<StdLogicVector> addr,
             ISignalSink<StdLogicVector> data);
 
+        /// <summary>
+        /// Writes to the memory.
+        /// </summary>
+        /// <param name="addr">address to write to</param>
+        /// <param name="data">data to write</param>
+        /// <returns>the write transaction</returns>
         [StaticEvaluation]
         [AssumeCalled]
         IEnumerable<TAVerb> Write(
             ISignalSource<StdLogicVector> addr,
             ISignalSource<StdLogicVector> data);
 
+        /// <summary>
+        /// Reads from the memory.
+        /// </summary>
+        /// <param name="addr">address to read from</param>
+        /// <returns>read task</returns>
         [MemReadRewriter]
         Task<StdLogicVector> Read(StdLogicVector addr);
 
+
+        /// <summary>
+        /// Writes to the memory.
+        /// </summary>
+        /// <param name="addr">address to write to</param>
+        /// <param name="data">data to write</param>
         [MemWriteRewriter]
         void Write(StdLogicVector addr, StdLogicVector data);
 
+        /// <summary>
+        /// Returns a address width for read operations.
+        /// </summary>
         int AddrReadWidth { get; }
+
+        /// <summary>
+        /// Returns the address width for write operations.
+        /// </summary>
         int AddrWriteWidth { get; }
+
+        /// <summary>
+        /// Returns the data width for read operations.
+        /// </summary>
         int DataReadWidth { get; }
+
+        /// <summary>
+        /// Returns the data width for write operations.
+        /// </summary>
         int DataWriteWidth { get; }
+
+        /// <summary>
+        /// Returns the memory depth for read operations.
+        /// </summary>
         int DataReadDepth { get; }
+
+        /// <summary>
+        /// Returns the memory depth for write operations.
+        /// </summary>
         int DataWriteDepth { get; }
     }
 
+    /// <summary>
+    /// Models a Xilinx block memory.
+    /// </summary>
     public class BlockMem: FunctionalUnit
     {
         public enum EGenerator
@@ -315,7 +367,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         public int ByteSize { [StaticEvaluation] get; set; }
 
         public StdLogicVector[] InitialImage { [StaticEvaluation] get; set; }
-        //public int InitialImageRadix { get; set; }
 
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "coe_file")]
@@ -1112,11 +1163,18 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
 
         private MemoryTransactor _sideA, _sideB;
+
+        /// <summary>
+        /// Returns the transaction site of side A
+        /// </summary>
         public IXilinxBlockMemSide SideA
         {
             [StaticEvaluation] get { return _sideA; }
         }
 
+        /// <summary>
+        /// Returns the transaction site of side B
+        /// </summary>
         public IXilinxBlockMemSide SideB
         {
             [StaticEvaluation] get { return _sideB; }
@@ -1127,6 +1185,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         private SLVSignal _dataA1, _dataA2;
         private SLVSignal _dataB1, _dataB2;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public BlockMem()
         {
             Generator = EGenerator.Block_Memory_Generator_4_3;
@@ -1492,6 +1553,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         public ulong BaseAddress { get; set; }
     }
 
+    /// <summary>
+    /// Maps memory read/write instructions to Xilinx block memory.
+    /// </summary>
     public class BlockMemXILMapper : IXILMapper
     { 
         private class BlockMemReadMapping: DefaultXILMapping
@@ -1652,6 +1716,10 @@ namespace SystemSharp.Interop.Xilinx.IPCores
 
         private MemoryRegion _region;
 
+        /// <summary>
+        /// Constructs a new mapper.
+        /// </summary>
+        /// <param name="region">memory region to associate this mapper with</param>
         public BlockMemXILMapper(MemoryRegion region)
         {
             _region = region;
@@ -1861,6 +1929,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// An <c>IBlockMemFactory</c> implementation which creates Xilinx block memories.
+    /// </summary>
     public class XilinxBlockMemFactory : IBlockMemFactory
     {
         public void CreateROM(int addrWidth, int dataWidth, int capacity, int readLatency, 

@@ -36,6 +36,9 @@ using SystemSharp.Synthesis.VHDLGen;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
+    /// <summary>
+    /// Transaction site interface for adder/subtracter cores.
+    /// </summary>
     public interface IAdderSubtracterTransactionSite : ITransactionSite
     {
         IEnumerable<TAVerb> Add(ISignalSource<StdLogicVector> a, ISignalSource<StdLogicVector> b,
@@ -44,6 +47,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             ISignalSink<StdLogicVector> r);
     }
 
+    /// <summary>
+    /// Model of a Xilinx adder/subtracter IP core.
+    /// </summary>
     [DeclareXILMapper(typeof(XilinxAdderSubtracterXILMapper))]
     public class XilinxAdderSubtracter : Component
     {
@@ -580,23 +586,45 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// Maps integral and fixed-point additions and subtractions to the Xilinx adder/subtracter IP core.
+    /// </summary>
     public class XilinxAdderSubtracterXILMapper : IXILMapper
     {
+        /// <summary>
+        /// Provides core configuration tuning parameters.
+        /// </summary>
         public class CoreConfig
         {
-            public CoreConfig()
+            /// <summary>
+            /// Constructs an instance.
+            /// </summary>
+            internal CoreConfig()
             {
                 PipeStageScaling = 1.0;
             }
 
+            /// <summary>
+            /// Gets or sets a scaling parameter for determining the number of pipeline stages.
+            /// </summary>
+            /// <remarks>
+            /// This parameter is multiplied with the maximum viable number of pipeline stages for a given
+            /// addition/subtraction. It must be between 0.0 and 1.0.
+            /// </remarks>
             public double PipeStageScaling { get; set; }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public XilinxAdderSubtracterXILMapper()
         {
             Config = new CoreConfig();
         }
 
+        /// <summary>
+        /// Provides access to core-specific tuning parameters.
+        /// </summary>
         public CoreConfig Config { get; private set; }
 
         private class XILMapping : IXILMapping

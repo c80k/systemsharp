@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -34,6 +34,9 @@ using XilinxSupportLib.SystemSharp.Interop.Xilinx.AXI;
 
 namespace SystemSharp.Interop.Xilinx.AXI
 {
+    /// <summary>
+    /// Testbench for AXI Lite slave user logic.
+    /// </summary>
     [ComponentPurpose(EComponentPurpose.SimulationOnly)]
     public class AXILiteSlaveUserLogicTestbench : Component
     {
@@ -49,6 +52,10 @@ namespace SystemSharp.Interop.Xilinx.AXI
         private SLSignal _sig_IP2Bus_Error;
 
         private AXILiteSlaveUserLogic user_logic;
+
+        /// <summary>
+        /// Returns the component under test
+        /// </summary>
         public AXILiteSlaveUserLogic UserLogic
         {
             get { return user_logic; }
@@ -56,6 +63,10 @@ namespace SystemSharp.Interop.Xilinx.AXI
 
         private Clock _clockGen;
 
+        /// <summary>
+        /// Constructs a new testbechn.
+        /// </summary>
+        /// <param name="userLogic">component under test</param>
         public AXILiteSlaveUserLogicTestbench(AXILiteSlaveUserLogic userLogic)
         {
             user_logic = userLogic;
@@ -159,6 +170,9 @@ namespace SystemSharp.Interop.Xilinx.AXI
         }
     }
 
+    /// <summary>
+    /// Abstract base implementation of AXI Lite slave user logic
+    /// </summary>
     public abstract class AXILiteSlaveUserLogic : Component
     {
         public enum EAccessMode
@@ -205,6 +219,11 @@ namespace SystemSharp.Interop.Xilinx.AXI
         private List<ISignal> _writeSignals = new List<ISignal>();
         private List<ISignal> _readSignals = new List<ISignal>();
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
+        /// <param name="numRegs">number of registers</param>
+        /// <param name="slvDWidth">data width</param>
         public AXILiteSlaveUserLogic(int numRegs, int slvDWidth)
         {
             NumRegs = numRegs;
@@ -214,6 +233,13 @@ namespace SystemSharp.Interop.Xilinx.AXI
             _readBits = new In<StdLogic>[NumRegs, SLVDWidth];
         }
 
+        /// <summary>
+        /// Maps a signal to a register.
+        /// </summary>
+        /// <param name="sig">signal to map</param>
+        /// <param name="mode">register access</param>
+        /// <param name="reg">register index</param>
+        /// <param name="startBit">start bit in register</param>
         protected void MapSignal(SLVSignal sig, EAccessMode mode, int reg, int startBit)
         {
             if (mode != EAccessMode.Read)
@@ -230,6 +256,13 @@ namespace SystemSharp.Interop.Xilinx.AXI
             }
         }
 
+        /// <summary>
+        /// Maps a signal to a register.
+        /// </summary>
+        /// <param name="sig">signal to map</param>
+        /// <param name="mode">register access</param>
+        /// <param name="reg">register idnex</param>
+        /// <param name="startBit">bit offset in register</param>
         protected void MapSignal(SLSignal sig, EAccessMode mode, int reg, int startBit)
         {
             if (mode != EAccessMode.Read)

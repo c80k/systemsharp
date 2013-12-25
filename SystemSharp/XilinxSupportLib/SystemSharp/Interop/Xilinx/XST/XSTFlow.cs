@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -160,6 +160,9 @@ namespace SystemSharp.Interop.Xilinx.XST
         Backward
     }
 
+    /// <summary>
+    /// Provides access to the Xilinx XST tool.
+    /// </summary>
     public class XSTFlow
     {
         [AttributeUsage(AttributeTargets.Property)]
@@ -359,6 +362,9 @@ namespace SystemSharp.Interop.Xilinx.XST
         [FlowProp("slice_utilization_ratio_maxmargin")]
         public int SliceUtilizationRatioMaxMargin { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public XSTFlow()
         {
             TempDir = "xst/projnav.tmp";

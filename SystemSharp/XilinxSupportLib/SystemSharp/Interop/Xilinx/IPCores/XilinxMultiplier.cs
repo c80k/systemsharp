@@ -36,12 +36,18 @@ using SystemSharp.Synthesis.VHDLGen;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
+    /// <summary>
+    /// Transactio site interface for the Xilinx multiplier IP core.
+    /// </summary>
     public interface IMultiplierTransactionSite: ITransactionSite
     {
         IEnumerable<TAVerb> Multiply(ISignalSource<StdLogicVector> a, ISignalSource<StdLogicVector> b,
             ISignalSink<StdLogicVector> r);
     }
 
+    /// <summary>
+    /// Models a Xilinx multiplier IP core.
+    /// </summary>
     [DeclareXILMapper(typeof(XilinxMultiplierXILMapper))]
     public class XilinxMultiplier : Component
     {
@@ -384,11 +390,17 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             }
         }
 
+        /// <summary>
+        /// Returns the transaction site.
+        /// </summary>
         public IMultiplierTransactionSite TASite { get; private set; }
 
         private RegPipe _outPipe;
         private SLVSignal _pipeIn;
 
+        /// <summary>
+        /// Constructs a new instance.
+        /// </summary>
         public XilinxMultiplier()
         {
             Generator = EGenerator.Multiplier_11_2;
@@ -510,23 +522,38 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// Maps integral and fixed-point multiplications to the Xilinx multiplier IP core.
+    /// </summary>
    public class XilinxMultiplierXILMapper : IXILMapper
    {
+       /// <summary>
+       /// Provides core-specific configuration options.
+       /// </summary>
        public class CoreConfig
        {
-           public CoreConfig()
+           internal CoreConfig()
            {
                PipeStageScaling = 1.0;
            }
 
+           /// <summary>
+           /// Gets or sets the latency scaling factor.
+           /// </summary>
            public double PipeStageScaling { get; set; }
        }
 
+       /// <summary>
+       /// Constructs an instance.
+       /// </summary>
        public XilinxMultiplierXILMapper()
        {
            Config = new CoreConfig();
        }
 
+       /// <summary>
+       /// Provides core-specific configuration options.
+       /// </summary>
        public CoreConfig Config { get; private set; }
 
        private class XILMapping : IXILMapping

@@ -31,16 +31,40 @@ using System.Threading.Tasks;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Provides infrastructure for executing multiple command-line tools in parallel.
+    /// </summary>
     public class ProcessPool
     {
+        /// <summary>
+        /// Describes the exeuction state of a particular tool.
+        /// </summary>
         public enum EToolState
         {
+            /// <summary>
+            /// The tool has not yet started.
+            /// </summary>
             WaitingForExecution,
+
+            /// <summary>
+            /// The tool failed to start.
+            /// </summary>
             StartFailure,
+
+            /// <summary>
+            /// The tool is running.
+            /// </summary>
             Running,
+
+            /// <summary>
+            /// The tool has exited.
+            /// </summary>
             Exited
         }
 
+        /// <summary>
+        /// Encapsulates the execution of a command-line tool.
+        /// </summary>
         public class Tool
         {
             public static int DefaultCompletionTimeout = 180000;
@@ -74,6 +98,9 @@ namespace SystemSharp.Interop.Xilinx
                 _isExited.Close();
             }
 
+            /// <summary>
+            /// An ID of the console the tool is running in.
+            /// </summary>
             public int ConsoleID { get; internal set; }
 
             private void DataReceivedEventHandler(object sender, DataReceivedEventArgs e)
@@ -140,13 +167,22 @@ namespace SystemSharp.Interop.Xilinx
                 }
             }
 
+            /// <summary>
+            /// Returns the current execution state of the tool.
+            /// </summary>
             public EToolState State
             {
                 get { return _state; }
             }
 
+            /// <summary>
+            /// Returns the exit code of the tool.
+            /// </summary>
             public int ExitCode { get; private set; }
 
+            /// <summary>
+            /// Suspends the current thread until the tool has exited.
+            /// </summary>
             public void WaitForExit()
             {
                 if (!_isExited.WaitOne(DefaultCompletionTimeout))
@@ -156,12 +192,18 @@ namespace SystemSharp.Interop.Xilinx
                 }
             }
 
+            /// <summary>
+            /// Returns the tool name.
+            /// </summary>
             public string Name
             {
                 get { return _name; }
             }
         }
 
+        /// <summary>
+        /// Represents a batch job of tools.
+        /// </summary>
         public class ToolBatch
         {
             private ProcessPool _pool;
@@ -175,6 +217,10 @@ namespace SystemSharp.Interop.Xilinx
             }
 
             private int _consoleID;
+
+            /// <summary>
+            /// Gets or sets the console ID the batch is executing in.
+            /// </summary>
             public int ConsoleID
             {
                 get { return _consoleID; }
@@ -188,6 +234,14 @@ namespace SystemSharp.Interop.Xilinx
                 }
             }
 
+            /// <summary>
+            /// Adds a tool to the batch job.
+            /// </summary>
+            /// <param name="iseDir">ISE installation path</param>
+            /// <param name="projDir">project directory</param>
+            /// <param name="toolName">tool name</param>
+            /// <param name="arguments">command line arguments</param>
+            /// <returns>a model of the added tool</returns>
             public Tool Add(string iseDir, string projDir, string toolName, string arguments)
             {
                 if (_sealed)
@@ -209,11 +263,20 @@ namespace SystemSharp.Interop.Xilinx
                 return tool;
             }
 
+            /// <summary>
+            /// Adds a tool to the batch job.
+            /// </summary>
+            /// <param name="toolName">tool name</param>
+            /// <param name="arguments">command line arguments</param>
+            /// <returns>a model of the added tool</returns>
             public Tool Add(string toolName, string arguments)
             {
                 return Add("", null, toolName, arguments);
             }
 
+            /// <summary>
+            /// Enumerates all currently added tools.
+            /// </summary>
             public IEnumerable<Tool> Tools
             {
                 get { return new ReadOnlyCollection<Tool>(_tools); }
@@ -227,6 +290,9 @@ namespace SystemSharp.Interop.Xilinx
                 }
             }
 
+            /// <summary>
+            /// Queues the batch job in the process pool.
+            /// </summary>
             public void Start()
             {
                 _sealed = true;
@@ -235,6 +301,10 @@ namespace SystemSharp.Interop.Xilinx
         }
 
         private static int _maxParallelProcesses;
+
+        /// <summary>
+        /// Configures the maximum number of tools which are allowed to execute in parallel.
+        /// </summary>
         public static int MaxParallelProcessesPreset
         {
             get
@@ -251,6 +321,10 @@ namespace SystemSharp.Interop.Xilinx
 
         private static object _syncRoot = new object();
         private static ProcessPool _instance;
+
+        /// <summary>
+        /// Returns the singleton process pool instance.
+        /// </summary>
         public static ProcessPool Instance
         {
             get
@@ -271,8 +345,15 @@ namespace SystemSharp.Interop.Xilinx
         private Action<Tool, string> _onToolErrorOutput;
         private Action<Tool> _onToolExited;
 
+        /// <summary>
+        /// The maximum number of tools which are allowed to execute in parallel.
+        /// </summary>
         public int MaxParallelProcesses { get; private set; }
 
+        /// <summary>
+        /// Constructs a new process pool.
+        /// </summary>
+        /// <param name="maxParallelProcesses">maximum number of tools which are allowed to execute in parallel</param>
         public ProcessPool(int maxParallelProcesses)
         {
             _psq = new BlockingCollection<ToolBatch>();
@@ -328,6 +409,14 @@ namespace SystemSharp.Interop.Xilinx
                 _onToolExited(tool);
         }
 
+        /// <summary>
+        /// Queues a single tool.
+        /// </summary>
+        /// <param name="iseDir">ISE installation path</param>
+        /// <param name="projDir">project directory</param>
+        /// <param name="toolName">tool name</param>
+        /// <param name="arguments">command line arguments</param>
+        /// <returns>a model of the queued tool</returns>
         public Tool ToolExec(string iseDir, string projDir, string toolName, string arguments)
         {
             var batch = new ToolBatch(this);
@@ -336,40 +425,64 @@ namespace SystemSharp.Interop.Xilinx
             return tool;
         }
 
+        /// <summary>
+        /// Queues a single tool.
+        /// </summary>
+        /// <param name="toolName">tool name</param>
+        /// <param name="arguments">command line arguments</param>
+        /// <returns>a model of the queued tool</returns>
         public Tool ToolExec(string toolName, string arguments)
         {
             return ToolExec("", null, toolName, arguments);
         }
 
+        /// <summary>
+        /// Creates a new batch job.
+        /// </summary>
         public ToolBatch CreateBatch()
         {
             return new ToolBatch(this);
         }
 
+        /// <summary>
+        /// Triggered whenever a new tool has started.
+        /// </summary>
         public event Action<Tool> ToolSpawned
         {
             add { _onToolSpawned += value; }
             remove { _onToolSpawned -= value; }
         }
 
+        /// <summary>
+        /// Triggered whenever a tool has failed to start.
+        /// </summary>
         public event Action<Tool> FailedToolStart
         {
             add { _onFailedToolStart += value; }
             remove { _onFailedToolStart -= value; }
         }
 
+        /// <summary>
+        /// Triggered whenever a tool writes to the console.
+        /// </summary>
         public event Action<Tool, string> ToolOutput
         {
             add { _onToolOutput += value; }
             remove { _onToolOutput -= value; }
         }
 
+        /// <summary>
+        /// Triggered whenever a tool writes to the error console.
+        /// </summary>
         public event Action<Tool, string> ToolErrorOutput
         {
             add { _onToolErrorOutput += value; }
             remove { _onToolErrorOutput -= value; }
         }
 
+        /// <summary>
+        /// Triggered whenever a tool has exited.
+        /// </summary>
         public event Action<Tool> ToolExited
         {
             add { _onToolExited += value; }
@@ -386,12 +499,18 @@ namespace SystemSharp.Interop.Xilinx
             Console.Error.WriteLine("[{0}] {1}", tool.ConsoleID, output);
         }
 
+        /// <summary>
+        /// Directs all tool output to the standard console of this process.
+        /// </summary>
         public void ConnectStandardConsole()
         {
             ToolOutput += DefaultToolOutputHandler;
             ToolErrorOutput += DefaultToolErrorOutputHandler;
         }
 
+        /// <summary>
+        /// Disconnects all tool output from the standard console of this process.
+        /// </summary>
         public void DisconnectStandardConsole()
         {
             ToolOutput -= DefaultToolOutputHandler;

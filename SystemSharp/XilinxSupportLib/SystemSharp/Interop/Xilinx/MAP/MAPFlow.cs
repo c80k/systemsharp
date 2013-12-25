@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -51,6 +51,9 @@ namespace SystemSharp.Interop.Xilinx.MAP
         Off
     }
 
+    /// <summary>
+    /// Provides access to the Xilinx "map" tool.
+    /// </summary>
     public class MAPFlow
     {
         public string PartName { get; set; }
@@ -79,6 +82,9 @@ namespace SystemSharp.Interop.Xilinx.MAP
         public string OutputFile { get; set; }
         public string PRFFile { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public MAPFlow()
         {
             PlacerEffort = EPlacerEffortLevelMap.High;

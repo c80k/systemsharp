@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,6 +24,9 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx.Devices.Virtex6
 {
+    /// <summary>
+    /// Frame model of a XC6VLX240T FF1156 device.
+    /// </summary>
     public class XC6VLX240T_FF1156 : XilinxDevice
     {
         public override EDevice Device
@@ -36,6 +39,9 @@ namespace SystemSharp.Interop.Xilinx.Devices.Virtex6
             get { return EPackage.ff1156; }
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public XC6VLX240T_FF1156()
         {
             AddPin(new XilinxPin("AD25"));

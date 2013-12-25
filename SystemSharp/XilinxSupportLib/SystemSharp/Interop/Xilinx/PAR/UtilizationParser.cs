@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -27,6 +27,9 @@ using System.Text.RegularExpressions;
 
 namespace SystemSharp.Interop.Xilinx.PAR
 {
+    /// <summary>
+    /// Provides methods to parse "par"-generated resource reports.
+    /// </summary>
     public static class UtilizationParser
     {
         private static readonly Regex LineRegex = new Regex(@"^\s*Number of (?<rname>[^:]+):\s+(?<count>[\d,]+) out of\s+(?<total>[\d,]+)");
@@ -50,6 +53,11 @@ namespace SystemSharp.Interop.Xilinx.PAR
             return false;
         }
 
+        /// <summary>
+        /// Parses the resource utilization.
+        /// </summary>
+        /// <param name="reportPath">path to PAR report</param>
+        /// <param name="rec">resource record to receive the parsed information</param>
         public static void ParseUtilization(string reportPath, ResourceRecord rec)
         {
             using (var rd = new StreamReader(reportPath))
@@ -68,6 +76,11 @@ namespace SystemSharp.Interop.Xilinx.PAR
             }
         }
 
+        /// <summary>
+        /// Parses the device-specific totals of each resource type.
+        /// </summary>
+        /// <param name="reportPath">path to PAR report</param>
+        /// <param name="rec">resource record to receive the parsed information</param>
         public static void ParseTotals(string reportPath, ResourceRecord rec)
         {
             using (var rd = new StreamReader(reportPath))

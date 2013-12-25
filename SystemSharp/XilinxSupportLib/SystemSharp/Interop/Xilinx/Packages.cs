@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,6 +25,13 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Describes Xilinx device packages.
+    /// </summary>
+    /// <remarks>
+    /// This enum is far from being complete. It just enumerates an arbitrary choice of packages.
+    /// An exhaustive enumeration is yet to be defined.
+    /// </remarks>
     public enum EPackage
     {
         Undefined,
@@ -61,6 +68,9 @@ namespace SystemSharp.Interop.Xilinx
 
     public static class Packages
     {
+        /// <summary>
+        /// Enumerates all Xilinx device packages.
+        /// </summary>
         public static IEnumerable<EPackage> GetPackages()
         {
             return typeof(EPackage)

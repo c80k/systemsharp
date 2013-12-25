@@ -24,6 +24,9 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx.TRCE
 {
+    /// <summary>
+    /// Provides access to the Xilinx "trce" tool.
+    /// </summary>
     public class TRCEFlow
     {
         public string PhysicalDesignFile { get; set; }
@@ -51,6 +54,9 @@ namespace SystemSharp.Interop.Xilinx.TRCE
         public bool TurnOffPackageFlightDelay { get; set; }
         public string ISEProjectFile { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public TRCEFlow()
         {
             ErrorReport = false;

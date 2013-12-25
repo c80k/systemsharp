@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -57,6 +57,9 @@ namespace SystemSharp.Interop.Xilinx.PAR
         ExtraEffort
     }
 
+    /// <summary>
+    /// Provides access to the Xilinx "par" tool.
+    /// </summary>
     public class PARFlow
     {
         public EOverallEffortLevel OverallEffortLevel { get; set; }
@@ -81,6 +84,9 @@ namespace SystemSharp.Interop.Xilinx.PAR
         public string OutputFile { get; set; }
         public string PhysicalConstraintsFile { get; set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public PARFlow()
         {
             PlacerCostTableEntry = 1;

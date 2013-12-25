@@ -1,4 +1,24 @@
-﻿using System;
+﻿/**
+ * Copyright 2011-2013 Christian Köllner
+ *                     Denis Tchokonthe
+ * 
+ * This file is part of System#.
+ *
+ * System# is free software: you can redistribute it and/or modify it under 
+ * the terms of the GNU Lesser General Public License (LGPL) as published 
+ * by the Free Software Foundation, either version 3 of the License, or (at 
+ * your option) any later version.
+ *
+ * System# is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along 
+ * with System#. If not, see http://www.gnu.org/licenses/lgpl.html.
+ * */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +33,13 @@ using System.IO;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
-    public class XilinxDdsCompiler : Component
+    /// <summary>
+    /// Models the Xilinx DDS compiler core.
+    /// </summary>
+    /// <remarks>
+    /// Not thouroughly tested and potentially buggy.
+    /// </remarks>
+    class XilinxDdsCompiler : Component
     {
         public enum EGenerator
         {
@@ -33,7 +59,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         {
             [PropID(EPropAssoc.CoreGen, "DdsCompiler")]
             DdsCompiler, 
-            
         }
 
         public enum EDSP48Use
@@ -59,6 +84,7 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             [PropID(EPropAssoc.CoreGen, "Speed")]
             Speed,
         }
+        
         public enum ELatencyOption
         {
             [PropID(EPropAssoc.CoreGen, "Auto")]
@@ -66,6 +92,7 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             [PropID(EPropAssoc.CoreGen, "Configurable")]
             Configurable,
         }
+
         public enum ENoiseShaping
         {
             [PropID(EPropAssoc.CoreGen, "Auto")]
@@ -142,8 +169,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
 
         
         public In<StdLogic> CLK { private get; set; }
-       // public Out <double> x { private get; set; }
-       // public In<StdLogicVector> k_in { private get; set; }
         public Out<StdLogicVector> SINE { private get; set; }
         public Out<StdLogicVector> COSINE { private get; set; }
         public Out<StdLogicVector> PHASE_OUT { private get; set; }
@@ -156,12 +181,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         public In<StdLogicVector> SCLR { private get; set; }
         public In<StdLogic> CE { private get; set; }
         public Out<StdLogic> RDY { private get; set; }
-        //public Out <StdLogicVector>  PHASE_OUT1 { private get; set; }
-
-
-        //public Out<StdLogicVector> t { private get; set; } 
-
-
 
         [CoreGenProp(ECoreGenUsage.Select)]
         public EGenerator Generator { get; set; }
@@ -182,7 +201,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         [PropID(EPropAssoc.CoreGen, "clock_enable")]
         public bool ClockEnable { [StaticEvaluation] get; set; }
 
-
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "component_name")]
         public String ComponentName { get; set; }
@@ -190,7 +208,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "dds_clock_rate")]
         public int DdsRlockRate { [StaticEvaluation] get; set; }
-
 
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "dsp48_use")]
@@ -396,11 +413,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         [PropID(EPropAssoc.CoreGen, "pinc1")]
         public StdLogicVector pinc1 { [StaticEvaluation] get; set; }
 
-
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc2")]
         public double pinc2 { [StaticEvaluation] get; set; }
-
 
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc3")]
@@ -414,36 +429,29 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         [PropID(EPropAssoc.CoreGen, "pinc4")]
         public int pinc5 { [StaticEvaluation] get; set; }
 
-
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc6")]
         public int pinc6 { [StaticEvaluation] get; set; }
-
 
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc7")]
         public int pinc7 { [StaticEvaluation] get; set; }
 
-
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc8")]
         public int pinc8 { [StaticEvaluation] get; set; }
-
 
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc9")]
         public int pinc9 { [StaticEvaluation] get; set; }
 
-
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc10")]
         public int pinc10 { [StaticEvaluation] get; set; }
 
-
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc11")]
         public int pinc11 { [StaticEvaluation] get; set; }
-
 
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "pinc12")]
@@ -544,15 +552,14 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "sclr_pin")]
         public bool SclrPin { get; set; }
-
        
         [CoreGenProp(ECoreGenUsage.CSet)]
         [PropID(EPropAssoc.CoreGen, "spurious_free_dynamic_range")]
         public int SpuriousFreeDynamicRange { [StaticEvaluation] get; set; }
 
-       // public double k_in { get; set; }
-
-
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public XilinxDdsCompiler()
         {
             Generator = EGenerator.DDS_Compiler_C_4_0;
@@ -648,9 +655,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             SclrPin = false;
             SpuriousFreeDynamicRange = 36;
             PhaseWidth = 10;
-            
-           
-
         }
 
         private SLVSignal _t;
@@ -659,7 +663,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         private SLVSignal Dat_in;
         private SLVSignal Dat_outOff;
         public SLVSignal Dat_outIncr;
-        //private SLVSignal PINC;      
         private StdLogicVector Phse_in = "0000000000";
         private StdLogicVector Gleitkomma = "0000000000";
         private SLVSignal POFF;
@@ -668,7 +671,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         private StdLogicVector Sinc = "0000000000";
         private StdLogicVector Cos = "0000000000";
         private StdLogicVector phase = "0000000000";
-        //private double phaseIN = 0;
        private StdLogicVector phase2 = "0000000000";
        private StdLogicVector pinc_in = "0000000000";
        private StdLogicVector poffin = "0000000000";
@@ -677,8 +679,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
        private StdLogicVector phase6 = "0000000000";
        private SLVSignal phase3 ;
        private RegPipe _RegPipe;
-       //private RegPipe _RegPipeIncr;
-       //public int latenc { get; set; }
        public int width { get; set; }
         
                      
@@ -710,18 +710,10 @@ namespace SystemSharp.Interop.Xilinx.IPCores
                 InitialValue = StdLogicVector._0s(PhaseWidth)
             };
 
-            //Dat_inIncr = new SLVSignal(PhaseWidth)
-            //{
-            //    InitialValue = StdLogicVector._1s(PhaseWidth)
-            //};
             Dat_in = new SLVSignal(PhaseWidth)
            {
                InitialValue = StdLogicVector._0s(PhaseWidth)
            };
-            //Dat_outIncr = new SLVSignal(PhaseWidth)
-            //{
-            //    InitialValue = StdLogicVector._1s(PhaseWidth)
-            //};
             Dat_outOff = new SLVSignal(PhaseWidth)
             {
                 InitialValue = StdLogicVector._0s(PhaseWidth)
@@ -732,18 +724,7 @@ namespace SystemSharp.Interop.Xilinx.IPCores
                 Din = Dat_in,
                 Dout = Dat_outOff,
             };
-            //_RegPipeIncr = new RegPipe(depth, width)
-            //{
-            //    Clk = CLK,
-            //    Din = PINC_IN,
-            //    Dout = Dat_outIncr,
-            //};
-
-        } // hier wird das Egpipe instansiert tec......
-
-
-
-
+        }
 
         //********************************Hier wird das angegebene Binaere Vektor in Dezimal umgewandelt************************
         private double Getradian(StdLogicVector x)
@@ -754,6 +735,7 @@ namespace SystemSharp.Interop.Xilinx.IPCores
 
             return dphase;
         }
+
         //********************************************************************************************************************
         //*******************Hier wird die angegebene Dezimalzahl im Binaere umgewandelt**************************************
         //int intw;
@@ -771,10 +753,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             //Latency = y;
             return Dat_outOff.Cur;
         }
-        //private StdLogicVector GetpipeIncr()
-        //{           
-        //    return Dat_outOff.Cur;                         
-        //}             
 
         private StdLogicVector GetPhaseInProgrammable()
         {
@@ -793,8 +771,7 @@ namespace SystemSharp.Interop.Xilinx.IPCores
                     }
                 }
             }               
-                return PH.Cur;
-            
+            return PH.Cur;
         }
 
         private StdLogicVector GetPhaseOffProgrammable()
@@ -817,24 +794,12 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             return PH.Cur;
 
         }
-         //private StdLogicVector GetPoffProgrammable()
-         //{                                     
 
-        //                   if (REG_SELECT.Cur == '1'&& WE.Cur == '1')
-         //                   {
-         //                       POFF.Next = DATA.Cur;
-         //                   }
-                           
-         //                   return POFF.Cur;                                              
-         //   }
-
-         private StdLogicVector GetPhaseIn()
-         {             
+        private StdLogicVector GetPhaseIn()
+        {             
             phase3.Next = PHASE_IN.Cur;
-             
             return phase3.Cur;
-
-         }
+        }
 
         private StdLogicVector GetPinc()
         {                               
@@ -949,7 +914,6 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         protected override void Initialize()
         {
             AddProcess(Processing, CLK);
-
         }
     }
 }

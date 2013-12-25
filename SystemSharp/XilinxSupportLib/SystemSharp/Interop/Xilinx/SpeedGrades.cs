@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -25,6 +25,12 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Describes Xilinx device speed grades.
+    /// </summary>
+    /// <remarks>
+    /// The enum is far from being complete.
+    /// </remarks>
     public enum ESpeedGrade
     {
         [PropID(EPropAssoc.ISE, "undefined")]
@@ -60,6 +66,9 @@ namespace SystemSharp.Interop.Xilinx
 
     public static class SpeedGrades
     {
+        /// <summary>
+        /// Enumerates all Xilinx device speed grades.
+        /// </summary>
         public static IEnumerable<ESpeedGrade> GetSpeedGrades()
         {
             return typeof(EDevice)

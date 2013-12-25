@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -26,6 +26,9 @@ using SystemSharp.TreeAlgorithms;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Default implementation of <c>AbstractXilinxDevice</c>.
+    /// </summary>
     public class DefaultXilinxDevice: AbstractXilinxDevice
     {
         private CacheBasedPropMap<string, XilinxPin> _pins;
@@ -35,6 +38,9 @@ namespace SystemSharp.Interop.Xilinx
             return new XilinxPin(name);
         }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public DefaultXilinxDevice()
         {
             _pins = new CacheBasedPropMap<string, XilinxPin>(CreatePin);
@@ -46,6 +52,9 @@ namespace SystemSharp.Interop.Xilinx
             get { return _device; }
         }
 
+        /// <summary>
+        /// Sets the device.
+        /// </summary>
         public void SetDevice(EDevice device)
         {
             _device = device;
@@ -57,6 +66,9 @@ namespace SystemSharp.Interop.Xilinx
             get { return _package; }
         }
 
+        /// <summary>
+        /// Sets the package.
+        /// </summary>
         public void SetPackage(EPackage package)
         {
             _package = package;

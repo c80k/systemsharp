@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -114,12 +114,18 @@ namespace SystemSharp.Interop.Xilinx
         }
     }
 
+    /// <summary>
+    /// Enumerates hardware definition languages.
+    /// </summary>
     public enum EHDL
     {
         Verilog,
         VHDL
     }
 
+    /// <summary>
+    /// Models the ISE design flow property.
+    /// </summary>
     public enum EDesignFlow
     {
         Schematic,
@@ -127,17 +133,30 @@ namespace SystemSharp.Interop.Xilinx
         Verilog
     }
 
+    /// <summary>
+    /// This attribute associates a device with the device family.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
     public class DeclareFamily : Attribute
     {
+        /// <summary>
+        /// The device family
+        /// </summary>
         public EDeviceFamily Family { get; private set; }
 
+        /// <summary>
+        /// Constructs the attribute.
+        /// </summary>
+        /// <param name="family">device family</param>
         public DeclareFamily(EDeviceFamily family)
         {
             Family = family;
         }
     }
 
+    /// <summary>
+    /// This attribute associates a device with a supported package.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = true)]
     public class DeclarePackage : Attribute
     {
@@ -149,6 +168,9 @@ namespace SystemSharp.Interop.Xilinx
         }
     }
 
+    /// <summary>
+    /// Enumerates ISE versions.
+    /// </summary>
     public enum EISEVersion
     {
         [PropID(EPropAssoc.ISE, "11.1")]
@@ -199,6 +221,9 @@ namespace SystemSharp.Interop.Xilinx
 
     public static class ISEVersions
     {
+        /// <summary>
+        /// Enumerates all supported ISE versions.
+        /// </summary>
         public static IEnumerable<EISEVersion> GetISEVersions()
         {
             return typeof(EISEVersion)
@@ -206,6 +231,9 @@ namespace SystemSharp.Interop.Xilinx
                 .Select(fi => (EISEVersion)fi.GetValue(null));
         }
 
+        /// <summary>
+        /// Translates an ISE version to its textual identifier.
+        /// </summary>
         public static string GetVersionText(this EISEVersion ver)
         {
             return PropEnum.ToString(ver, EPropAssoc.ISE);
@@ -356,7 +384,7 @@ namespace SystemSharp.Interop.Xilinx
         }
     }
 
-    public static class RegistryExtensions
+    internal static class RegistryExtensions
     {
         public static RegistryKey OpenSubKeys(this RegistryKey key, params string[] subKeys)
         {
@@ -391,6 +419,9 @@ namespace SystemSharp.Interop.Xilinx
 
     public static class Tooling
     {
+        /// <summary>
+        /// Combines device, speed grade and package to a part name.
+        /// </summary>
         public static string MakePartName(EDevice device, ESpeedGrade grade, EPackage package)
         {
             return device.ToString() +

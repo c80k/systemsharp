@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2012 Christian Köllner
+ * Copyright 2012-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -24,6 +24,9 @@ using System.Text;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Describes the resource types of a Xilinx device.
+    /// </summary>
     public enum EDeviceResource
     {
         [PropID(EPropAssoc.PARReport, "Slice Registers")]
@@ -84,6 +87,12 @@ namespace SystemSharp.Interop.Xilinx
             }
         }
 
+        /// <summary>
+        /// Converts a resource name to its enumeration value.
+        /// </summary>
+        /// <param name="rname">resource name</param>
+        /// <param name="res">out parameter to receive the resource type</param>
+        /// <returns><c>true</c> if the resource type was found</returns>
         public static bool ResolveResourceType(string rname, out EDeviceResource res)
         {
             if (_rmap == null)

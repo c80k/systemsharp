@@ -39,41 +39,136 @@ using SystemSharp.SysDOM;
 
 namespace SystemSharp.Interop.Xilinx.IPCores
 {
+    /// <summary>
+    /// Transaction site interface of Xilinx floating-point core 
+    /// </summary>
     public interface IFloatingPointCoreTransactionSite:
         ITransactionSite
     {
+        /// <summary>
+        /// Performs the pre-configured unary operation.
+        /// </summary>
+        /// <returns>transaction</returns>
         IEnumerable<TAVerb> DoUnOp(ISignalSource<StdLogicVector> operand,
             ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs the pre-configured binary operation.
+        /// </summary>
+        /// <returns>transaction</returns>
         IEnumerable<TAVerb> DoBinOp(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Suspends core operation for one clock step.
+        /// </summary>
+        /// <returns>pause transaction</returns>
         IEnumerable<TAVerb> Pause();
+
+        /// <summary>
+        /// Resets the core.
+        /// </summary>
+        /// <returns>reset transaction</returns>
         IEnumerable<TAVerb> Reset();
+
+        /// <summary>
+        /// Performs an addition.
+        /// </summary>
+        /// <returns>addition transaction</returns>
         IEnumerable<TAVerb> Add(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a subtraction.
+        /// </summary>
+        /// <returns>subtraction transaction</returns>
         IEnumerable<TAVerb> Sub(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a multiplication.
+        /// </summary>
+        /// <returns>multiplication transaction</returns>
         IEnumerable<TAVerb> Mul(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a division.
+        /// </summary>
+        /// <returns>division transaction</returns>
         IEnumerable<TAVerb> Div(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a square-root computation.
+        /// </summary>
+        /// <returns>square-root transaction</returns>
         IEnumerable<TAVerb> Sqrt(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a "less than" comparison.
+        /// </summary>
+        /// <returns>comparison transaction</returns>
         IEnumerable<TAVerb> IsLt(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a "less than or equal" comparison.
+        /// </summary>
+        /// <returns>comparison transaction</returns>
         IEnumerable<TAVerb> IsLte(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs an equality comparison.
+        /// </summary>
+        /// <returns>comparison transaction</returns>
         IEnumerable<TAVerb> IsEq(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs an inquality comparison.
+        /// </summary>
+        /// <returns>comparison transaction</returns>
         IEnumerable<TAVerb> IsNEq(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a "greater than or equal" comparison.
+        /// </summary>
+        /// <returns>comparison transaction</returns>
         IEnumerable<TAVerb> IsGte(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Performs a "greater than" comparison.
+        /// </summary>
+        /// <returns>comparison transaction</returns>
         IEnumerable<TAVerb> IsGt(ISignalSource<StdLogicVector> a,
             ISignalSource<StdLogicVector> b, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Converts a fixed-point number to floating-point.
+        /// </summary>
+        /// <returns>conversion transaction</returns>
         IEnumerable<TAVerb> Fix2Float(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Converts a floating-point number to fixed-point.
+        /// </summary>
+        /// <returns>conversion transaction</returns>
         IEnumerable<TAVerb> Float2Fix(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> result);
+
+        /// <summary>
+        /// Converts between floating-point formats.
+        /// </summary>
+        /// <returns>conversion transaction</returns>
         IEnumerable<TAVerb> Float2Float(ISignalSource<StdLogicVector> x, ISignalSink<StdLogicVector> result);
     }
 
+    /// <summary>
+    /// Models a Xilinx floating-point core.
+    /// </summary>
     [DeclareXILMapper(typeof(FloatingPointXILMapper))]
     public class FloatingPointCore : FunctionalUnit
     {
@@ -901,12 +996,18 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             }
         }
 
+        /// <summary>
+        /// Returns the transaction site.
+        /// </summary>
         public IFloatingPointCoreTransactionSite TASite { get; private set; }
 
         private RegPipe _rpipe;
         private SLVSignal _rin;
         private SLVSignal _rout;
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public FloatingPointCore()
         {
             Generator = EGenerator.Floating_Point_5_0;
@@ -1671,8 +1772,14 @@ namespace SystemSharp.Interop.Xilinx.IPCores
         }
     }
 
+    /// <summary>
+    /// Maps floating-point arithmetic operations to the Xilinx floating-point core.
+    /// </summary>
     public class FloatingPointXILMapper : IXILMapper
     {
+        /// <summary>
+        /// Provides core-specific configuration options.
+        /// </summary>
         public class CoreConfiguration
         {
             public bool UseDedicatedAddSub { get; set; }
@@ -1696,6 +1803,9 @@ namespace SystemSharp.Interop.Xilinx.IPCores
             public bool HasDivideByZero { get; set; }
         }
 
+        /// <summary>
+        /// Manages core-specific configuration options, depending on floating-point precision and functional selection.
+        /// </summary>
         public class CoreConfigurator
         {
             private CacheDictionary<Tuple<FloatingPointCore.EPrecision, FloatingPointCore.EFunction>, CoreConfiguration> _map;
@@ -1710,14 +1820,23 @@ namespace SystemSharp.Interop.Xilinx.IPCores
                 return new CoreConfiguration();
             }
 
+            /// <summary>
+            /// Retrieves the configuration options for a given precision and functional selection.
+            /// </summary>
             public CoreConfiguration this[FloatingPointCore.EPrecision prec, FloatingPointCore.EFunction func]
             {
                 get { return _map[Tuple.Create(prec, func)]; }
             }
         }
 
+        /// <summary>
+        /// Returns the configuration manager.
+        /// </summary>
         public CoreConfigurator Config { get; private set; }
 
+        /// <summary>
+        /// Constructs an instance.
+        /// </summary>
         public FloatingPointXILMapper()
         {
             Config = new CoreConfigurator();

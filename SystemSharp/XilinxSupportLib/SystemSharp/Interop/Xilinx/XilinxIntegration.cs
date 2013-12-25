@@ -42,6 +42,9 @@ namespace SystemSharp.Interop.Xilinx
         All = FloatingPoint | FixedPointAddSub | Cordic | FixedPointDiv | FixedPointMul | BlockMem
     }
 
+    /// <summary>
+    /// This static class provides services for registering the Xilinx IP core models into the System# framework.
+    /// </summary>
     public static class XilinxIntegration
     {
         private static Dictionary<string, EISEVersion> _versionMap = new Dictionary<string, EISEVersion>();
@@ -52,6 +55,11 @@ namespace SystemSharp.Interop.Xilinx
                 _versionMap[prop.IDs[EPropAssoc.ISE]] = (EISEVersion)prop.EnumValue;
         }
 
+        /// <summary>
+        /// Registers Xilinx IP core models for the design.
+        /// </summary>
+        /// <param name="dd">the design</param>
+        /// <param name="flags">which IP cores should be registered</param>
         public static void RegisterIPCores(this DesignDescriptor dd, EXilinxIPCores flags = EXilinxIPCores.All)
         {
             var plan = dd.GetHLSPlan();
@@ -131,6 +139,11 @@ namespace SystemSharp.Interop.Xilinx
             }
         }
 
+        /// <summary>
+        /// Configures the latency computation heuristic for a given synthesis plan.
+        /// </summary>
+        /// <param name="plan">synthesis plan</param>
+        /// <param name="ratio">scaling factor for operator latencies</param>
         public static void SetLatencyProfile(HLSPlan plan, float ratio)
         {
             var axms = plan.XILMappers

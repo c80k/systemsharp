@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2012 Christian Köllner
+ * Copyright 2011-2013 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -38,6 +38,10 @@ namespace SystemSharp.Interop.Xilinx
         public override IPropMap<string, XilinxPin> Pins { get { return _pins; } }
         public override IEnumerable<XilinxPin> PinList { get { return _pins.Values; } }
 
+        /// <summary>
+        /// Adds a pin to the device.
+        /// </summary>
+        /// <param name="pin">pin to add</param>
         protected void AddPin(XilinxPin pin)
         {
             _pins[pin.Name] = pin;

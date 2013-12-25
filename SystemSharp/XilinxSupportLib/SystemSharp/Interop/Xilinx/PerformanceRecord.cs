@@ -25,15 +25,11 @@ using SystemSharp.Components;
 
 namespace SystemSharp.Interop.Xilinx
 {
+    /// <summary>
+    /// Provides information on usage of Xilinx device resources.
+    /// </summary>
     public class ResourceRecord
     {
-        /*
-        public EDevice Device { get; internal set; }
-        public EPackage Package { get; internal set; }
-        public ESpeedGrade SpeedGrade { get; internal set; }
-        public EISEVersion ISEVersion { get; internal set; }
-         * */
-
         public int SliceRegisters { get; internal set; }
         public int SliceLUTs { get; internal set; }
         public int OccupiedSlices { get; internal set; }
@@ -41,6 +37,11 @@ namespace SystemSharp.Interop.Xilinx
         public int RAMB18s { get; internal set; }
         public int DSP48E1s { get; internal set; }
 
+        /// <summary>
+        /// Assigns the amount of a particular resource.
+        /// </summary>
+        /// <param name="res">resource to assign</param>
+        /// <param name="amount">usage to assign</param>
         public void AssignResource(EDeviceResource res, int amount)
         {
             switch (res)
@@ -72,9 +73,19 @@ namespace SystemSharp.Interop.Xilinx
         }
     }
 
+    /// <summary>
+    /// Provides information on design performance.
+    /// </summary>
     public class PerformanceRecord : ResourceRecord
     {
+        /// <summary>
+        /// The minimum achievable clock period.
+        /// </summary>
         public double MinPeriod { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the netlist of the design.
+        /// </summary>
         public byte[] Netlist { get; set; }
     }
 }
