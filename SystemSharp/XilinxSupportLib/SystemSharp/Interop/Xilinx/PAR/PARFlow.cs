@@ -151,7 +151,9 @@ namespace SystemSharp.Interop.Xilinx.PAR
             cmd.Append(" \"" + OutputFile + "\"");
             if (PhysicalConstraintsFile != null)
                 cmd.Append(" \"" + PhysicalConstraintsFile + "\"");
-            return batch.Add(proj.ISEBinPath, proj.ProjectPath, "par", cmd.ToString());
+
+            return proj.AddToolToBatch(batch, proj.ProjectPath, "par", cmd.ToString());
+            batch.Add(proj.ISEBinPath, proj.ProjectPath, "par", cmd.ToString());
         }
     }
 }

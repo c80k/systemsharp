@@ -259,6 +259,15 @@ namespace SystemSharp.Interop.Xilinx
             PutProperty(EXilinxProjectProperties.FunctionalModelTargetLanguageSchematic, EHDL.VHDL);
         }
 
+        public ProcessPool.Tool AddToolToBatch(ProcessPool.ToolBatch batch, string projDir, string toolName, string arguments)
+        {
+            string iseBin = ISEBinPath;
+            if (iseBin == null)
+                throw new InvalidOperationException("No ISE installation detected. Unable to execute tool.");
+
+            return batch.Add(iseBin, projDir, toolName, arguments);
+        }
+
         private string CreateProjectID()
         {
             Random rand = new Random(DateTime.Now.Second);

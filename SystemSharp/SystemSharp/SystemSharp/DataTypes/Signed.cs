@@ -1101,12 +1101,7 @@ namespace SystemSharp.DataTypes
         public static Signed operator %(Signed a, Signed b)
         {
             int rsize = b.Size;
-            var div = 2 * b.BigIntValue;
-            var rem = a.BigIntValue % div;
-            if (rem > b.BigIntValue)
-                rem -= div;
-            else if (rem < -b.BigIntValue)
-                rem += div;
+            var rem = a.BigIntValue % b.BigIntValue;
             return new Signed(rem, rsize);
         }
 

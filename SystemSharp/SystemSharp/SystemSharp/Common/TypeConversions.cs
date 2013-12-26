@@ -450,8 +450,11 @@ namespace SystemSharp.Common
                 dstType.IsAssignableFrom(srcType))
                 return srcValue;
 
-            if (srcValue is bool ||
-                srcValue is sbyte ||
+            if (srcValue is bool)
+            {
+                return ConvertLong((bool)srcValue ? 1 : 0, dstType);
+            }
+            else if (srcValue is sbyte ||
                 srcValue is byte ||
                 srcValue is short ||
                 srcValue is ushort ||
@@ -460,7 +463,7 @@ namespace SystemSharp.Common
                 srcValue is uint ||
                 srcValue is long)
             {
-                long inter = ToLong(srcValue);
+                long inter = (long)Convert.ChangeType(srcValue, typeof(long));
                 return ConvertLong(inter, dstType);
             }
             else if (srcValue is ulong)

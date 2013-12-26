@@ -23,6 +23,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -244,6 +245,11 @@ namespace SystemSharp.Interop.Xilinx
             /// <returns>a model of the added tool</returns>
             public Tool Add(string iseDir, string projDir, string toolName, string arguments)
             {
+                Contract.Requires<ArgumentNullException>(iseDir != null, "iseDir");
+                Contract.Requires<ArgumentNullException>(projDir != null, "projDir");
+                Contract.Requires<ArgumentNullException>(toolName != null, "toolName");
+                Contract.Requires<ArgumentNullException>(arguments != null, "arguments");
+
                 if (_sealed)
                     throw new InvalidOperationException("Tool batch is already queued");
 

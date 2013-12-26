@@ -1881,9 +1881,16 @@ namespace SystemSharp.Analysis
 
         public StackElement GetCallExpression(MethodInfo method, params StackElement[] args)
         {
+            {
+                // Contract
+                Type contractReturnType;
+                bool contractIsFunc = method.IsFunction(out contractReturnType);
+                Contract.Requires<ArgumentException>(contractIsFunc, 
+                    "GetCallExpression() is only allowed on methods returning a value");
+            }
+
             Type returnType;
-            Contract.Requires<InvalidOperationException>(method.IsFunction(out returnType),
-                "GetCallExpression() is only allowed on methods returning a value");
+            bool isFunc = method.IsFunction(out returnType);
 
             bool tmp = _curILIValid;
             _curILIValid = false;
@@ -1894,6 +1901,10 @@ namespace SystemSharp.Analysis
 
         protected virtual void OnCall(MethodBase callee, StackElement[] args, Type returnType)
         {
+            Contract.Requires<ArgumentNullException>(callee != null, "callee");
+            Contract.Requires<ArgumentNullException>(args != null, "args");
+            Contract.Requires<ArgumentNullException>(returnType != null, "returnType");
+
             object rsample = MakeReturnValueSample((MethodInfo)callee, args);
 
             if (callee is MethodInfo &&

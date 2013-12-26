@@ -414,7 +414,7 @@ namespace SystemSharp.Interop.Xilinx.CoreGen
                     madeSubst = true;
                 }
                 string arguments = "-b \"" + xcoPath + "\" -p \"" + projPath + "\"";
-                batch.Add(proj.ISEBinPath, dir, "coregen", arguments);
+                proj.AddToolToBatch(batch, dir, "coregen", arguments);
                 if (madeSubst)
                 {
                     batch.Add("subst", drive + " /D");

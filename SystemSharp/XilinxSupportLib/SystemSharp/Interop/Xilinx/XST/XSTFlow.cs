@@ -460,7 +460,7 @@ namespace SystemSharp.Interop.Xilinx.XST
         public static ProcessPool.Tool AddToBatch(XilinxProject proj, ProcessPool.ToolBatch batch, string scriptPath, string logPath)
         {
             string args = "-intstyle \"silent\" -ifn \"" + scriptPath + "\" -ofn \"" + logPath + "\"";
-            return batch.Add(proj.ISEBinPath, proj.ProjectPath, "xst", args);
+            return proj.AddToolToBatch(batch, proj.ProjectPath, "xst", args);
         }
 
         public ProcessPool.Tool SaveToXSTScriptAndAddToBatch(XilinxProject proj, ProcessPool.ToolBatch batch, string scriptPath, string logPath)

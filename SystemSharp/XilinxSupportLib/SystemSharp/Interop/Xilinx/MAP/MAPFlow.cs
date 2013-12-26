@@ -165,7 +165,8 @@ namespace SystemSharp.Interop.Xilinx.MAP
             cmd.Append(" \"" + InputFile + "\"");
             if (PRFFile != null)
                 cmd.Append(" " + PRFFile);
-            return batch.Add(proj.ISEBinPath, proj.ProjectPath, "map", cmd.ToString());
+
+            return proj.AddToolToBatch(batch, proj.ProjectPath, "map", cmd.ToString());
         }
     }
 }
