@@ -117,7 +117,8 @@ namespace SystemSharp.Interop.Xilinx.NGDBuild
             cmd.Append(" " + DesignName);
             if (NGDFile != null)
                 cmd.Append(" " + NGDFile);
-            return batch.Add(proj.ISEBinPath, proj.ProjectPath, "ngdbuild", cmd.ToString());
+
+            return proj.AddToolToBatch(batch, proj.ProjectPath, "ngdbuild", cmd.ToString());
         }
     }
 }

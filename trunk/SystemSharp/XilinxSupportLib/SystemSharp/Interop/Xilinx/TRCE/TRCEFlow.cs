@@ -148,7 +148,8 @@ namespace SystemSharp.Interop.Xilinx.TRCE
                 cmd.Append(" \"" + PhysicalConstraintsFile + "\"");
             if (UserConstraintsFile != null)
                 cmd.Append(" -ucf \"" + UserConstraintsFile + "\"");
-            return batch.Add(proj.ISEBinPath, proj.ProjectPath, "trce", cmd.ToString());
+
+            return proj.AddToolToBatch(batch, proj.ProjectPath, "trce", cmd.ToString());
         }
     }
 }
