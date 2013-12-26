@@ -1,0 +1,26 @@
+var namespace_system_sharp_1_1_analysis_1_1_msil =
+[
+    [ "AbstractStackState< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_abstract_stack_state_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_abstract_stack_state_3_01_t_elem_01_4" ],
+    [ "AbstractStackStateContractClass< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_abstract_stack_state_contract_class_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_abstract_stack_state_contract_class_3_01_t_elem_01_4" ],
+    [ "DependentStackState< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_dependent_stack_state_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_dependent_stack_state_3_01_t_elem_01_4" ],
+    [ "PushStackState< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_push_stack_state_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_push_stack_state_3_01_t_elem_01_4" ],
+    [ "PopStackState< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_pop_stack_state_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_pop_stack_state_3_01_t_elem_01_4" ],
+    [ "AsmtStackState< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_asmt_stack_state_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_asmt_stack_state_3_01_t_elem_01_4" ],
+    [ "ArgAsmtStackState< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_arg_asmt_stack_state_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_arg_asmt_stack_state_3_01_t_elem_01_4" ],
+    [ "IndependentStackStateBase< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_independent_stack_state_base_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_independent_stack_state_base_3_01_t_elem_01_4" ],
+    [ "FixPointAnalyzer< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_fix_point_analyzer_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_fix_point_analyzer_3_01_t_elem_01_4" ],
+    [ "FixPointAnalyzerContractClass< TElem >", "class_system_sharp_1_1_analysis_1_1_msil_1_1_fix_point_analyzer_contract_class_3_01_t_elem_01_4.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_fix_point_analyzer_contract_class_3_01_t_elem_01_4" ],
+    [ "StackStates", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_states.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_states" ],
+    [ "CallSite", "class_system_sharp_1_1_analysis_1_1_msil_1_1_call_site.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_call_site" ],
+    [ "InvocationAnalyzer", "class_system_sharp_1_1_analysis_1_1_msil_1_1_invocation_analyzer.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_invocation_analyzer" ],
+    [ "StackOperands", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_operands.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_operands" ],
+    [ "StackInfluenceAnalysis", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_influence_analysis.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_influence_analysis" ],
+    [ "VariabilityOperations", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_operations.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_operations" ],
+    [ "VariabilityInfo", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_info.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_info" ],
+    [ "IUniqueSuccessorInfo", "interface_system_sharp_1_1_analysis_1_1_msil_1_1_i_unique_successor_info.html", "interface_system_sharp_1_1_analysis_1_1_msil_1_1_i_unique_successor_info" ],
+    [ "ModifyUniqueSuccessorStackState", "class_system_sharp_1_1_analysis_1_1_msil_1_1_modify_unique_successor_stack_state.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_modify_unique_successor_stack_state" ],
+    [ "StackStateOfVariabilityExtensions", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_state_of_variability_extensions.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_stack_state_of_variability_extensions" ],
+    [ "BreakOnVariabilityAnalysis", "class_system_sharp_1_1_analysis_1_1_msil_1_1_break_on_variability_analysis.html", null ],
+    [ "VariabilityPattern", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_pattern.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_pattern" ],
+    [ "VariabilityAnalyzer", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_analyzer.html", "class_system_sharp_1_1_analysis_1_1_msil_1_1_variability_analyzer" ]
+];

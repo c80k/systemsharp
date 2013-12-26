@@ -1,0 +1,35 @@
+var class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref =
+[
+    [ "EReferencedProperty", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727", [
+      [ "Instance", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727ad9a17c1c9e8ef6866e4dbeef41c741b2", null ],
+      [ "Next", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727a10ac3d04253ef7e1ddc73e6091c0cd55", null ],
+      [ "Cur", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727add4b1ecca171981542c71a705aa93f3e", null ],
+      [ "Pre", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727afb55a965b77791b31ffd2bb548f71080", null ],
+      [ "ChangedEvent", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727abce42fe2cba7cfefc10f41fefe17484c", null ],
+      [ "RisingEdge", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727a5b0a1c3bcd3397b6e692a26fe8427564", null ],
+      [ "FallingEdge", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac2602b9335fc17657b0147b8b917c727aa3919f129620bfcb6ba26d6e5dc1aa64", null ]
+    ] ],
+    [ "SignalRef", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a397b5b6f907a4677212ce0b483a5d568", null ],
+    [ "SignalRef", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a1dbf09fbcf8a4b0dc5f031bff980cd82", null ],
+    [ "SignalRef", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a2fb27866adaf837c81fa034b66db3abd", null ],
+    [ "Accept", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a6075c29988eea4109fdc49e49f049d4e", null ],
+    [ "ApplyIndex", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a8649e047cf756affa4337e937e8cd446", null ],
+    [ "AssimilateIndices", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a7d272d8db11bbc8b669e5bc16b4aa099", null ],
+    [ "Create", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ae246b74ec4d21d47fb63f5a6a11d0e9c", null ],
+    [ "Create", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ace8a56c9288c6545901f189847d25cb0", null ],
+    [ "DefaultEval", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a6ad56bef57f8e336b2ab197d77033eaa", null ],
+    [ "Equals", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a38b806b63d87bbc4b99ed70775e27248", null ],
+    [ "Eval", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#adf00272f2c7b610d507a211e2f494284", null ],
+    [ "GetFullIndices", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a22be5549b6d02795c900790c4e5b90ec", null ],
+    [ "GetHashCode", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#aaf5790db8f137f90b71927f2efe46cdd", null ],
+    [ "ToSignal", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ae547708383377723f84ffa797242da4e", null ],
+    [ "ToString", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a6b672818b877c9424dfde2e2b0a95922", null ],
+    [ "Desc", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a68324bf1bfa48a6009fa6a92646b6e16", null ],
+    [ "IndexSample", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#a958e7dad4aeb6805e40debdaace1e2b6", null ],
+    [ "Indices", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#adcf8ef2034784cf8caace3564890fcbd", null ],
+    [ "IsStaticIndex", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#aebd56e05f7fb6fcd6133fa130d7e14e0", null ],
+    [ "Name", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ad705e45bb5c5c4b6c004591c5dd160a4", null ],
+    [ "Prop", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#acfcc3c47e681f132088a72a5b5b77c78", null ],
+    [ "StoreMode", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#aec56014d5b68f5616322aa80c208fe7e", null ],
+    [ "Type", "class_system_sharp_1_1_sys_d_o_m_1_1_signal_ref.html#ac86726082077d9bff9ac5aa3b360015f", null ]
+];

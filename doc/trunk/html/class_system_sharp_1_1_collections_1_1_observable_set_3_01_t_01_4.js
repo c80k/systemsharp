@@ -1,0 +1,25 @@
+var class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4 =
+[
+    [ "ObservableSet", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a22942672bb1ae1f16dcfe50d481cfac4", null ],
+    [ "ObservableSet", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a8386d43d9751a7b6dcc901bfe1f64bfc", null ],
+    [ "Add", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#aba737860cca1cd326c21b31ec0a5b6e9", null ],
+    [ "Clear", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#ae1f49ccb9aad4608564bc6b67c6dc94f", null ],
+    [ "Complete", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#ab686f5c980ef36ef65e618014984322a", null ],
+    [ "Contains", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a7fdc7854a1f32e0e7e5d73a06cfcf9de", null ],
+    [ "CopyTo", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#ada35428e04335f29e74a175f7d160090", null ],
+    [ "ExceptWith", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a6200f0cc72089f702aa2ae68989438b2", null ],
+    [ "GetEnumerator", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#ae2c30ab20fb3b771e2db050d1bcdf0ee", null ],
+    [ "IntersectWith", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a3daf905c78af7e81f30349227fb0e0d1", null ],
+    [ "IsProperSubsetOf", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a70ddeee3eb53ea522231ab94fecd7137", null ],
+    [ "IsProperSupersetOf", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a9c8792b4a11b60f1b1c500a6565b5863", null ],
+    [ "IsSubsetOf", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a037b0572c0a24de95af53b1e58eeb64b", null ],
+    [ "IsSupersetOf", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a20be2986c072bf242c8d417be3ece96c", null ],
+    [ "Overlaps", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#aac06bf1bfa1d688a6ec730521ffde1c9", null ],
+    [ "Remove", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a817b3402ea68c74f86e532c07bd40bb2", null ],
+    [ "SetEquals", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a3df71f56f997ddb3368d9e4d94060d58", null ],
+    [ "Subscribe", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a544ddf2f3328bb422018bc0600a7672b", null ],
+    [ "SymmetricExceptWith", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a61b59d988ffcaea53da8670607b15787", null ],
+    [ "UnionWith", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#afb24286ee30f6515c50a14f540dcd26c", null ],
+    [ "Count", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#a047ae49dadd0ed895829dbb204fff5fd", null ],
+    [ "IsReadOnly", "class_system_sharp_1_1_collections_1_1_observable_set_3_01_t_01_4.html#ae0b5d43eb548140ac469dd5453424ba5", null ]
+];

@@ -1,0 +1,4 @@
+var namespace_system_sharp_1_1_interop_1_1_xilinx_1_1_core_gen_1_1_cache =
+[
+    [ "CoreGenCache", "class_system_sharp_1_1_interop_1_1_xilinx_1_1_core_gen_1_1_cache_1_1_core_gen_cache.html", "class_system_sharp_1_1_interop_1_1_xilinx_1_1_core_gen_1_1_cache_1_1_core_gen_cache" ]
+];

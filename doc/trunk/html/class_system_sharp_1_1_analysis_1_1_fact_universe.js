@@ -1,0 +1,28 @@
+var class_system_sharp_1_1_analysis_1_1_fact_universe =
+[
+    [ "FactUniverse", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#af92d0c533eda403bc186a4ee63b48c48", null ],
+    [ "AddConstructor", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a576a72c1f440692781d1504e84015240", null ],
+    [ "AddMethod", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#aa1f1cc441f04741977a2e4e7331976fe", null ],
+    [ "AddType", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a3364f2d65738e5379e5b97dc21fcc4d7", null ],
+    [ "Complete", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a924ec93bed20ae5eebe69193a981ee13", null ],
+    [ "CreateHTMLReport", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#abf8ec28593b037f56eeebc6fcf6006db", null ],
+    [ "GetFacts", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a9588e1dff8363a8cdc6963a180f08eb6", null ],
+    [ "GetFacts", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a2e70ed1ede4fd6b70d0a6b6309bbc3e4", null ],
+    [ "GetFacts", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a8159c258c39b761d0bf73b93370fceb1", null ],
+    [ "HaveFacts", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a32156668326303f20c83b5b60600be15", null ],
+    [ "RealizationsOf", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a81087f2d49002e0b0dab2d9ee887d355", null ],
+    [ "RealizationsOf", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#ac5647a2a91fe6b32e33e5381abb95acf", null ],
+    [ "RealizationsOf", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a0fcd805b7dcb8e009c66693cfa182662", null ],
+    [ "UniverseCompletedErrorMsg", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a84d65e00b3b613258522d6b60148dffe", null ],
+    [ "Instance", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a6332f1bbbf7abf8abcabe24198fa8221", null ],
+    [ "IsCompleted", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#ac2abea9d95dac3bfc46ccebb76eefeea", null ],
+    [ "KnownAbstractClasses", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a0e01b6edce824940fdeeab0b058e3a86", null ],
+    [ "KnownAllocationSites", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a7be13bd8ebcdaf537e8ff9190f636848", null ],
+    [ "KnownConstructors", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a2400b019cdac5d8a636f91e7ea530a20", null ],
+    [ "KnownInstantiables", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a289361b00a7fb30d340c56a402d99136", null ],
+    [ "KnownInterfaces", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a1c8df500b7e6320d8c5c3ea90f489eb5", null ],
+    [ "KnownMethodBases", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#afcd1b8f106b786a1d39b628b92f091be", null ],
+    [ "KnownMethods", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#af549d1b29db857056a9d10a5f6802280", null ],
+    [ "KnownTypes", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#a6d4ca9c642706a248fd6b6b9a34f213a", null ],
+    [ "KnownValueTypes", "class_system_sharp_1_1_analysis_1_1_fact_universe.html#aa3df8e27085f119b9a5227a2336b3521", null ]
+];

@@ -1,0 +1,4 @@
+var class_system_sharp_1_1_interop_1_1_xilinx_1_1_i_p_cores_1_1_xilinx_adder_subtracter_x_i_l_mapper_1_1_core_config =
+[
+    [ "PipeStageScaling", "class_system_sharp_1_1_interop_1_1_xilinx_1_1_i_p_cores_1_1_xilinx_adder_subtracter_x_i_l_mapper_1_1_core_config.html#a0dd44178fb400d4a59be0597f3ec2566", null ]
+];

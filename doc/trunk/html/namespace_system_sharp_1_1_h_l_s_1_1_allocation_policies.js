@@ -1,0 +1,5 @@
+var namespace_system_sharp_1_1_h_l_s_1_1_allocation_policies =
+[
+    [ "IContextSensitiveAllocationPolicyFactory", "interface_system_sharp_1_1_h_l_s_1_1_allocation_policies_1_1_i_context_sensitive_allocation_policy_factory.html", "interface_system_sharp_1_1_h_l_s_1_1_allocation_policies_1_1_i_context_sensitive_allocation_policy_factory" ],
+    [ "ContextSensitiveAllocation", "class_system_sharp_1_1_h_l_s_1_1_allocation_policies_1_1_context_sensitive_allocation.html", "class_system_sharp_1_1_h_l_s_1_1_allocation_policies_1_1_context_sensitive_allocation" ]
+];
