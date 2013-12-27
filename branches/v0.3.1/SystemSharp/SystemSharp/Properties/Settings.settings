@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SystemSharp.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="GCCPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\MinGW\bin\mingw32-gcc</Value>
+    </Setting>
+    <Setting Name="GCCWorkDir" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\MinGW\bin</Value>
+    </Setting>
+    <Setting Name="SettingGCCNoDosFileWarning" Type="System.Boolean" Scope="Application">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="XilinxISEEnv" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\Xilinx\12.4\ISE_DS\ISE\settings64.bat</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
