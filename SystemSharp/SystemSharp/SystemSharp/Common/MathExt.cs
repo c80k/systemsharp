@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner
+ * Copyright 2011-2014 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -237,6 +237,50 @@ namespace SystemSharp.Common
         public static bool IsPow2(ulong number)
         {
             return (number & (number - 1)) == 0;
+        }
+
+        /// <summary>
+        /// Performs binary left rotation.
+        /// </summary>
+        /// <param name="value">value to rotate</param>
+        /// <param name="bits">number of bits to rotate</param>
+        /// <returns>rotated value</returns>
+        public static int RotateLeft(this int value, int bits)
+        {
+            return (value << bits) | (value >> (32 - bits));
+        }
+
+        /// <summary>
+        /// Performs binary right rotation.
+        /// </summary>
+        /// <param name="value">value to rotate</param>
+        /// <param name="bits">number of bits to rotate</param>
+        /// <returns>rotated value</returns>
+        public static int RotateRight(this int value, int bits)
+        {
+            return (value >> bits) | (value << (32 - bits));
+        }
+
+        /// <summary>
+        /// Performs binary left rotation.
+        /// </summary>
+        /// <param name="value">value to rotate</param>
+        /// <param name="bits">number of bits to rotate</param>
+        /// <returns>rotated value</returns>
+        public static long RotateLeft(this long value, int bits)
+        {
+            return (value << bits) | (value >> (64 - bits));
+        }
+
+        /// <summary>
+        /// Performs binary right rotation.
+        /// </summary>
+        /// <param name="value">value to rotate</param>
+        /// <param name="bits">number of bits to rotate</param>
+        /// <returns>rotated value</returns>
+        public static long RotateRight(this long value, int bits)
+        {
+            return (value >> bits) | (value << (64 - bits));
         }
 
         /// <summary>

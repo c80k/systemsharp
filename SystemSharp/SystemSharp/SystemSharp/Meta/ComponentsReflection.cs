@@ -38,7 +38,7 @@ using SystemSharp.DataTypes;
 using SystemSharp.Synthesis;
 using SystemSharp.SysDOM;
 
-namespace SystemSharp.Meta
+namespace Obsolete.SystemSharp.Meta
 {
     /// <summary>
     /// Visitor interface for descriptors.
@@ -2371,7 +2371,7 @@ namespace SystemSharp.Meta
                 else
                     first = false;
                 while (stk.Count > 0)
-                    idx = stk.Pop().Index.ApplyTo(idx);
+                    idx = stk.Pop().Index.Project(idx);
                 accIndex = idx;
             }
             else

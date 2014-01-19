@@ -247,13 +247,13 @@ namespace SystemSharp.Components
 
                 if (flags.HasFlag(EBinderFlags.CreateNewPort))
                 {
-                    EPortDirection dir = EPortDirection.In;
+                    EFlowDirection dir = EFlowDirection.In;
                     if (flags.HasFlag(EBinderFlags.In))
-                        dir = EPortDirection.In;
+                        dir = EFlowDirection.In;
                     if (flags.HasFlag(EBinderFlags.Out))
-                        dir = EPortDirection.Out;
+                        dir = EFlowDirection.Out;
                     if (flags.HasFlag(EBinderFlags.InOut))
-                        dir = EPortDirection.InOut;
+                        dir = EFlowDirection.InOut;
                     int id = _id++;
                     var port = _host.Descriptor.CreatePort("agp" + id + "_" + name, dir, 
                         TypeDescriptor.GetTypeOf(initialValue));

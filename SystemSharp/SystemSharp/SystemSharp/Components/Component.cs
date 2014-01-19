@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner, David Hlavac
+ * Copyright 2011-2014 Christian Köllner, David Hlavac
  * 
  * This file is part of System#.
  *
@@ -37,9 +37,10 @@ namespace SystemSharp.Components
     /// </summary>
     public class Component :
         DesignObject,
-        IDescriptive<ComponentDescriptor>,
-        IContainmentImplementor
+        IDescriptive<ComponentDescriptor, Component>
     {
+        #region private types
+        
         private class ComponentBehaviorComparer : IEqualityComparer<Component>
         {
             public bool Equals(Component x, Component y)
@@ -52,6 +53,8 @@ namespace SystemSharp.Components
                 return obj.GetBehaviorHashCode();
             }
         }
+
+        #endregion
 
         /// <summary>
         /// An equality comparer which defines equality by the <c>IsEquivalent(...)</c>/<c>GetBehaviorHashCode()</c> methods.
@@ -78,11 +81,21 @@ namespace SystemSharp.Components
         /// <summary>
         /// The containing component of this component.
         /// </summary>
-        public Component Parent { [StaticEvaluation] get; private set; }
+        public Component Parent 
+        {
+            [StaticEvaluation]
+            get
+            {
+                var id = (IInstanceDescriptor)Descriptor.Owner;
+                if (id == null)
+                    return null;
+                return id.Instance as Component;
+            }
+        }
 
         #region await helper members
         /// <summary>
-        /// Represents one tick
+        /// Represents one tick.
         /// </summary>
         public static PredicatedEvent Tick 
         { 
@@ -169,7 +182,7 @@ namespace SystemSharp.Components
         /// Combines multiple events to a single event which is triggered whenever any event is triggered.
         /// </summary>
         [StaticEvaluationDoNotAnalyze]
-        public static MultiEvent Any(params AbstractEvent[] events)
+        public static MultiEvent Any(params EventSource[] events)
         {
             return new MultiEvent(null, events);
         }
@@ -218,7 +231,7 @@ namespace SystemSharp.Components
         /// </summary>
         /// <param name="func">The process body</param>
         /// <param name="sensitive">The sensitivity list</param>
-        protected void AddProcess(Action func, params AbstractEvent[] sensitive)
+        protected internal void AddProcess(Action func, params EventSource[] sensitive)
         {
             Process process = new Process(
                 this,
@@ -227,7 +240,6 @@ namespace SystemSharp.Components
             {
                 Sensitivity = sensitive
             };
-            Context.RegisterProcess(process);
             process.Schedule(0);
         }
 
@@ -251,7 +263,6 @@ namespace SystemSharp.Components
                 this,
                 Process.EProcessKind.Triggered,
                 func);
-            Context.RegisterProcess(process);
             process.Schedule(0);
         }
 
@@ -265,7 +276,6 @@ namespace SystemSharp.Components
                 this,
                 Process.EProcessKind.Threaded,
                 func);
-            Context.RegisterProcess(process);
             process.Schedule(0);
         }
 
@@ -279,7 +289,6 @@ namespace SystemSharp.Components
                 Predicate = predicate,
                 Sensitivity = DesignContext.MakeEventList(sensitive)
             };
-            Context.RegisterProcess(process);
             process.Schedule(0);
             return process;
         }
@@ -311,7 +320,7 @@ namespace SystemSharp.Components
         /// Changes a process sensitivity list.
         /// </summary>
         /// <param name="sensitive">The new sensitivity list</param>
-        protected void NextTrigger(params AbstractEvent[] sensitive)
+        protected void NextTrigger(params EventSource[] sensitive)
         {
             Process curp = Context.CurrentProcess;
             curp.Sensitivity = sensitive;
@@ -380,19 +389,16 @@ namespace SystemSharp.Components
                     continue;
 
                 object fvalue = fi.GetValue(this);
-                IContainmentImplementor ici = fvalue as IContainmentImplementor;
-                if (ici != null)
-                {
-                    ici.SetOwner(Descriptor, fi, IndexSpec.Empty);
-                }
+                var desc = fvalue as IDescriptive;
+                if (desc != null)
+                    desc.Nest(Descriptor, fi);
             }
 
             var pis = FindProperties(type);
             foreach (PropertyInfo pi in pis)
             {
                 Type propType = pi.PropertyType;
-                RewriteDeclaration rwDecl = (RewriteDeclaration)Attribute.GetCustomAttribute(
-                    propType, typeof(RewriteDeclaration), true);
+                var rwDecl = propType.GetCustomAttribute<RewriteDeclaration>();
                 if (rwDecl != null)
                     rwDecl.ImplementDeclaration(Descriptor, pi);
             }
@@ -420,36 +426,14 @@ namespace SystemSharp.Components
         /// <summary>
         /// The associated component descriptor
         /// </summary>
-        public ComponentDescriptor Descriptor { get; internal set; }
+        public ComponentDescriptor Descriptor { get; private set; }
 
         /// <summary>
         /// The associated component descriptor
         /// </summary>
-        DescriptorBase IDescriptive.Descriptor
+        IDescriptor IDescriptive.Descriptor
         {
             get { return Descriptor; }
-        }
-
-        /// <summary>
-        /// Sets the owning descriptor of this component.
-        /// </summary>
-        /// <param name="owner">owning descriptor</param>
-        /// <param name="declSite">declaration site of this component</param>
-        /// <param name="indexSpec">index within declaration site</param>
-        public virtual void SetOwner(DescriptorBase owner, MemberInfo declSite, IndexSpec indexSpec)
-        {
-            IComponentDescriptor cowner = (IComponentDescriptor)owner;
-            FieldInfo field = (FieldInfo)declSite;
-            if (Descriptor.Owner == null)
-            {
-                owner.AddChild(Descriptor, field, indexSpec);
-            }
-            else
-            {
-                Context.Report(EIssueClass.Error, "Component instance of " + GetType().Name + " is declared multiple times: " +
-                    "first declaration is " + Descriptor.GetFullName() + ", second one in " + cowner.GetFullName() + ", field " +
-                    declSite.Name);
-            }
         }
 
         /// <summary>

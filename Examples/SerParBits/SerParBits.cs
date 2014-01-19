@@ -135,7 +135,7 @@ namespace Example_SerParBits
         public Out<StdLogicVector> ParOut { private get; set; }
 
         private int _size;
-        private Signal1D<StdLogic> _shiftReg;
+        private VSignal<StdLogic> _shiftReg;
 
         /// <summary>
         /// Constructs a BitDeserializer component
@@ -144,7 +144,7 @@ namespace Example_SerParBits
         public BitDeserializer(int size)
         {
             _size = size;
-            _shiftReg = new Signal1D<StdLogic>(size, i => new Signal<StdLogic>());
+            _shiftReg = new VSignal<StdLogic>(size, i => new Signal<StdLogic>());
         }
 
         [TransformIntoFSM]

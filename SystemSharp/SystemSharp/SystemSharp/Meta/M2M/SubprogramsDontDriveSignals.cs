@@ -69,13 +69,13 @@ namespace SystemSharp.Meta.M2M
                     {
                         switch (pd.Direction)
                         {
-                            case EPortDirection.In:
+                            case EFlowDirection.In:
                                 flowDir = ArgumentDescriptor.EArgDirection.In;
                                 break;
-                            case EPortDirection.InOut:
+                            case EFlowDirection.InOut:
                                 flowDir = ArgumentDescriptor.EArgDirection.InOut;
                                 break;
-                            case EPortDirection.Out:
+                            case EFlowDirection.Out:
                                 flowDir = ArgumentDescriptor.EArgDirection.Out;
                                 break;
                             default:

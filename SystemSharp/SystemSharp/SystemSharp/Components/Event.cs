@@ -30,19 +30,20 @@ using SystemSharp.SysDOM;
 namespace SystemSharp.Components
 {
     /// <summary>
-    /// Abstract base class for events
+    /// Abstract base class for events.
     /// </summary>
-    public abstract class AbstractEvent : DesignObject
+    public abstract class EventSource : 
+        DesignObject,
+        IExpressive
     {
         /// <summary>
         /// Constructs an instance
         /// </summary>
         /// <param name="owner">owning design object</param>
-        public AbstractEvent(DesignObject owner)
+        public EventSource(DesignObject owner)
         {
             Owner = owner;
         }
-
 
         /// <summary>
         /// The owner of this event.
@@ -60,9 +61,9 @@ namespace SystemSharp.Components
         /// <param name="e1">an event</param>
         /// <param name="e2">another event</param>
         /// <returns>combined event</returns>
-        public static MultiEvent operator | (AbstractEvent e1, AbstractEvent e2)
+        public static MultiEvent operator | (EventSource e1, EventSource e2)
         {
-            List<AbstractEvent> all = new List<AbstractEvent>();
+            List<EventSource> all = new List<EventSource>();
 
             MultiEvent m1 = e1 as MultiEvent;
             MultiEvent m2 = e2 as MultiEvent;
@@ -75,16 +76,20 @@ namespace SystemSharp.Components
 
             return new MultiEvent(null, all);
         }
+
+        public abstract Expression DescribingExpression { get; }
     }
 
     /// <summary>
-    /// Event implementation
+    /// An can be considered as a zero-sized message which as passed between processes.
     /// </summary>
     /// <remarks>
     /// The state of an event remains consistent throughout a delta cycle. If an event state is set in the current
     /// delta cycle, it is usually reset within the next one, unless it is requested to be set again.
     /// </remarks>
-    public class Event : AbstractEvent
+    public class Event : 
+        EventSource,
+        IDescriptive<EventDescriptor, Event>
     {
         [RewriteAwaitE]
         [MapToIntrinsicType(EIntrinsicTypes.IllegalRuntimeType)]
@@ -125,6 +130,7 @@ namespace SystemSharp.Components
 
         private Action _fireList;
         private Awaiter _awaiter;
+        private EventDescriptor _descriptor;
 
         /// <summary>
         /// Constructs an instance.
@@ -192,12 +198,32 @@ namespace SystemSharp.Components
                 return true;
             }
         }
+
+        public override Expression DescribingExpression
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public EventDescriptor Descriptor
+        {
+            get 
+            {
+                if (_descriptor == null)
+                    _descriptor = new EventDescriptor(this);
+                return _descriptor;
+            }
+        }
+
+        IDescriptor IDescriptive.Descriptor
+        {
+            get { return Descriptor; }
+        }
     }
 
     /// <summary>
     /// Represents a combined event which is triggered whenever one of multiple events is triggered.
     /// </summary>
-    public class MultiEvent : AbstractEvent
+    public class MultiEvent : EventSource
     {
         private class OneTimeInvoker
         {
@@ -255,14 +281,14 @@ namespace SystemSharp.Components
         }
 
         private Awaiter _awaiter;
-        public IEnumerable<AbstractEvent> _events { get; private set; }
+        public IEnumerable<EventSource> _events { get; private set; }
 
         /// <summary>
         /// Constructs an instance.
         /// </summary>
         /// <param name="owner">owning design object</param>
         /// <param name="events">events to combine</param>
-        public MultiEvent(DesignObject owner, IEnumerable<AbstractEvent> events) :
+        internal MultiEvent(DesignObject owner, IEnumerable<EventSource> events) :
             base(owner)
         {
             Owner = owner;
@@ -297,21 +323,32 @@ namespace SystemSharp.Components
                 return true;
             }
         }
+
+        public override Expression DescribingExpression
+        {
+            get 
+            {
+                return _events
+                    .Select(_ => _.DescribingExpression)
+                    .Aggregate((e1, e2) => e1 | e2);
+            }
+        }
     }
 
     /// <summary>
     /// Represents a predicated event which is triggered whenever some associated event is triggered AND a predicate
     /// function evaluates to <c>true</c>.
     /// </summary>
-    public class PredicatedEvent : AbstractEvent
+    public class PredicatedEvent : EventSource
     {
+        #region private types
         private class PredicatedInvoker
         {
-            private AbstractEvent _baseEvent;
+            private EventSource _baseEvent;
             private Action _action;
             private Func<bool> _pred;
 
-            public PredicatedInvoker(AbstractEvent baseEvent, Action action, Func<bool> pred)
+            public PredicatedInvoker(EventSource baseEvent, Action action, Func<bool> pred)
             {
                 _baseEvent = baseEvent;
                 _action = action;
@@ -390,10 +427,12 @@ namespace SystemSharp.Components
                 return true;
            }
         }
+        #endregion
 
         private Awaiter _awaiter;
-        private AbstractEvent _baseEvent;
+        private EventSource _baseEvent;
         private Func<bool> _pred;
+        private Expression _description;
 
         /// <summary>
         /// Constructs an instance.
@@ -401,21 +440,29 @@ namespace SystemSharp.Components
         /// <param name="owner">owning design object</param>
         /// <param name="evt">associated base event</param>
         /// <param name="pred">predicate function</param>
-        public PredicatedEvent(DesignObject owner, AbstractEvent evt, Func<bool> pred) :
+        internal PredicatedEvent(DesignObject owner, EventSource evt, Func<bool> pred,
+            Expression description) :
             base(owner)
         {
             Contract.Requires<ArgumentNullException>(evt != null, "evt");
             Contract.Requires<ArgumentNullException>(pred != null, "pred");
+            Contract.Requires<ArgumentNullException>(description != null, "description");
 
             Owner = owner;
             _baseEvent = evt;
             _pred = pred;
             _awaiter = new Awaiter(this);
+            _description = description;
         }
 
         public override IAwaitable GetAwaiter()
         {
             return _awaiter;
+        }
+
+        public override Expression DescribingExpression
+        {
+            get { return _description; }
         }
     }
 }

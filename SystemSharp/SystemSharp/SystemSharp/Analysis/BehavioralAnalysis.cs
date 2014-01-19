@@ -112,7 +112,7 @@ namespace SystemSharp.Analysis
             List<ISignalOrPortDescriptor> sens = new List<ISignalOrPortDescriptor>();
             if (process.Sensitivity != null)
             {
-                foreach (AbstractEvent e in process.Sensitivity)
+                foreach (EventSource e in process.Sensitivity)
                 {
                     DesignObject owner = e.Owner;
                     if (!(owner is SignalBase))

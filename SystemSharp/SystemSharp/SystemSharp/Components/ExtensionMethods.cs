@@ -39,7 +39,7 @@ namespace SystemSharp.Components
         /// <summary>
         /// <c>await events</c> pauses until one of the specified events is triggered.
         /// </summary>
-        public static IAwaitable GetAwaiter(this IEnumerable<AbstractEvent> events)
+        public static IAwaitable GetAwaiter(this IEnumerable<EventSource> events)
         {
             return new MultiEvent(null, events).GetAwaiter();
         }
@@ -51,7 +51,7 @@ namespace SystemSharp.Components
         /// Because of a compiler bug (see http://stackoverflow.com/questions/14198019/await-array-by-implementing-extension-method-for-array)
         /// await events[] cannot be compiled.
         /// </remarks>
-        public static IAwaitable GetAwaiter(this AbstractEvent[] events)
+        public static IAwaitable GetAwaiter(this EventSource[] events)
         {
             //because of a compiler bug (see http://stackoverflow.com/questions/14198019/await-array-by-implementing-extension-method-for-array)
             //await events[] cannot be compiled, even though this extension method allows it an intellisense says that "(awaitable) AbstractEvent[]"

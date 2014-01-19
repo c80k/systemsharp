@@ -44,8 +44,6 @@ namespace SystemSharp.Components
     [ModelElement]
     public abstract class DesignObject
     {
-        private List<DesignObject> _children = new List<DesignObject>();
-
         /// <summary>
         /// Constructs a SimObject instance.
         /// </summary>
@@ -83,19 +81,6 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Returns a collection of all dependent ("owned") objects.
-        /// </summary>
-        public ICollection<DesignObject> Children
-        {
-            get
-            {
-                Contract.Assume(_children != null);
-
-                return new ReadOnlyCollection<DesignObject>(_children);
-            }
-        }
-
-        /// <summary>
         /// Provides diagnostic information on object creator (i.e. stack trace during constructor call).
         /// Logging must be previously enabled by setting CaptureDesignObjectOrigins property of DesignContext to true.
         /// </summary>
@@ -115,63 +100,6 @@ namespace SystemSharp.Components
         }
         [RewriteGetResult]
         void GetResult();
-    }
-
-    /// <summary>
-    /// Helper class for process-local storage
-    /// </summary>
-    internal class PLSSlot : DesignObject
-    {
-        private int _slot;
-        private object _fallbackValue;
-
-        /// <summary>
-        /// Constructs a process-local storage slot
-        /// </summary>
-        /// <param name="slot">the slot index</param>
-        public PLSSlot(DesignContext context, int slot) :
-            base(context)
-        {
-            _slot = slot;
-        }
-
-        /// <summary>
-        /// Provides access to the process-local value of the underlying storage slot
-        /// </summary>
-        public object Value
-        {
-            get
-            {
-                if (Context.CurrentProcess == null)
-                    return _fallbackValue;
-                else
-                    return Context.CurrentProcess.GetLocal(_slot);
-            }
-            set
-            {
-                if (Context.CurrentProcess == null)
-                    _fallbackValue = value;
-                else
-                    Context.CurrentProcess.StoreLocal(_slot, value);
-            }
-        }
-
-        /// <summary>
-        /// Provides access to all process-local values.
-        /// </summary>
-        /// <param name="index">The process for which the value should be retrieved/stored</param>
-        /// <returns></returns>
-        public object this[Process index]
-        {
-            get
-            {
-                return index.GetLocal(_slot);
-            }
-            set
-            {
-                index.StoreLocal(_slot, value);
-            }
-        }
     }
 
     /// <summary>

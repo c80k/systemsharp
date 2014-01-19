@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner, David Hlavac
+ * Copyright 2011-2014 Christian Köllner, David Hlavac
  * 
  * This file is part of System#.
  *
@@ -44,7 +44,7 @@ namespace SystemSharp.Components
     /// </summary>
     [ModelElement]
     [MapToIntrinsicType(EIntrinsicTypes.DesignContext)]
-    public class DesignContext : IDescriptive<DesignDescriptor>
+    public class DesignContext : IDescriptive<DesignDescriptor, DesignContext>
     {
         /// <summary>
         /// This enumeration defines the possible model/simulation states
@@ -141,6 +141,7 @@ namespace SystemSharp.Components
         private PriorityQueue<Action> _q = new PriorityQueue<Action>();
         private List<Component> _components = new List<Component>();
         private List<Process> _processes = new List<Process>();
+        private int _pidCounter;
         private List<SignalBase> _signals = new List<SignalBase>();
         private int _numPLSSlots;
         private Stack<DesignObject> _objStack = new Stack<DesignObject>();
@@ -443,12 +444,31 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
+        /// Unregisters a component with this simulation context.
+        /// </summary>
+        /// <param name="component">The component to unregister</param>
+        internal void UnregisterComponent(Component component)
+        {
+            _components.Remove(component);
+        }
+
+        /// <summary>
         /// Registers a process with this simulation context.
         /// </summary>
         /// <param name="process">The process to register</param>
-        internal void RegisterProcess(Process process)
+        internal int RegisterProcess(Process process)
         {
             _processes.Add(process);
+            return ++_pidCounter;
+        }
+
+        /// <summary>
+        /// Unregisters a process with this simulation context.
+        /// </summary>
+        /// <param name="process">The process to unregister</param>
+        internal void UnregisterProcess(Process process)
+        {
+            _processes.Remove(process);
         }
 
         /// <summary>
@@ -458,6 +478,15 @@ namespace SystemSharp.Components
         internal void RegisterSignal(SignalBase signal)
         {
             _signals.Add(signal);
+        }
+
+        /// <summary>
+        /// Unregisters a signal with this simulation context.
+        /// </summary>
+        /// <param name="signal">The signal to unregister</param>
+        internal void UnregisterSignal(SignalBase signal)
+        {
+            _signals.Remove(signal);
         }
 
         /// <summary>
@@ -826,7 +855,7 @@ namespace SystemSharp.Components
         //[MapToIntrinsicFunction(IntrinsicFunction.EAction.Wait)] //FIXME
         [DoNotAnalyze]
         [Obsolete("Use instead: await event; or await (event1 | event2 | ...); or await Any(events); or await Any(event1, event2, ...);", true)]
-        public static void Wait(params AbstractEvent[] events)
+        public static void Wait(params EventSource[] events)
         {
             ///uncommented due to [Obsolete]
 
@@ -900,7 +929,7 @@ namespace SystemSharp.Components
         /// <param name="signals">The signal(s) to be converted</param>
         /// <returns>An appropriate event list</returns>
         [StaticEvaluation]
-        public static AbstractEvent[] MakeEventList(params IInPort[] signals)
+        public static EventSource[] MakeEventList(params IInPort[] signals)
         {
             return MakeEventList((IEnumerable<IInPort>)signals);
         }
@@ -911,13 +940,13 @@ namespace SystemSharp.Components
         /// <param name="signals">The signal(s) to be converted</param>
         /// <returns>An appropriate event list</returns>
         [StaticEvaluation]
-        public static AbstractEvent[] MakeEventList(IEnumerable<IInPort> signals)
+        public static EventSource[] MakeEventList(IEnumerable<IInPort> signals)
         {
             if (signals == null ||
                 signals.Any(s => s == null))
                 throw new ArgumentException("null reference inside sensitivity list");
 
-            AbstractEvent[] events = (from IInPort signal in signals
+            EventSource[] events = (from IInPort signal in signals
                                       select signal.ChangedEvent).ToArray();
             return events;
         }

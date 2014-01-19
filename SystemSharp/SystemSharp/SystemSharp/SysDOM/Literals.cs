@@ -578,7 +578,7 @@ namespace SystemSharp.SysDOM
             {
                 IndexSpec indexSpec;
                 var udesc = Desc.GetUnindexedContainer(out indexSpec);
-                int dimRed0 = indexSpec.TargetDimension - indexSpec.SourceDimension;
+                int dimRed0 = indexSpec.MinTargetDimension - indexSpec.MinSourceDimension;
                 int dimRed1 = Indices.Sum(idx => idx.Count(e => !e.ResultType.CILType.Equals(typeof(Range))));
                 int dimRed = dimRed0 + dimRed1;
                 var elemType = udesc.ElementType;
@@ -600,7 +600,7 @@ namespace SystemSharp.SysDOM
                 switch (Prop)
                 {
                     case EReferencedProperty.ChangedEvent:
-                        return (TypeDescriptor)typeof(AbstractEvent);
+                        return (TypeDescriptor)typeof(EventSource);
 
                     case EReferencedProperty.Instance:
                         if (Indices.Count() == 0)
@@ -866,7 +866,7 @@ namespace SystemSharp.SysDOM
 
             IndexSpec rootIndex;
             var udesc = Desc.GetUnindexedContainer(out rootIndex);
-            var myIndex = IndexSample.ApplyTo(rootIndex);
+            var myIndex = IndexSample.Project(rootIndex);
             
             return new SignalRef(
                 udesc, Prop,
@@ -907,7 +907,7 @@ namespace SystemSharp.SysDOM
                 throw new InvalidOperationException("Only applicable to static indices");
 
             var asmRef = AssimilateIndices();
-            var resultIndex = index.ApplyTo(asmRef.IndexSample);
+            var resultIndex = index.Project(asmRef.IndexSample);
             return new SignalRef(asmRef.Desc, Prop, resultIndex.AsExpressions(), resultIndex, true);
         }
     }

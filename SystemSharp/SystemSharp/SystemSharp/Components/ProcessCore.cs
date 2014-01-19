@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner, David Hlavac
+ * Copyright 2011-2014 Christian Köllner, David Hlavac
  * 
  * This file is part of System#.
  *
@@ -18,6 +18,7 @@
  * */
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
@@ -42,7 +43,7 @@ namespace SystemSharp.Components
         /// <summary>
         /// The sensitivity list
         /// </summary>
-        IEnumerable<AbstractEvent> Sensitivity { get; }
+        IEnumerable<EventSource> Sensitivity { get; }
     }
 
     /// <summary>
@@ -332,13 +333,13 @@ namespace SystemSharp.Components
         {
             public ISignal Signal { get; private set; }
             public Func<object> Operation { get; private set; }
-            public IEnumerable<AbstractEvent> Sensitivity { get; private set; }
+            public IEnumerable<EventSource> Sensitivity { get; private set; }
 
             public FromSignalSource(ISignal signal)
             {
                 Signal = signal;
                 Operation = () => Signal.CurObject;
-                Sensitivity = new AbstractEvent[] { Signal.ChangedEvent };
+                Sensitivity = new EventSource[] { Signal.ChangedEvent };
             }
 
             public Expression GetExpression()
@@ -356,7 +357,7 @@ namespace SystemSharp.Components
         {
             public In<T> Signal { get; private set; }
             public Func<T> Operation { get; private set; }
-            public IEnumerable<AbstractEvent> Sensitivity { get; private set; }
+            public IEnumerable<EventSource> Sensitivity { get; private set; }
             
             Func<object> ISignalSource.Operation
             {
@@ -367,7 +368,7 @@ namespace SystemSharp.Components
             {
                 Signal = signal;
                 Operation = () => Signal.Cur;
-                Sensitivity = new AbstractEvent[] { Signal.ChangedEvent };
+                Sensitivity = new EventSource[] { Signal.ChangedEvent };
             }
 
             public Expression GetExpression()
@@ -401,13 +402,13 @@ namespace SystemSharp.Components
         {
             private object _value;
             public Func<object> Operation { get; private set; }
-            public IEnumerable<AbstractEvent> Sensitivity { get; private set; }
+            public IEnumerable<EventSource> Sensitivity { get; private set; }
 
             public ConstSignalSource(object value)
             {
                 _value = value;
                 Operation = () => _value;
-                Sensitivity = new AbstractEvent[0];
+                Sensitivity = new EventSource[0];
                 ValueExpr = LiteralReference.CreateConstant(_value);
             }
 
@@ -432,13 +433,13 @@ namespace SystemSharp.Components
         {
             private T _value;
             public Func<T> Operation { get; private set; }
-            public IEnumerable<AbstractEvent> Sensitivity { get; private set; }
+            public IEnumerable<EventSource> Sensitivity { get; private set; }
 
             public ConstSignalSource(T value)
             {
                 _value = value;
                 Operation = () => _value;
-                Sensitivity = new AbstractEvent[0];
+                Sensitivity = new EventSource[0];
                 ValueExpr = LiteralReference.CreateConstant(_value);
             }
 
@@ -534,7 +535,7 @@ namespace SystemSharp.Components
             public Action Operation { get; private set; }
             public IEnumerable<ISignal> DrivenSignals { get; private set; }
 
-            public IEnumerable<AbstractEvent> Sensitivity
+            public IEnumerable<EventSource> Sensitivity
             {
                 get { return Source.Sensitivity; }
             }
@@ -563,7 +564,7 @@ namespace SystemSharp.Components
             public Action Operation { get; private set; }
             public IEnumerable<ISignal> DrivenSignals { get; private set; }
 
-            public IEnumerable<AbstractEvent> Sensitivity
+            public IEnumerable<EventSource> Sensitivity
             {
                 get { return Source.Sensitivity; }
             }
@@ -591,7 +592,7 @@ namespace SystemSharp.Components
             public IEnumerable<IProcess> ProcessDefs { get; private set; }
             public Action Operation { get; private set; }
 
-            public IEnumerable<AbstractEvent> Sensitivity
+            public IEnumerable<EventSource> Sensitivity
             {
                 get { return ProcessDefs.SelectMany(p => p.Sensitivity); }
             }
@@ -642,9 +643,9 @@ namespace SystemSharp.Components
                 get { return Enumerable.Empty<ISignal>(); }
             }
 
-            public IEnumerable<AbstractEvent> Sensitivity
+            public IEnumerable<EventSource> Sensitivity
             {
-                get { return Enumerable.Empty<AbstractEvent>(); }
+                get { return Enumerable.Empty<EventSource>(); }
             }
 
             public void Implement(IAlgorithmBuilder builder)
@@ -746,7 +747,7 @@ namespace SystemSharp.Components
 
         #region ISensitive Member
 
-        public IEnumerable<AbstractEvent> Sensitivity
+        public IEnumerable<EventSource> Sensitivity
         {
             get { return ProcessDef.Sensitivity; }
         }
@@ -791,7 +792,9 @@ namespace SystemSharp.Components
     /// <summary>
     /// This class represents a process.
     /// </summary>
-    public class Process : DesignObject
+    public class Process : 
+        DesignObject,
+        IDescriptive<ProcessDescriptor, Process>
     {
         /// <summary>
         /// The ThreadStopException when a process requests to sleep forever. It causes the process to be removed
@@ -836,34 +839,33 @@ namespace SystemSharp.Components
             Kind = kind;
             InitialAction = function;
             Context.OnStartOfSimulation += OnStartOfSimulation;
+            Context.OnAnalysis += OnAnalysis;
             _analysisGeneration = Context.CurrentRefinementCycle;
+            PID = Context.RegisterProcess(this);
         }
+
+        /// <summary>
+        /// Unique process identifier.
+        /// </summary>
+        public int PID { get; private set; }
 
         /// <summary>
         /// Returns a symbolic name of the process. The name is constructed from reflection.
         /// </summary>
         public string Name
         {
-            get
-            {
-                return InitialAction.Method.DeclaringType.Name + "." + InitialAction.Method.Name;
-            }
+            get { return InitialAction.Method.DeclaringType.Name + "." + InitialAction.Method.Name; }
         }
 
         /// <summary>
         /// The current sensitivity list.
         /// </summary>
-        private AbstractEvent[] _sensitivity;
-
-        /// <summary>
-        /// A helper field to realize process-local storage.
-        /// </summary>
-        private object[] _localStorage;
+        private EventSource[] _sensitivity;
 
         private event Action _preWaitAction;
         private event Action _postWaitAction;
         private IProcess _duringProcess;
-        //private TransactingComponent.TATarget[] _coFSMs;
+        private ProcessDescriptor _descriptor;
 
         /// <summary>
         /// Returns the component which hosts this process.
@@ -884,16 +886,10 @@ namespace SystemSharp.Components
         /// <summary>
         /// The process sensitivity list
         /// </summary>
-        public AbstractEvent[] Sensitivity
+        public EventSource[] Sensitivity
         {
-            get
-            {
-                return _sensitivity;
-            }
-            internal set
-            {
-                _sensitivity = value;
-            }
+            get { return _sensitivity; }
+            internal set { _sensitivity = value; }
         }
 
         public Func<bool> Predicate { get; internal set; }
@@ -994,125 +990,12 @@ namespace SystemSharp.Components
         }
 
         /// <summary>
-        /// Initializes process-local storage.
-        /// </summary>
-        /// <param name="numSlots">the number of storage objects</param>
-        internal void InitLocalStorage(int numSlots)
-        {
-            _localStorage = new object[numSlots];
-        }
-
-        /// <summary>
-        /// Retrieves a process-local storage object.
-        /// </summary>
-        /// <param name="slot">The index of the object to be retrieved</param>
-        /// <returns></returns>
-        internal object GetLocal(int slot)
-        {
-            return _localStorage[slot];
-        }
-
-        /// <summary>
-        /// Stores a process-local storage object.
-        /// </summary>
-        /// <param name="slot">The index of the object to be stored</param>
-        /// <param name="value">The object to be stored</param>
-        internal void StoreLocal(int slot, object value)
-        {
-            _localStorage[slot] = value;
-        }
-
-        /// <summary>
-        /// Throws an exception if this process is not threaded
-        /// </summary>
-        private void EnsureThreaded()
-        {
-            //if (Kind != EProcessKind.Threaded)
-            //    throw new InvalidOperationException("await is only allowed within a threaded process.");
-        }
-
-        /// <summary>
         /// Writes some debug output to the console.
         /// </summary>
         /// <param name="text">The text to be written</param>
         private void Log(string text)
         {
             Console.WriteLine("> " + Kind.ToString() + " process " + InitialAction.Method.DeclaringType.Name + "." + InitialAction.Method.Name + ": " + text);
-        }
-
-        /// <summary>
-        /// Suspends execution for a specified period.
-        /// </summary>
-        /// <param name="delta">The desired suspension period</param>
-        [Obsolete("not supported anymore", true)]
-        internal void Wait(Time delta)
-        {
-            ///uncommented due to [Obsolete]
-
-            //EnsureThreaded();
-            //await delta;
-        }
-
-        /// <summary>
-        /// Suspends execution until at least one of the specified events is set.
-        /// </summary>
-        /// <param name="events">the events to wait for</param>
-        [Obsolete("not supported anymore", true)]
-        internal void Wait(params AbstractEvent[] events)
-        {
-            ///uncommented due to [Obsolete]
-
-            //EnsureThreaded();
-            //await new MultiEvent(null, events);
-        }
-
-        [Obsolete("not supported anymore", true)]
-        internal void Wait()
-        {
-            ///uncommented due to [Obsolete]
-
-            //EnsureThreaded();
-
-            //if (Predicate == null)
-            //{
-            //    throw new StopThreadException();
-            //}
-
-            //if (_preWaitAction != null)
-            //    _preWaitAction();
-
-            //AbstractEvent[] sens;
-            //if (_duringProcess != null)
-            //{
-            //    _duringProcess.Operation();
-            //    sens = Sensitivity.Concat(_duringProcess.Sensitivity).ToArray();
-            //}
-            //else
-            //{
-            //    sens = Sensitivity;
-            //}
-
-            //do
-            //{
-            //    await new MultiEvent(null, sens);
-            //    if (_duringProcess != null)
-            //    {
-            //        _duringProcess.Operation();
-            //    }
-            //} while (!Predicate());
-
-            //if (_postWaitAction != null)
-            //    _postWaitAction();
-        }
-
-        [Obsolete("not supported anymore", true)]
-        internal void Wait(IProcess during)
-        {
-            ///uncommented due to [Obsolete]
-
-            //Contract.Requires(during != null);
-            //RegisterDuringAction(during);
-            //Wait();
         }
 
         /// <summary>
@@ -1144,22 +1027,6 @@ namespace SystemSharp.Components
                 _duringProcess = _duringProcess.Par(action);
         }
 
-#if false
-        internal void RegisterCoFSMs(TransactingComponent.TATarget[] targets)
-        {
-            _coFSMs = targets;
-            foreach (TransactingComponent.TATarget tat in targets)
-            {
-                tat.Register(this);
-            }
-        }
-
-        internal TransactingComponent.TATarget[] GetCoFSMs()
-        {
-            return _coFSMs;
-        }
-#endif
-
         /// <summary>
         /// Returns <c>true</c> iff this process is tagged with an attribute implementing <c>IDoNotAnalyze</c>.
         /// </summary>
@@ -1173,6 +1040,78 @@ namespace SystemSharp.Components
         {
             get { return _analysisGeneration; }
             set { _analysisGeneration = value; }
+        }
+
+        private void OnAnalysis()
+        {
+            Descriptor.Nest(Owner.Descriptor, InitialAction.Method);
+        }
+
+        public ProcessDescriptor Descriptor
+        {
+            get 
+            {
+                if (_descriptor == null)
+                    _descriptor = new ProcessDescriptor(this);
+                return _descriptor;
+            }
+        }
+
+        IDescriptor IDescriptive.Descriptor
+        {
+            get { return Descriptor; }
+        }
+
+        public Expression DescribingExpression
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
+
+    /// <summary>
+    /// Implements a process-local variable.
+    /// </summary>
+    /// <typeparam name="T">variable type</typeparam>
+    internal class PLV<T> : DesignObject
+    {
+        private ConcurrentDictionary<int, T> _perProcessValue = new ConcurrentDictionary<int,T>(1, 1);
+
+        /// <summary>
+        /// Constructs a process-local storage slot
+        /// </summary>
+        /// <param name="slot">the slot index</param>
+        public PLV()
+        {
+            Context = DesignContext.Instance;
+        }
+
+        /// <summary>
+        /// Provides access to the process-local value of the underlying storage slot
+        /// </summary>
+        public T Value
+        {
+            get
+            {
+                var curp = Context.CurrentProcess;
+                int pid = curp == null ? 0 : curp.PID;
+                return _perProcessValue[pid];
+            }
+            set
+            {
+                var curp = Context.CurrentProcess;
+                int pid = curp == null ? 0 : curp.PID;
+                _perProcessValue[pid] = value;
+            }
+        }
+
+        public IEnumerable<T> Values
+        {
+            get { return _perProcessValue.Values; }
+        }
+
+        public void Reset()
+        {
+            _perProcessValue.Clear();
         }
     }
 }

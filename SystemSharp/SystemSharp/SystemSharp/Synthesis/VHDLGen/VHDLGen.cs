@@ -1236,13 +1236,13 @@ namespace SystemSharp.Synthesis.VHDLGen
             return name + ".vhd";
         }
 
-        private string PortDirectionToString(EPortDirection dir)
+        private string PortDirectionToString(EFlowDirection dir)
         {
             switch (dir)
             {
-                case EPortDirection.In: return "in";
-                case EPortDirection.Out: return "out";
-                case EPortDirection.InOut: return "inout";
+                case EFlowDirection.In: return "in";
+                case EFlowDirection.Out: return "out";
+                case EFlowDirection.InOut: return "inout";
                 default: throw new NotImplementedException();
             }
         }
@@ -1414,7 +1414,7 @@ namespace SystemSharp.Synthesis.VHDLGen
 
                 tw.Write(pid + ": " + PortDirectionToString(pd.Direction) + " " +
                     GetTypeDescriptorCompletedName(pd.ElementType));
-                if (pd.Direction != EPortDirection.In &&
+                if (pd.Direction != EFlowDirection.In &&
                     pd.InitialValue != null)
                 {
                     tw.Write(" := ");

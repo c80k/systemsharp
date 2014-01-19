@@ -107,7 +107,7 @@ namespace SystemSharp.HLS.AllocationPolicies
                     get { throw new NotImplementedException(); }
                 }
 
-                public IEnumerable<AbstractEvent> Sensitivity
+                public IEnumerable<EventSource> Sensitivity
                 {
                     get { throw new NotImplementedException(); }
                 }
@@ -142,7 +142,7 @@ namespace SystemSharp.HLS.AllocationPolicies
                 get { throw new NotImplementedException(); }
             }
 
-            public IEnumerable<AbstractEvent> Sensitivity
+            public IEnumerable<EventSource> Sensitivity
             {
                 get { throw new NotImplementedException(); }
             }

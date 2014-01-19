@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner
+ * Copyright 2011-2014 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -27,9 +27,10 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using SystemSharp.Components;
 using SystemSharp.DataTypes;
+using SystemSharp.Meta;
 using SystemSharp.SysDOM;
 
-namespace SystemSharp.Meta
+namespace SystemSharp.SysDOM
 {
     /// <summary>
     /// Provides options for creating a value instance from a type descriptor.
@@ -632,8 +633,6 @@ namespace SystemSharp.Meta
         {
             if (this == obj)
                 return true;
-            //if (!IsComplete)
-            //    return false;
 
             if (obj is TypeDescriptor)
             {
@@ -836,6 +835,12 @@ namespace SystemSharp.Meta
             {
                 return new TypeDescriptor[] { this };
             }
+        }
+
+        internal void Nest(PackageDescriptor owner)
+        {
+            owner.AddChild(this);
+            Owner = owner;
         }
     }
 
