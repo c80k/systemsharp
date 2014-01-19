@@ -196,12 +196,12 @@ namespace Example_Arbiter
             public static readonly Time ClockCycle = new Time(10.0, ETimeUnit.ns);
 
             private SLSignal _clk = new SLSignal();
-            private Signal1D<StdLogic> _request = new Signal1D<StdLogic>(NumMasters, i => new SLSignal())
+            private VSignal<StdLogic> _request = new VSignal<StdLogic>(NumMasters, i => new SLSignal())
             {
                 InitialValue = Arrays.Same<StdLogic>('0', NumMasters)
             };
 
-            private Signal1D<StdLogic> _grant = new Signal1D<StdLogic>(NumMasters, i => new SLSignal())
+            private VSignal<StdLogic> _grant = new VSignal<StdLogic>(NumMasters, i => new SLSignal())
             {
                 InitialValue = Arrays.Same<StdLogic>('0', NumMasters)
             };

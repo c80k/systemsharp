@@ -40,136 +40,6 @@ using System.Threading.Tasks;
 
 namespace SystemSharp.DataTypes
 {
-    public enum ESizedProperties
-    {
-        Size
-    }
-
-    /// <summary>
-    /// This interface is used for data types which have an associated size.
-    /// </summary>
-    public interface ISized
-    {
-        int Size { get; }
-    }
-
-    public interface ISizeOf
-    {
-        int SizeOfThis { get; }
-    }
-
-    /// <summary>
-    /// This interface represents an indexable data type.
-    /// </summary>
-    /// <typeparam name="TA">The indexable data type</typeparam>
-    /// <typeparam name="TE">The data type of a single indexed element</typeparam>
-    public interface IIndexable<TA, TE> :
-        ISized
-    {
-        /// <summary>
-        /// Performs an index operation on the data type.
-        /// </summary>
-        /// <param name="i">The index of the element to be retrieved</param>
-        /// <returns>The element at index i</returns>
-        TE this[int i]
-        {
-            [MapToIntrinsicFunction(IntrinsicFunction.EAction.Index)]
-            [SideEffectFree]
-            get;
-        }
-
-        /// <summary>
-        /// Performs a slice operation on the data type.
-        /// </summary>
-        /// <param name="i0">The first index of the slice to be retrieved</param>
-        /// <param name="i1">The second index of the slice to be retrieved</param>
-        /// <returns>The slice defined by the closed interval [i0..i1]</returns>
-        TA this[int i0, int i1]
-        {
-            [MapToSlice]
-            [SideEffectFree]
-            get;
-        }
-    }
-
-    /// <summary>
-    /// This interface represents a data type which supports concatenation.
-    /// </summary>
-    /// <typeparam name="TA">The concatenable data type</typeparam>
-    /// <typeparam name="TE">The data type of a single, indexed element of that data type</typeparam>
-    public interface IConcatenable<TA, TE>
-    {
-        /// <summary>
-        /// Concatenates an instance of this data type with another one.
-        /// </summary>
-        /// <param name="other">The other instance which should be appended</param>
-        /// <returns>The concatenation of both</returns>
-        [MapToBinOp(BinOp.Kind.Concat)]
-        [SideEffectFree]
-        TA Concat(TA other);
-
-        /// <summary>
-        /// Concatenates an instance of this data type with a single element.
-        /// </summary>
-        /// <param name="other">The element to append</param>
-        /// <returns>The concatenation of both</returns>
-        [MapToBinOp(BinOp.Kind.Concat)]
-        [SideEffectFree]
-        TA Concat(TE other);
-    }
-
-    public static class ConcatExtensions
-    {
-        class ConcatRewriter : RewriteCall
-        {
-            public override bool Rewrite(CodeDescriptor decompilee, System.Reflection.MethodBase callee, Analysis.StackElement[] args, Analysis.IDecompiler stack, IFunctionBuilder builder)
-            {
-                Array arr = (Array)args[0].Sample;
-                if (arr == null)
-                    throw new InvalidOperationException("Unable to deduce array length");
-
-                int numElems = arr.Length;
-                Type tTE = arr.GetType().GetElementType();
-                Type tTA;
-                callee.IsFunction(out tTA);
-                FunctionCall newCall = IntrinsicFunctions.NewArray(tTE, LiteralReference.CreateConstant(numElems), arr);
-                FunctionSpec fspec = (FunctionSpec)newCall.Callee;
-                IntrinsicFunction ifun = fspec.IntrinsicRep;
-                ArrayParams aparams = (ArrayParams)ifun.Parameter;
-                for (int i = 0; i < numElems; i++)
-                {
-                    aparams.Elements[i] = IntrinsicFunctions.GetArrayElement(
-                        args[0].Expr,
-                        LiteralReference.CreateConstant(i));
-                }
-
-                object sample = null;
-                try
-                {
-                    sample = callee.Invoke(arr);
-                }
-                catch (Exception)
-                {
-                }
-
-                Expression conv = IntrinsicFunctions.Cast(newCall, arr.GetType(), tTA);
-                stack.Push(conv, sample);
-                return true;
-            }
-        }
-
-        [ConcatRewriter]
-        public static TA Concat<TA, TE>(this TE[] arr) where TA : IConcatenable<TA, TE>
-        {
-            TA cur = default(TA);
-            for (long i = 0; i < arr.LongLength; i++)
-            {
-                cur = cur.Concat(arr[i]);
-            }
-            return cur;
-        }
-    }
-
     class StdLogicSLV : ISerializer
     {
         public StdLogicVector Serialize(object value)
@@ -1982,7 +1852,7 @@ namespace SystemSharp.DataTypes
                 }
             }
 
-            public AbstractEvent ChangedEvent
+            public EventSource ChangedEvent
             {
                 [SignalProperty(SignalRef.EReferencedProperty.ChangedEvent)]
                 get { return _signal.ChangedEvent; }
@@ -2071,7 +1941,7 @@ namespace SystemSharp.DataTypes
                 }
             }
 
-            public AbstractEvent ChangedEvent
+            public EventSource ChangedEvent
             {
                 [SignalProperty(SignalRef.EReferencedProperty.ChangedEvent)]
                 get { return _signal.ChangedEvent; }

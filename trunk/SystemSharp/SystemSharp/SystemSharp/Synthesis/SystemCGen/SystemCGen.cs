@@ -1292,13 +1292,13 @@ namespace SystemSharp.Synthesis.SystemCGen
             return name + ".cpp";
         }
 
-        private string PortDirectionToString(EPortDirection dir)
+        private string PortDirectionToString(EFlowDirection dir)
         {
             switch (dir)
             {
-                case EPortDirection.In: return "in";
-                case EPortDirection.Out: return "out";
-                case EPortDirection.InOut: return "inout";
+                case EFlowDirection.In: return "in";
+                case EFlowDirection.Out: return "out";
+                case EFlowDirection.InOut: return "inout";
                 default: throw new NotImplementedException();
             }
         }
@@ -2599,7 +2599,7 @@ namespace SystemSharp.Synthesis.SystemCGen
                 xsim.PushScope();
                 foreach (IPortDescriptor pd in cd.GetPorts())
                 {
-                    if ((pd.Direction == EPortDirection.Out) && (pd.InitialValue != null) && !pd.ElementType.CILType.IsArray)
+                    if ((pd.Direction == EFlowDirection.Out) && (pd.InitialValue != null) && !pd.ElementType.CILType.IsArray)
                     {
                         string pname = MakeIDName(pd.Name, pd.BoundSignal.RemoveIndex(), xsim);
                         tw.WriteLine(pname + ".initialize(" + SystemCifyConstant(pd.InitialValue) + ");");

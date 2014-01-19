@@ -131,7 +131,7 @@ namespace SystemSharp.Meta
         DescriptorBase,
         IPortDescriptor
     {
-        private EPortDirection _dir;
+        private EFlowDirection _dir;
         private EPortUsage _usage;
         private string _domain;
         private ISignalDescriptor _boundSignal;
@@ -144,7 +144,7 @@ namespace SystemSharp.Meta
         /// <param name="usage">usage hint</param>
         /// <param name="domain">optional argument for future use</param>
         /// <param name="elementType">type descriptor of exchanged data</param>
-        public PortBuilder(EPortDirection dir, EPortUsage usage, string domain, TypeDescriptor elementType)
+        public PortBuilder(EFlowDirection dir, EPortUsage usage, string domain, TypeDescriptor elementType)
         {
             _dir = dir;
             _usage = usage;
@@ -155,7 +155,7 @@ namespace SystemSharp.Meta
         /// <summary>
         /// Returns the data-flow direction of the port.
         /// </summary>
-        public EPortDirection Direction
+        public EFlowDirection Direction
         {
             get { return _dir; }
         }
@@ -346,7 +346,7 @@ namespace SystemSharp.Meta
         /// <param name="usage">usage hint</param>
         /// <param name="dataType">type descriptor of exchanged data</param>
         /// <returns>the descriptor of the newly created port</returns>
-        public static PortBuilder CreatePort(this IComponentDescriptor me, string name, EPortDirection dir, EPortUsage usage, TypeDescriptor dataType)
+        public static PortBuilder CreatePort(this IComponentDescriptor me, string name, EFlowDirection dir, EPortUsage usage, TypeDescriptor dataType)
         {
             Contract.Requires<ArgumentNullException>(me != null);
             Contract.Requires<ArgumentNullException>(name != null);
@@ -365,7 +365,7 @@ namespace SystemSharp.Meta
         /// <param name="dir">data-flow direction</param>
         /// <param name="dataType">type descriptor of exchanged data</param>
         /// <returns>the descriptor of the newly created port</returns>
-        public static PortBuilder CreatePort(this IComponentDescriptor me, string name, EPortDirection dir, TypeDescriptor dataType)
+        public static PortBuilder CreatePort(this IComponentDescriptor me, string name, EFlowDirection dir, TypeDescriptor dataType)
         {
             return CreatePort(me, name, dir, EPortUsage.Default, dataType);
         }

@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner
+ * Copyright 2011-2014 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -30,7 +30,7 @@ using SystemSharp.Collections;
 using SystemSharp.Common;
 using SystemSharp.SysDOM;
 
-namespace SystemSharp.Components
+namespace SystemSharp.Common
 {
     /// <summary>
     /// Provides services for late injection of attributes to CLI objects.

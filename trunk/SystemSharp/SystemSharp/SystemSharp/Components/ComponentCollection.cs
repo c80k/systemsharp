@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011 Christian Köllner
+ * Copyright 2011-2014 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -22,14 +22,18 @@ using System.Linq;
 using System.Reflection;
 using SystemSharp.DataTypes;
 using SystemSharp.Meta;
+using SystemSharp.SysDOM;
 
 namespace SystemSharp.Components
 {
     /// <summary>
     /// A component which is an aggregate of multiple child components
     /// </summary>
-    public class ComponentCollection: Component
+    public class ComponentCollection: 
+        DesignObject,
+        IDescriptive<ComponentCollectionDescriptor, ComponentCollection>
     {
+        private ComponentCollectionDescriptor _descriptor;
         private List<Component> _components;
 
         /// <summary>
@@ -38,6 +42,7 @@ namespace SystemSharp.Components
         /// <param name="components">child components</param>
         public ComponentCollection(IEnumerable<Component> components)
         {
+            Initialize();
             _components = components.ToList();
         }
 
@@ -46,6 +51,12 @@ namespace SystemSharp.Components
         /// </summary>
         public ComponentCollection()
         {
+            Initialize();
+        }
+
+        private void Initialize()
+        {
+            DesignContext.Instance.OnAnalysis += OnAnalysis;
         }
 
         /// <summary>
@@ -56,10 +67,30 @@ namespace SystemSharp.Components
             _components.Add(component);
         }
 
-        public override void SetOwner(DescriptorBase owner, MemberInfo declSite, IndexSpec indexSpec)
+        protected override void OnAnalysis()
         {
             for (int i = 0; i < _components.Count; i++)
-                _components[i].SetOwner(owner, declSite, new IndexSpec(i));
+                _components[i].Descriptor.Nest(Descriptor, new IndexSpec(i));
+        }
+
+        public ComponentCollectionDescriptor Descriptor
+        {
+            get 
+            {
+                if (_descriptor == null)
+                    _descriptor = new ComponentCollectionDescriptor();
+                return _descriptor;
+            }
+        }
+
+        IDescriptor IDescriptive.Descriptor
+        {
+            get { return Descriptor; }
+        }
+
+        public Expression DescribingExpression
+        {
+            get { throw new System.NotImplementedException(); }
         }
     }
 }

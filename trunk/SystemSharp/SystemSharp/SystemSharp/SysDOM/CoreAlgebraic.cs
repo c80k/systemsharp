@@ -3754,6 +3754,7 @@ namespace SystemSharp.SysDOM
 
     #endregion
 
+#if false
     /// <summary>
     /// A matrix whose elements a expressions.
     /// </summary>
@@ -4374,5 +4375,5 @@ namespace SystemSharp.SysDOM
             get { return x => GetEuclidian(x); }
         }
     }
-
+#endif
 }

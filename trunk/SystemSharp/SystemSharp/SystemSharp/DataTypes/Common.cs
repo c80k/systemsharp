@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright 2011-2013 Christian Köllner
+ * Copyright 2011-2014 Christian Köllner
  * 
  * This file is part of System#.
  *
@@ -44,17 +44,55 @@ namespace SystemSharp.DataTypes
     /// <summary>
     /// A discrete range.
     /// </summary>
-    public struct Range //: IEnumerable<int>
+    public struct Range:
+        IEquatable<Range>,
+        IComparable<Range>
     {
+        /// <summary>
+        /// Represents the possible relation of two ranges.
+        /// </summary>
         public enum EComparisonResult
         {
+            /// <summary>
+            /// Ranges have different directions and are therefore unrelated.
+            /// </summary>
             Unrelated,
+
+            /// <summary>
+            /// All values of the first range are smaller than the values of the second range.
+            /// </summary>
             Left,
+
+            /// <summary>
+            /// Both ranges overlap, and the smallest value of the first range is smaller than the
+            /// smallest value of the second range.
+            /// </summary>
             LeftOverlap,
-            LeftInclusion,
-            Equality,
-            RightInclusion,
+
+            /// <summary>
+            /// The first range is a true subset of the second range.
+            /// </summary>
+            FirstIncluded,
+
+            /// <summary>
+            /// The second range is a true subset of the first range.
+            /// </summary>
+            SecondIncluded,
+
+            /// <summary>
+            /// Both ranges are equal.
+            /// </summary>
+            Equal,
+
+            /// <summary>
+            /// Both ranges overlap, and the smallest value of the second range is smaller than the
+            /// smallest value of the first range.
+            /// </summary>
             RightOverlap,
+
+            /// <summary>
+            /// All values of the first range are greater than the values of the second range.
+            /// </summary>
             Right
         }
 
@@ -123,7 +161,7 @@ namespace SystemSharp.DataTypes
         /// <summary>
         /// Returns the index of the resulting element if we apply this range as a projection to original element <paramref name="offset"/>.
         /// </summary>
-        public long Project(int offset)
+        public int Project(int offset)
         {
             switch (Direction)
             {
@@ -165,21 +203,62 @@ namespace SystemSharp.DataTypes
         }
 
         /// <summary>
-        /// To ranges are defined to be equal iff they have the same direction and extactly the same first/last indices.
+        /// Returns <c>true</c> iff this range contains <paramref name="index"/>.
+        /// </summary>
+        public bool Contains(int index)
+        {
+            switch (Direction)
+            {
+                case EDimDirection.Downto:
+                    return index <= FirstBound && index >= SecondBound;
+
+                case EDimDirection.To:
+                    return index >= FirstBound && index <= SecondBound;
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Returns <c>true</c> iff this range contains the specified range.
+        /// </summary>
+        public bool Contains(Range range)
+        {
+            var compared = Range.Compare(this, range);
+            return compared == EComparisonResult.SecondIncluded ||
+                compared == EComparisonResult.Equal;
+        }
+
+        /// <summary>
+        /// Two ranges are defined to be equal iff they have the same direction and extactly the same first/last indices.
+        /// </summary>
+        public bool Equals(Range other)
+        {
+            return FirstBound == other.FirstBound &&
+                SecondBound == other.SecondBound &&
+                Direction == other.Direction;
+        }
+
+        public int CompareTo(Range other)
+        {
+            switch (Range.Compare(this, other))
+            {
+                case EComparisonResult.Left: return -1;
+                case EComparisonResult.Right: return 1;
+                default: return 0;
+            }
+        }
+
+        /// <summary>
+        /// Two ranges are defined to be equal iff they have the same direction and extactly the same first/last indices.
         /// </summary>
         public override bool Equals(object obj)
         {
             if (obj is Range)
-            {
-                Range range = (Range)obj;
-                return FirstBound == range.FirstBound &&
-                    SecondBound == range.SecondBound &&
-                    Direction == range.Direction;
-            }
+                return Equals((Range)obj);
             else
-            {
                 return false;
-            }
         }
 
         public override int GetHashCode()
@@ -201,6 +280,7 @@ namespace SystemSharp.DataTypes
             return sb.ToString();
         }
 
+#if false
         /// <summary>
         /// Constructs a descending range.
         /// </summary>
@@ -220,6 +300,7 @@ namespace SystemSharp.DataTypes
         {
             return new Range(lo, hi, EDimDirection.To);
         }
+#endif
 
         /// <summary>
         /// Compares to ranges with respect to all possible overlap cases.
@@ -231,31 +312,52 @@ namespace SystemSharp.DataTypes
             if (ra.Direction != rb.Direction)
                 return EComparisonResult.Unrelated;
 
-            if (ra.SecondBound < rb.FirstBound)
+            int ralo, rahi, rblo, rbhi;
+            switch (ra.Direction)
+            {
+                case EDimDirection.Downto:
+                    ralo = ra.SecondBound;
+                    rahi = ra.FirstBound;
+                    rblo = rb.SecondBound;
+                    rbhi = rb.FirstBound;
+                    break;
+
+                case EDimDirection.To:
+                    ralo = ra.FirstBound;
+                    rahi = ra.SecondBound;
+                    rblo = rb.FirstBound;
+                    rbhi = rb.SecondBound;
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
+
+            if (rahi < rblo)
                 return EComparisonResult.Left;
 
-            if (rb.SecondBound < ra.FirstBound)
+            if (rbhi < ralo)
                 return EComparisonResult.Right;
 
-            if (ra.FirstBound < rb.FirstBound)
+            if (ralo < rblo && rahi < rbhi)
                 return EComparisonResult.LeftOverlap;
 
-            if (rb.FirstBound < ra.FirstBound)
+            if (rblo < ralo && rbhi < rahi)
                 return EComparisonResult.RightOverlap;
 
-            if (ra.FirstBound > rb.FirstBound)
-                return EComparisonResult.LeftInclusion;
+            if (ralo > rblo || rahi < rbhi)
+                return EComparisonResult.FirstIncluded;
 
-            if (rb.FirstBound > ra.FirstBound)
-                return EComparisonResult.RightInclusion;
+            if (rblo > ralo || rbhi < rahi)
+                return EComparisonResult.SecondIncluded;
 
-            return EComparisonResult.Equality;
+            return EComparisonResult.Equal;
         }
 
         /// <summary>
-        /// Returns the narrower of two ranges. One of the ranges must completely include the other one,
-        /// otherwise this will result in an <c>ArgumentException</c>.
+        /// Returns the narrower of two ranges. One of the ranges must completely include the other one.
         /// </summary>
+        /// <exception cref="ArgumentException">if neither range includes the other one</exception>
         public static Range Min(Range ra, Range rb)
         {
             switch (Compare(ra, rb))
@@ -263,22 +365,22 @@ namespace SystemSharp.DataTypes
                 case EComparisonResult.Unrelated:
                     throw new ArgumentException("Ranges must have equal directions");
 
-                case EComparisonResult.LeftInclusion:
-                case EComparisonResult.Equality:
+                case EComparisonResult.FirstIncluded:
+                case EComparisonResult.Equal:
                     return ra;
 
-                case EComparisonResult.RightInclusion:
+                case EComparisonResult.SecondIncluded:
                     return rb;
 
                 default:
-                    throw new ArgumentException("Ranges overlap, but no range is included within the other one");
+                    throw new ArgumentException("Ranges overlap, but no range is included within the other one.");
             }
         }
 
         /// <summary>
-        /// Returns the wider of two ranges. One of the ranges must completely include the other one,
-        /// otherwise this will result in an <c>ArgumentException</c>.
+        /// Returns the wider of two ranges. One of the ranges must completely include the other one.
         /// </summary>
+        /// <exception cref="ArgumentException">if neither range includes the other one</exception>
         public static Range Max(Range ra, Range rb)
         {
             switch (Compare(ra, rb))
@@ -286,11 +388,11 @@ namespace SystemSharp.DataTypes
                 case EComparisonResult.Unrelated:
                     throw new ArgumentException("Ranges must have equal directions");
 
-                case EComparisonResult.LeftInclusion:
-                case EComparisonResult.Equality:
+                case EComparisonResult.FirstIncluded:
+                case EComparisonResult.Equal:
                     return rb;
 
-                case EComparisonResult.RightInclusion:
+                case EComparisonResult.SecondIncluded:
                     return ra;
 
                 default:
@@ -338,9 +440,37 @@ namespace SystemSharp.DataTypes
     }
 
     /// <summary>
+    /// Provides extension methods for constructing <c>Range</c> instances.
+    /// </summary>
+    public static class RangeConstructor
+    {
+        /// <summary>
+        /// Constructs an ascending range.
+        /// </summary>
+        /// <param name="from">lower index</param>
+        /// <param name="to">upper index</param>
+        public static Range To(this int from, int to)
+        {
+            return new Range(from, to, EDimDirection.To);
+        }
+
+        /// <summary>
+        /// Constructs a descending range.
+        /// </summary>
+        /// <param name="from">upper index</param>
+        /// <param name="downto">lower index</param>
+        public static Range Downto(this int from, int downto)
+        {
+            return new Range(from, downto, EDimDirection.Downto);
+        }
+    }
+
+    /// <summary>
     /// A dimensional specifier is either a single index or a range.
     /// </summary>
-    public class DimSpec
+    public class DimSpec: 
+        IEquatable<DimSpec>,
+        IComparable<DimSpec>
     {
         /// <summary>
         /// Kind of specifier, index or range
@@ -376,6 +506,52 @@ namespace SystemSharp.DataTypes
             Index = range;
         }
 
+        /// <summary>
+        /// Two dimensional specifiers are defined to be equal iff the are of the same kind with the same
+        /// index or range, respectively.
+        /// </summary>
+        public bool Equals(DimSpec other)
+        {
+            return Kind == other.Kind && Index.Equals(other.Index);
+        }
+
+        public int CompareTo(DimSpec other)
+        {
+            if (other.Kind != Kind)
+                return 0;
+
+            switch (Kind)
+            {
+                case EKind.Index:
+                    return ((long)this).CompareTo((long)other);
+
+                case EKind.Range:
+                    return ((Range)this).CompareTo((Range)other);
+
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Enumerates all indices which are covered by this dimensional specifier.
+        /// In case this specifier represents a single index, an enumeration with that index
+        /// as one and only element is returned. In case it represents a range, all integer values
+        /// inside that range are returned.
+        /// </summary>
+        public IEnumerable<int> IndexValues
+        {
+            get
+            {
+                switch (Kind)
+                {
+                    case EKind.Index: return new int[] { (int)this };
+                    case EKind.Range: return ((Range)this).Values;
+                    default: throw new NotImplementedException();
+                }
+            }
+        }
+
         public override string ToString()
         {
             switch (Kind)
@@ -396,7 +572,7 @@ namespace SystemSharp.DataTypes
             if (other == null)
                 return false;
 
-            return Kind == other.Kind && Index.Equals(other.Index);
+            return Equals(obj);
         }
 
         public override int GetHashCode()
@@ -410,6 +586,26 @@ namespace SystemSharp.DataTypes
         public int BaseIndex
         {
             get { return Index.Direction == EDimDirection.Downto ? Index.SecondBound : Index.FirstBound; }
+        }
+
+        public DimSpec Project(Range range)
+        {
+            switch (Kind)
+            {
+                case EKind.Index: return range.Unproject((int)this);
+                case EKind.Range: return range.Unproject((Range)this);
+                default: throw new NotImplementedException();
+            }
+        }
+
+        public DimSpec Unproject(Range range)
+        {
+            switch (Kind)
+            {
+                case EKind.Index: return range.Project((int)this);
+                case EKind.Range: return range.Project((Range)this);
+                default: throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -467,13 +663,86 @@ namespace SystemSharp.DataTypes
 
             return ds.Index;
         }
+
+        public static bool operator <(DimSpec a, DimSpec b)
+        {
+            Contract.Requires<ArgumentNullException>(a != null, "a");
+            Contract.Requires<ArgumentNullException>(b != null, "b");
+            return a.CompareTo(b) < 0;
+        }
+
+        public static bool operator <=(DimSpec a, DimSpec b)
+        {
+            Contract.Requires<ArgumentNullException>(a != null, "a");
+            Contract.Requires<ArgumentNullException>(b != null, "b");
+            return a.CompareTo(b) < 0 || a.Equals(b);
+        }
+
+        public static bool operator ==(DimSpec a, DimSpec b)
+        {
+            if (a == null && b == null)
+                return true;
+            if (a == null || b == null)
+                return false;
+
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(DimSpec a, DimSpec b)
+        {
+            if (a == null && b == null)
+                return false;
+            if (a == null || b == null)
+                return true;
+
+            return !a.Equals(b);
+        }
+
+        public static bool operator >=(DimSpec a, DimSpec b)
+        {
+            Contract.Requires<ArgumentNullException>(a != null, "a");
+            Contract.Requires<ArgumentNullException>(b != null, "b");
+            return a.CompareTo(b) > 0 || a.Equals(b);
+        }
+
+        public static bool operator >(DimSpec a, DimSpec b)
+        {
+            Contract.Requires<ArgumentNullException>(a != null, "a");
+            Contract.Requires<ArgumentNullException>(b != null, "b");
+            return a.CompareTo(b) > 0;
+        }
     }
 
     /// <summary>
     /// An index specifier is an aggregation of dimensional specifiers.
     /// </summary>
-    public class IndexSpec
+    public class IndexSpec: IComparable<IndexSpec>
     {
+        private class IndexComparerImpl : IComparer<IndexSpec>
+        {
+            public int Compare(IndexSpec x, IndexSpec y)
+            {
+                if (x == null || y == null)
+                    return 0;
+
+                int count = Math.Min(x.Indices.Length, y.Indices.Length);
+                for (int i = 0; i < count; i++)
+                {
+                    if (x.Indices[i] < y.Indices[i])
+                        return -1;
+
+                    if (x.Indices[i] > y.Indices[i])
+                        return 1;
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Compares index specifiers from first to last index.
+        /// </summary>
+        public static readonly IComparer<IndexSpec> IndexComparer = new IndexComparerImpl();
+
         /// <summary>
         /// The empty specifier.
         /// </summary>
@@ -490,7 +759,7 @@ namespace SystemSharp.DataTypes
         /// <param name="indices">sequence of dimensional specifiers</param>
         public IndexSpec(IEnumerable<DimSpec> indices)
         {
-            Contract.Requires(indices != null);
+            Contract.Requires<ArgumentNullException>(indices != null, "indices");
 
             Indices = indices.ToArray();
         }
@@ -509,15 +778,15 @@ namespace SystemSharp.DataTypes
         /// <summary>
         /// Number of dimensional specifiers
         /// </summary>
-        public int SourceDimension
+        public int MinSourceDimension
         {
             get { return Indices.Length; }
         }
 
         /// <summary>
-        /// Dimension of result when applying this index specifier.
+        /// Minimum dimension of result when applying this index specifier.
         /// </summary>
-        public int TargetDimension
+        public int MinTargetDimension
         {
             get
             {
@@ -531,189 +800,77 @@ namespace SystemSharp.DataTypes
             }
         }
 
-        /// <summary>
-        /// Constructs an index specifier which represents applying this specifier to specifier <paramref name="first"/>.
-        /// </summary>
-        public IndexSpec ApplyTo(IndexSpec first)
+        public int DimensionReduction
         {
-            if (first == null)
-                return this;
-
-            // Special case: no index operator, i.e. array of indices is empty.
-            if (first.TargetDimension == 0)
-                return this;
-
-            if (first.TargetDimension < SourceDimension)
-                throw new ArgumentException("Dimensionalities do not match");
-
-            int sdim1 = first.SourceDimension;
-            DimSpec[] indices = new DimSpec[sdim1];
-            int index2 = 0;
-            int start = first.TargetDimension - SourceDimension;
-            for (int index1 = 0; index1 < sdim1; index1++)
+            get
             {
-                indices[index1] = first.Indices[index1];
-                if (index1 < start)
-                    continue;
-
-                if (indices[index1].Kind == DimSpec.EKind.Range)
+                int dim = 0;
+                foreach (DimSpec index in Indices)
                 {
-                    Range itsRange = (Range)indices[index1];
-                    if (Indices[index2].Kind == DimSpec.EKind.Index)
-                    {
-                        int myidx = (int)Indices[index2];
-                        int totalIdx;
-                        switch (itsRange.Direction)
-                        {
-                            case EDimDirection.Downto:
-                                totalIdx = itsRange.SecondBound + myidx;
-                                if (totalIdx < itsRange.SecondBound ||
-                                    totalIdx > itsRange.FirstBound)
-                                    throw new ArgumentException("Index exceeds range bounds");
-                                break;
-
-                            case EDimDirection.To:
-                                totalIdx = itsRange.FirstBound + myidx;
-                                if (totalIdx < itsRange.FirstBound ||
-                                    totalIdx > itsRange.SecondBound)
-                                    throw new ArgumentException("Index exceeds range bounds");
-                                break;
-
-                            default: throw new NotImplementedException();
-                        }
-                        indices[index1] = totalIdx;
-                    }
-                    else
-                    {
-                        var myRange = (Range)indices[index2];
-                        if (itsRange.Direction != myRange.Direction)
-                            throw new ArgumentException("Projection ranges must have same direction");
-
-                        Range totalRange;
-                        switch (itsRange.Direction)
-                        {
-                            case EDimDirection.Downto:
-                                totalRange = new Range(
-                                    myRange.FirstBound + itsRange.SecondBound,
-                                    myRange.SecondBound + itsRange.SecondBound,
-                                    EDimDirection.Downto);
-                                if (totalRange.FirstBound > itsRange.FirstBound ||
-                                    totalRange.SecondBound < itsRange.SecondBound)
-                                    throw new ArgumentException("Index exceeds range bounds");
-                                break;
-
-                            case EDimDirection.To:
-                                totalRange = new Range(
-                                    myRange.FirstBound + itsRange.FirstBound,
-                                    myRange.SecondBound + itsRange.FirstBound,
-                                    EDimDirection.To);
-                                if (totalRange.FirstBound < itsRange.FirstBound ||
-                                    totalRange.SecondBound > itsRange.SecondBound)
-                                    throw new ArgumentException("Index exceeds range bounds");
-                                break;
-
-                            default: throw new NotImplementedException();
-                        }
-                    }
-                    indices[index1] = Indices[index2++];
+                    if (index.Kind == DimSpec.EKind.Index)
+                        ++dim;
                 }
+                return dim;
             }
-            return new IndexSpec(indices);
         }
 
         /// <summary>
-        /// Finds an IndexSpec second such that <c>second.ApplyTo(this).Equals(result)</c>.
+        /// Constructs an index specifier which represents applying this specifier to specifier <paramref name="first"/>.
+        /// </summary>
+        public IndexSpec Project(IndexSpec first)
+        {
+            Contract.Requires<ArgumentNullException>(first != null, "first");
+
+            var indexList = new List<DimSpec>();
+            int j = 0;
+            for (int i = 0; i < first.Indices.Length; i++)
+            {
+                if (first.Indices[i].Kind == DimSpec.EKind.Index ||
+                    j == Indices.Length)
+                {
+                    indexList.Add(first.Indices[i]);
+                }
+                else
+                {
+                    indexList.Add(Indices[j].Project((Range)first.Indices[i]));
+                    ++j;
+                }
+            }
+            for (; j < Indices.Length; j++)
+            {
+                indexList.Add(Indices[j]);
+            }
+            return new IndexSpec(indexList.ToArray());
+        }
+
+        /// <summary>
+        /// Computes an <c>IndexSpec second</c> such that <c>second.Project(this).Equals(result)</c>.
         /// </summary>
         /// <returns>second</returns>
         public IndexSpec Unproject(IndexSpec result)
         {
-            if (SourceDimension == 0)
-                return result;
+            Contract.Requires<ArgumentNullException>(result != null, "result");
 
-            if (this.Equals(result))
-                return new IndexSpec(); // empty index
-
-            if (TargetDimension != result.SourceDimension)
-                throw new ArgumentException("dimensions do not match");
-
-            int rindex = 0;
-            var rindices = new DimSpec[TargetDimension];
-            for (int myindex = 0; myindex < SourceDimension; myindex++)
+            var indexList = new List<DimSpec>();
+            int j = 0;
+            for (int i = 0; i < Indices.Length; i++)
             {
-                if (Indices[myindex].Kind == DimSpec.EKind.Index)
-                    continue;
-
-                var myrange = (Range)Indices[myindex];
-                var rdim = result.Indices[rindex];
-                switch (rdim.Kind)
+                if (Indices[i].Kind == DimSpec.EKind.Index ||
+                    j == result.Indices.Length)
                 {
-                    case DimSpec.EKind.Index:
-                        {
-                            int rdimidx = (int)rdim;
-                            switch (myrange.Direction)
-                            {
-                                case EDimDirection.Downto:
-                                    if (rdimidx < myrange.SecondBound ||
-                                        rdimidx > myrange.FirstBound)
-                                        throw new ArgumentException("Index exceeds range bounds");
-                                    rindices[rindex] = rdimidx - myrange.SecondBound;
-                                    break;
-
-                                case EDimDirection.To:
-                                    if (rdimidx > myrange.SecondBound ||
-                                        rdimidx < myrange.FirstBound)
-                                        throw new ArgumentException("Index exceeds range bounds");
-                                    rindices[rindex] = rdimidx - myrange.FirstBound;
-                                    break;
-
-                                default:
-                                    throw new NotImplementedException();
-                            }
-                        }
-                        break;
-
-                    case DimSpec.EKind.Range:
-                        {
-                            var rrange = (Range)rdim;
-                            if (rrange.Direction != myrange.Direction)
-                                throw new ArgumentException("Range directions do not match");
-
-                            switch (myrange.Direction)
-                            {
-                                case EDimDirection.Downto:
-                                    if (rrange.FirstBound < myrange.SecondBound ||
-                                        rrange.FirstBound > myrange.FirstBound ||
-                                        rrange.SecondBound < myrange.SecondBound ||
-                                        rrange.SecondBound > myrange.FirstBound)
-                                        throw new ArgumentException("Index exceeds range bounds");
-                                    rindices[rindex] = new Range(
-                                        rrange.FirstBound - myrange.SecondBound,
-                                        rrange.SecondBound - myrange.SecondBound,
-                                        EDimDirection.Downto);
-                                    break;
-
-                                case EDimDirection.To:
-                                    if (rrange.FirstBound > myrange.SecondBound ||
-                                        rrange.FirstBound < myrange.FirstBound ||
-                                        rrange.SecondBound > myrange.SecondBound ||
-                                        rrange.SecondBound < myrange.FirstBound)
-                                        throw new ArgumentException("Index exceeds range bounds");
-                                    rindices[rindex] = new Range(
-                                        rrange.FirstBound - myrange.FirstBound,
-                                        rrange.SecondBound - myrange.FirstBound,
-                                        EDimDirection.To);
-                                    break;
-
-                                default:
-                                    throw new NotImplementedException();
-                            }
-                        }
-                        break;
+                    indexList.Add(Indices[i]);
                 }
-                rindex++;
+                else
+                {
+                    indexList.Add(result.Indices[j].Unproject((Range)Indices[i]));
+                    ++j;
+                }
             }
-
-            return new IndexSpec(rindices);
+            for (; j < result.Indices.Length; j++)
+            {
+                indexList.Add(result.Indices[j]);
+            }
+            return new IndexSpec(indexList.ToArray());
         }
 
         /// <summary>
@@ -761,6 +918,11 @@ namespace SystemSharp.DataTypes
         public override int GetHashCode()
         {
             return Indices.GetSequenceHashCode();
+        }
+
+        public int CompareTo(IndexSpec other)
+        {
+            return IndexComparer.Compare(this, other);
         }
     }
 }

@@ -92,7 +92,7 @@ namespace SystemSharp.Components
         /// Constructs a new instance.
         /// </summary>
         /// <param name="direction">data direction</param>
-        public MapToPort(EPortDirection direction)
+        public MapToPort(EFlowDirection direction)
         {
             Direction = direction;
         }
@@ -100,7 +100,7 @@ namespace SystemSharp.Components
         /// <summary>
         /// Data direction
         /// </summary>
-        public EPortDirection Direction { get; private set; }
+        public EFlowDirection Direction { get; private set; }
 
         /// <summary>
         /// Port descriptor
@@ -402,7 +402,7 @@ namespace SystemSharp.Components
                         x.Desc,
                         x.Prop,
                         x.Indices.Concat(new Expression[][] { indices }),
-                        indexSpec.ApplyTo(x.IndexSample),
+                        indexSpec.Project(x.IndexSample),
                         x.IsStaticIndex && isStatic);
                 },
                 OnVisitVariable = x => { throw new InvalidOperationException(); },

@@ -229,7 +229,7 @@ namespace SystemSharp.Components.Std
         private Signal<SFix> _y;
         private Signal<Unsigned> _unitAddr;
         private Signal<SFix> _unitData;
-        private Signal1D<SFix> _memContent;
+        private VSignal<SFix> _memContent;
 
         private LERPUnit _lerpUnit;
 
@@ -314,7 +314,7 @@ namespace SystemSharp.Components.Std
             {
                 InitialValue = Unsigned.FromUInt(0, AddrWidth)
             };
-            _memContent = new Signal1D<SFix>(data.Length, _ => new Signal<SFix>() { InitialValue = data[_] });
+            _memContent = new VSignal<SFix>(data.Length, _ => new Signal<SFix>() { InitialValue = data[_] });
 
             _lerpUnit = new LERPUnit(xIntWidth, xFracWidth, yIntWidth, yFracWidth, pipeStages);
             Bind(() =>
@@ -550,7 +550,7 @@ namespace SystemSharp.Components.Std
         private Signal<Unsigned> _cosAddr;
         private Signal<SFix> _sinData;
         private Signal<SFix> _cosData;
-        private Signal1D<SFix> _sinLUT;
+        private VSignal<SFix> _sinLUT;
         private SLVSignal _sinFlipSignIn;
         private SLVSignal _cosFlipSignIn;
         private SLVSignal _sinFlipSignOut;
@@ -680,7 +680,7 @@ namespace SystemSharp.Components.Std
             {
                 InitialValue = SFix.FromDouble(0.0, YIntWidth, YFracWidth)
             };
-            _sinLUT = new Signal1D<SFix>((1 << lutWidth) + 2, _ => new Signal<SFix>() 
+            _sinLUT = new VSignal<SFix>((1 << lutWidth) + 2, _ => new Signal<SFix>() 
             { 
                 InitialValue = SFix.FromDouble(Math.Sin(Math.PI * 0.5 * _ / (double)(1 << lutWidth)), 2, yFracWidth) 
             });
